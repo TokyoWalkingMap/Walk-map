@@ -455,10 +455,10 @@ dl.meta dt{color:var(--ink2);font-weight:700}
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-maps.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-maps-gsi.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-mapdraw.js?v=20261114c" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261114d" charset="utf-8"></script>
+<script src="tokyo-maps.js?v=20261114d" charset="utf-8"></script>
+<script src="tokyo-maps-gsi.js?v=20261114d" charset="utf-8"></script>
+<script src="tokyo-mapdraw.js?v=20261114d" charset="utf-8"></script>
 <script>
 (function(){
 "use strict";
@@ -947,7 +947,7 @@ function titles(){
   return {cats:out,areas,have,master:have>=MASTER_N,grand:have===Object.keys(CATS).length};
 }
 const EXP_NEAR=30,EXP_FAR=5,EXP_AREA=100;
-const RANKS=[[1,"見習い技術者"],[3,"測量士補"],[5,"現場監督"],[8,"設計技師"],[11,"技術士"],[14,"棟梁"]];
+const RANKS=[[1,"まち歩き初心者"],[3,"構造物ウォッチャー"],[5,"構造の目利き"],[8,"構造物探偵"],[11,"都市の語り部"],[14,"東京の生き字引"]];
 function stats(){
   const got=D.filter(d=>hasPhoto(d.id)),n=got.length,onsite=got.filter(d=>photo(d.id).near).length;
   const done=TM.AREA_KEYS.filter(k=>SPOTS[k].length&&SPOTS[k].every(x=>hasPhoto(x.d.id))).length;
