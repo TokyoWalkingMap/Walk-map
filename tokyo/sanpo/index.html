@@ -305,6 +305,23 @@ dl.meta dt{color:var(--ink2);font-weight:700}
 .stars{display:block;font-size:17px;letter-spacing:2px;line-height:1.3}
 .stars i{font-style:normal;color:var(--rule)}.stars i.y{color:var(--gold);-webkit-text-stroke:1px var(--line)}
 .tbadge small{display:block;font-size:11px;font-weight:700;color:var(--ink2)}
+button.tbadge{font:inherit;color:inherit;cursor:pointer;display:block;width:100%}
+.tbadge.cur{background:var(--bg2);box-shadow:inset 0 0 0 2px var(--accent),0 3px 0 var(--line)}
+.kbtn{display:inline-block;margin-top:5px;font:400 10.5px/1.5 var(--f-disp);background:var(--bg2);border:2px solid var(--line);border-radius:999px;padding:0 9px}
+.know{margin-top:12px;background:var(--paper);border:3px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:12px}
+.know-h{display:grid;grid-template-columns:auto 1fr;gap:0 10px;align-items:center;margin-bottom:8px}
+.know-h .tic{grid-row:1/3;width:40px;height:40px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center}
+.know-h .tic svg{width:26px;height:26px}
+.know-h b{font:400 16px/1.3 var(--f-disp)}
+.know-h small{font-size:11.5px;font-weight:700;color:var(--ink2)}
+.kcard{background:var(--bg2);border:2.5px solid var(--line);border-radius:16px;padding:10px 12px;margin-top:8px}
+.kcard em{display:block;font:400 12px/1.4 var(--f-disp);font-style:normal;color:var(--gold2)}
+.kcard b{display:block;font:400 15px/1.45 var(--f-disp);margin:1px 0 3px}
+.kcard p{margin:0;font-size:13.5px;line-height:1.75}
+.kcard.lock{border-style:dashed;border-color:var(--ink3);opacity:.8}
+.kcard.lock b,.kcard.lock em{color:var(--ink3)}
+.kcard.in{margin:0 0 12px}
+.khint{margin:0 0 12px;font-size:12px;font-weight:700;color:var(--ink2)}
 .subh{font:400 15px/1.3 var(--f-disp);margin:16px 2px 8px}
 .tic.area{background:var(--accent)}
 .tic.area svg{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;width:24px;height:24px}
@@ -455,10 +472,10 @@ dl.meta dt{color:var(--ink2);font-weight:700}
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-maps.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-maps-gsi.js?v=20261114c" charset="utf-8"></script>
-<script src="tokyo-mapdraw.js?v=20261114c" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261114e" charset="utf-8"></script>
+<script src="tokyo-maps.js?v=20261114e" charset="utf-8"></script>
+<script src="tokyo-maps-gsi.js?v=20261114e" charset="utf-8"></script>
+<script src="tokyo-mapdraw.js?v=20261114e" charset="utf-8"></script>
 <script>
 (function(){
 "use strict";
@@ -826,7 +843,7 @@ function renderAlbum(){
   const T=titles();
   $("#atitles").innerHTML='<div class="master'+(T.master?" on":"")+'"><span class="crown" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg></span><span><b>'+(T.grand?"土木建築グランドマスター":"構造物マスター")+'</b><small>'+(T.grand?"すべての分類の称号を集めました":T.master?"分類の称号を "+T.have+" 種類集めました。全 7 種類でグランドマスター":"分類の称号を "+MASTER_N+" 種類集めると「構造物マスター」（いま "+T.have+" 種類）")+'</small></span></div>'+
     '<div class="tgrid">'+Object.keys(CATS).map(k=>{const c=T.cats[k];
-      return '<div class="tbadge'+(c.star?" on":"")+'"><span class="tic" style="background:var('+CATS[k].v+')"><svg viewBox="-12 -12 24 24">'+ICONS[k]+'</svg></span><b>'+esc(c.name)+'</b><span class="stars">'+[1,2,3].map(i=>'<i class="'+(c.star>=i?"y":"")+'">★</i>').join("")+'</span><small>'+c.n+" / "+c.tot+(c.next?"　次の★まで "+(c.next-c.n):"　すべて発見")+'</small></div>'}).join("")+'</div>'+
+      return '<button class="tbadge'+(c.star?" on":"")+(knowCat===k?" cur":"")+'" data-know="'+k+'" aria-expanded="'+(knowCat===k)+'"><span class="tic" style="background:var('+CATS[k].v+')"><svg viewBox="-12 -12 24 24">'+ICONS[k]+'</svg></span><b>'+esc(c.name)+'</b><span class="stars">'+[1,2,3].map(i=>'<i class="'+(c.star>=i?"y":"")+'">★</i>').join("")+'</span><small>'+c.n+" / "+c.tot+(c.next?"　次の★まで "+(c.next-c.n):"　すべて発見")+'</small><span class="kbtn">知識を読む</span></button>'}).join("")+'</div>'+(knowCat?knowHTML(knowCat):"")+
     '<h3 class="subh">エリアの称号</h3><div class="tgrid">'+TM.AREA_KEYS.map(k=>{const c=T.areas[k];
       return '<div class="tbadge'+(c.star?" on":"")+'"><span class="tic area"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><b>'+esc(c.name)+'</b><span class="stars">'+[1,2,3].map(i=>'<i class="'+(c.star>=i?"y":"")+'">★</i>').join("")+'</span><small>'+esc(TOKYO_MAPS[k].title.replace(/（.*）/,""))+"　"+c.n+" / "+c.tot+(c.next?"　次の★まで "+(c.next-c.n):"　制覇")+'</small></div>'}).join("")+'</div>';
   const list=got.slice().sort((a,b)=>String(photo(b.id).at||"").localeCompare(String(photo(a.id).at||"")));
@@ -835,6 +852,7 @@ function renderAlbum(){
   $("#storeinfo").textContent=P.mode==="cloud"?"写真はこのページの保存領域に、記録はあなた専用の領域に保存されます（ほかの閲覧者には見えません）。別の端末で開いても同じ写真が表示されます。":
     "写真はこの端末のブラウザに保存されています。ブラウザのデータを消すと写真も消えます。";
 }
+$("#atitles").addEventListener("click",e=>{const b=e.target.closest("[data-know]");if(!b)return;knowCat=knowCat===b.dataset.know?null:b.dataset.know;renderAlbum();const k=document.querySelector(".know");if(k)k.scrollIntoView({block:"nearest",behavior:"smooth"})});
 $("#aareas").addEventListener("click",e=>{const b=e.target.closest(".arow[data-area]");if(b){showMap(b.dataset.area);go("map")}});
 $("#agrid").addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)openSpot(t.dataset.id);const g=e.target.closest("[data-go]");if(g)go(g.dataset.go)});
 
@@ -861,6 +879,8 @@ function sheetHTML(d){
   '<span class="tag"><i style="background:var('+c.v+')"></i>'+esc(c.l)+(ak?" · "+esc(TOKYO_MAPS[ak].title):"")+"</span>"+
   '<dl class="meta"><dt>年</dt><dd>'+esc(d.yl)+"</dd><dt>場所</dt><dd>"+esc(d.area)+"</dd><dt>設計・施工</dt><dd>"+esc(d.by)+"</dd><dt>諸元</dt><dd>"+esc(d.spec)+"</dd>"+(here&&d.ll?"<dt>現在地から</dt><dd>"+fmtDist(distM(here,d.ll))+"</dd>":"")+"</dl>"+
   '<p class="note">'+esc(d.note)+"</p>"+
+  (function(){const T=titles().cats[d.cat];if(!T.star)return '<p class="khint">'+esc(c.l)+'の名所を発見していくと、この種類の知識が読めるようになります。</p>';
+    const kc=KNOW[d.cat][T.star-1];return '<div class="kcard in"><em>'+"★".repeat(T.star)+' '+esc(c.l)+'の知識</em><b>'+esc(kc[0])+'</b><p>'+esc(kc[1])+'</p></div>'})()+
   '<div class="memo"><label for="memo">ひとことメモ</label><textarea id="memo" maxlength="400" placeholder="気づいたこと、撮った場所など">'+esc(ph&&ph.memo||"")+'</textarea><small id="memost"></small></div></div>'+
   '<div class="acts">'+((ak||inOverview)?'<button class="btn" data-act="map"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/></svg>地図で見る</button>':"")+
   (d.ll?'<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination='+d.ll[0]+","+d.ll[1]+'"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>経路を調べる</a>':"")+"</div>";
@@ -909,7 +929,7 @@ async function onPhoto(e,viaCam){
     if(T1.master&&!T0.master){fx("称号ゲット！","構造物マスター",MASTER_N+" 種類の称号を集めました");return done()}
     const ak=areaOf[id];
     if(ak&&T1.areas[ak].star>T0.areas[ak].star){fx(T1.areas[ak].star===3?"エリア制覇！":"称号ゲット！",T1.areas[ak].name+" "+"★".repeat(T1.areas[ak].star),byId[id].name+" を発見");return done()}
-    if(T1.cats[k].star>T0.cats[k].star){fx("称号ゲット！",T1.cats[k].name+" "+"★".repeat(T1.cats[k].star),byId[id].name+" を発見");return done()}
+    if(T1.cats[k].star>T0.cats[k].star){fx("称号ゲット！",T1.cats[k].name+" "+"★".repeat(T1.cats[k].star),"新しい知識「"+KNOW[k][T1.cats[k].star-1][0]+"」が読めます");knowCat=k;return done()}
     if(af.lv>b4.lv)fx("レベルアップ！","Lv."+af.lv+"　"+af.rank,byId[id].name+" を発見");
     else if(af.done>b4.done)fx("エリア制覇！",TOKYO_MAPS[areaOf[id]].title,"経験値 +"+(af.exp-b4.exp));
     else if(!was&&near)fx("発見！",byId[id].name,"経験値 +"+(af.exp-b4.exp));
@@ -933,6 +953,36 @@ sheet.addEventListener("focusout",e=>{if(e.target.id==="memo")flushMemo()});
 /* ============ 全体 ============ */
 const TITLES={bridge:"橋梁マスター",rail:"鉄道・道路マスター",water:"治水マスター",port:"港湾・城郭マスター",tower:"塔マスター",modern:"近代建築マスター",post:"現代建築マスター"};
 const AREA_TITLES={marunouchi:"日本橋・丸の内の案内人",sumida:"隅田川の橋番",ueno:"上野の山の学芸員",wangan:"東京湾岸の港湾長",ochanomizu:"神田川の谷の名主",aoyama:"青山・六本木の建築通"};
+const KNOW={
+bridge:[["橋の形の見分け方","桁橋は、桁を渡しただけの基本の形。アーチ橋は弓形で、重さを両岸へ押す力に変える。トラス橋は三角形を組み合わせた骨組み。吊橋はケーブルで桁を吊る。まず「どこで重さを支えているか」を見ると形が分かる。"],
+ ["隅田川が「橋の博物館」と呼ばれる理由","関東大震災の復興で隅田川に橋を架け直したとき、場所ごとに違う形式を選んだ。永代橋は力強いアーチ、清洲橋は優美な吊橋。地盤や船の通り道、景色に合わせて形を変えたので、歩くだけで橋の形式を見比べられる。"],
+ ["リベットで橋の年代を読む","古い鉄の橋には、丸い頭の鋲（リベット）がびっしり並ぶ。赤く熱した鋲を差し込み、たたいてつぶして部材をつないだ跡だ。戦後は高力ボルトと溶接に変わった。継ぎ目を見れば、その橋がいつ頃の技術で造られたかが分かる。"]],
+rail:[["れんがアーチの高架橋","新橋から東京駅へ続く高架は、明治の終わりに造られたれんがのアーチ。れんがは押される力に強く、引っ張りに弱い。アーチは重さを押す力だけで伝える形なので、れんがと相性が良い。"],
+ ["シールド工法","東京の地下鉄や道路トンネルの多くは、円筒形の機械で土を掘り進み、すぐ後ろで壁の部材（セグメント）を輪に組んでいく方法で造られている。地上の建物や道路を止めずに掘れるのが強み。"],
+ ["新しい地下鉄ほど深い理由","地下には、先に造られた地下鉄、下水道、ビルの基礎がある。後から通す路線は、それらを避けて下へ潜るしかない。大江戸線の六本木駅のホームは地下約42mにある。"]],
+water:[["荒川は人が掘った川","今の荒川の下流は、洪水を都心から遠ざけるために掘った人工の放水路で、1930年に完成した。もとの流れは隅田川として残り、岩淵の水門で分けている。"],
+ ["地下にためる洪水対策","川幅を広げる土地がない東京では、道路の下に大きなトンネルを掘り、あふれそうな水を一時的にためる。神田川・環状七号線地下調節池は約54万立方メートルをためられる。"],
+ ["玉川上水の勾配","1653年に造られた玉川上水は、約43kmの長さに対して高低差が約92mしかない。ポンプなしで水を流すため、わずかな勾配を測量だけで保ち続けた。江戸の土木技術の高さを示す。"]],
+port:[["石垣の積み方","自然の石をそのまま積む野面積み、石をたたいて合わせる打込み接ぎ、すき間なく加工する切込み接ぎの三つがある。江戸城では、門のまわりほど手の込んだ切込み接ぎが使われている。"],
+ ["枡形門のしくみ","城の門は、外側の門と内側の門を直角にずらして置き、四角い広場で囲む。攻め込んだ敵はまっすぐ進めず、広場で三方から攻撃される。桜田門や大手門でこの形を体験できる。"],
+ ["埋立地でできた湾岸","東京の湾岸は、海底をさらった土や建設で出た土などで海を埋めて造った土地。「お台場」の名は、幕末に黒船に備えて海の上に築いた砲台（台場）から来ている。"]],
+tower:[["塔が倒れない形","高い塔には、横から風の大きな力がかかる。裾を広げた形は、倒そうとする力に対して踏ん張りが利く。東京タワーは鉄骨を三角形に組んだトラスで、高さ333m。"],
+ ["心柱で揺れを抑える","五重塔の中心には、心柱という一本の柱が通っている。東京スカイツリーはこの考えを生かし、中央の円筒と外側の塔が別々に揺れて、互いの揺れを打ち消す。高さは634m。"],
+ ["塔が高くなった理由","電波塔は、まわりの建物より高くないと電波が届きにくい。超高層ビルが増えたため、東京タワーより高い塔が必要になり、2012年に東京スカイツリーが開業した。"]],
+modern:[["様式の見分け方","太い柱が並び、上に三角形の飾り（破風）が載るのは、古代ギリシャ・ローマにならった古典主義。銀行や保険会社の建物に多く、信用と安定を形で示している。"],
+ ["辰野式","赤いれんがに白い石の帯を回す意匠は、建築家辰野金吾が好んだもの。東京駅丸の内駅舎がその代表で、同じ意匠の建物は全国に残る。"],
+ ["震災が変えた建物","1923年の関東大震災で、れんが造の建物は大きな被害を受けた。その後は、鉄筋コンクリート造が主流になる。1930年代には、洋風の建物に和風の瓦屋根を載せた帝冠様式も現れた。"]],
+post:[["超高層の始まり","日本の建物は長いあいだ高さ31mまでに制限されていた。地震の揺れをしなやかに受け流す柔構造の考え方で、1968年に高さ147mの霞が関ビルが完成し、超高層の時代が始まった。"],
+ ["メタボリズム","1960年に日本の建築家たちが唱えた、建物や都市を生き物のように新陳代謝させる考え方。部屋を取り替えたり増やしたりできる形をめざした。静岡新聞・静岡放送東京支社がその例。"],
+ ["耐震・制振・免震","耐震は建物を丈夫にして揺れに耐える。制振は、建物の中の装置（ダンパー）で揺れを吸収する。免震は、建物と地面の間にゴムなどを挟み、揺れを伝えにくくする。東京駅丸の内駅舎は復原のときに免震化された。"]]
+};
+let knowCat=null;
+function knowHTML(k){
+  const T=titles().cats[k];
+  return '<div class="know"><div class="know-h"><span class="tic" style="background:var('+CATS[k].v+')"><svg viewBox="-12 -12 24 24">'+ICONS[k]+'</svg></span><b>'+esc(CATS[k].l)+'の知識</b><small>★が増えると、一段深い知識が読めます</small></div>'+
+    KNOW[k].map((c,i)=>T.star>i?'<div class="kcard"><em>'+"★".repeat(i+1)+'</em><b>'+esc(c[0])+'</b><p>'+esc(c[1])+'</p></div>':
+      '<div class="kcard lock"><em>'+"★".repeat(i+1)+'</em><b>まだ読めません</b><p>'+esc(CATS[k].l)+'の名所をあと '+(([Math.ceil(T.tot*.1)+1,Math.max(Math.ceil(T.tot*.1)+2,Math.ceil(T.tot/2)),T.tot][i])-T.n)+' か所発見すると読めます。</p></div>').join("")+'</div>';
+}
 const MASTER_N=4;
 function stars(n,tot){const t1=Math.ceil(tot*.1)+1,t2=Math.max(t1+1,Math.ceil(tot/2)),th=[t1,t2,tot];return {star:th.filter(x=>n>=x).length,next:th[th.filter(x=>n>=x).length]||null}}
 function titles(){
@@ -947,7 +997,7 @@ function titles(){
   return {cats:out,areas,have,master:have>=MASTER_N,grand:have===Object.keys(CATS).length};
 }
 const EXP_NEAR=30,EXP_FAR=5,EXP_AREA=100;
-const RANKS=[[1,"見習い技術者"],[3,"測量士補"],[5,"現場監督"],[8,"設計技師"],[11,"技術士"],[14,"棟梁"]];
+const RANKS=[[1,"まち歩き初心者"],[3,"構造物ウォッチャー"],[5,"構造の目利き"],[8,"構造物探偵"],[11,"都市の語り部"],[14,"東京の生き字引"]];
 function stats(){
   const got=D.filter(d=>hasPhoto(d.id)),n=got.length,onsite=got.filter(d=>photo(d.id).near).length;
   const done=TM.AREA_KEYS.filter(k=>SPOTS[k].length&&SPOTS[k].every(x=>hasPhoto(x.d.id))).length;
