@@ -325,6 +325,19 @@ button.tbadge{font:inherit;color:inherit;cursor:pointer;display:block;width:100%
 .subh{font:400 15px/1.3 var(--f-disp);margin:16px 2px 8px}
 .tic.area{background:var(--accent)}
 .tic.area svg{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;width:24px;height:24px}
+/* 撮るほど深まる解説 */
+.tierbar{display:flex;align-items:center;gap:6px;margin:8px 0 2px;flex-wrap:wrap}
+.tierbar span{font:400 11px/1.5 var(--f-disp);border:2px solid var(--line);border-radius:999px;padding:0 10px;background:var(--bg2);color:var(--ink3)}
+.tierbar span.on{background:var(--gold);color:#27335C}
+.tierbar small{font-size:11px;font-weight:700;color:var(--ink2);margin-left:2px}
+dl.meta dd .lk{color:var(--ink3);font-size:12px;font-weight:700;background:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ink3) 14%,transparent) 5px 10px);border-radius:6px;padding:0 6px}
+.note .more{display:block;margin-top:4px;opacity:.75;font-size:12.5px}
+.kcard.open{background:var(--paper)}
+.kcard.mission{border-color:var(--accent);background:color-mix(in srgb,var(--gold) 14%,var(--paper))}
+.kcard.mission em{color:var(--accent)}
+.kcard .btn{margin-top:8px;min-height:40px;font-size:13px}
+.kcard .btn.sub{min-height:34px;font-size:12px}
+.mthumb{float:right;width:64px;height:64px;object-fit:cover;border:2.5px solid var(--line);border-radius:12px;margin:0 0 6px 10px;background:var(--bg)}
 /* 近くの名所 */
 .nearby{position:absolute;left:10px;right:10px;bottom:26px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;background:var(--paper);border:3px solid var(--line);border-radius:20px;box-shadow:0 4px 0 var(--line);cursor:pointer;text-align:left;z-index:3}
 .nearby.pop{animation:nbpop .5s cubic-bezier(.2,1.6,.4,1)}
@@ -472,10 +485,10 @@ button.tbadge{font:inherit;color:inherit;cursor:pointer;display:block;width:100%
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261114e" charset="utf-8"></script>
-<script src="tokyo-maps.js?v=20261114e" charset="utf-8"></script>
-<script src="tokyo-maps-gsi.js?v=20261114e" charset="utf-8"></script>
-<script src="tokyo-mapdraw.js?v=20261114e" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261114f" charset="utf-8"></script>
+<script src="tokyo-maps.js?v=20261114f" charset="utf-8"></script>
+<script src="tokyo-maps-gsi.js?v=20261114f" charset="utf-8"></script>
+<script src="tokyo-mapdraw.js?v=20261114f" charset="utf-8"></script>
 <script>
 (function(){
 "use strict";
@@ -496,6 +509,9 @@ const fmtDate=iso=>{if(!iso)return"";const d=new Date(iso);return d.getFullYear(
 const P={local:{},cloud:{},mode:"local"};   // id -> {url, at, memo, asset?}
 function photo(id){const c=P.cloud[id],l=P.local[id];if(c&&c.url)return c;if(l&&l.url)return c?Object.assign({},l,{memo:c.memo||l.memo}):l;return c||l||null}
 function hasPhoto(id){const p=photo(id);return !!(p&&p.url)}
+const XKEY=(id,n)=>n<=1?id:id+"_"+n;          // 2枚目・3枚目の保存キー
+const baseId=k=>String(k).split("_")[0];
+function tier(id){let n=0;for(let i=1;i<=3;i++){if(hasPhoto(XKEY(id,i)))n=i;else break}return n}
 let idb=null;
 function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open("tokyo-sanpo",1);r.onupgradeneeded=()=>r.result.createObjectStore("photos");r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}})}
 function idbAll(){return new Promise(res=>{if(!idb)return res({});try{const out={},tx=idb.transaction("photos"),st=tx.objectStore("photos"),rq=st.openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){out[c.key]=c.value;c.continue()}else res(out)};rq.onerror=()=>res(out)}catch(e){res({})}})}
@@ -519,7 +535,7 @@ async function initCloud(){
     cloud={db,assets,col:db.collection("data/users/"+uid)};
     cloud.col.onSnapshot(snap=>{
       const next={};
-      snap.docs.forEach(doc=>{const v=doc.data()||{};if(!byId[doc.id])return;next[doc.id]={asset:v.asset||null,url:v.asset?"/_blob/"+v.asset:null,at:v.at||null,memo:v.memo||"",near:!!v.near}});
+      snap.docs.forEach(doc=>{const v=doc.data()||{};if(!byId[baseId(doc.id)])return;next[doc.id]={asset:v.asset||null,url:v.asset?"/_blob/"+v.asset:null,at:v.at||null,memo:v.memo||"",near:!!v.near}});
       P.cloud=next;P.mode=assets?"cloud":"cloud-memo";renderAll();
     },err=>{cloud=null;P.mode="local";renderAll()});
   }catch(e){cloud=null}
@@ -555,7 +571,8 @@ async function savePhoto(id,file,near){near=!!near;
   P.local[id]={url:URL.createObjectURL(blob),at,memo,near};
   return "local";
 }
-async function removePhoto(id){
+async function removePhoto(id){for(let i=1;i<=3;i++)await removeKey(XKEY(id,i))}
+async function removeKey(id){
   if(P.cloud[id]&&cloud){
     const a=P.cloud[id].asset,memo=P.cloud[id].memo;
     if(memo)await cloud.col.doc(id).set({asset:null,at:null,memo});else await cloud.col.doc(id).delete();
@@ -858,6 +875,7 @@ $("#agrid").addEventListener("click",e=>{const t=e.target.closest(".tile");if(t)
 
 /* ============ 詳細シート ============ */
 const sheet=$("#sheet"),scrim=$("#scrim");let sheetId=null,lastFocus=null,busy=false;
+function nearNow(d){return !!(here&&d.ll&&Date.now()-hereAt<120000&&distM(here,d.ll)<=NEAR_M)}
 function shootBox(d){
   const m=here&&d.ll?distM(here,d.ll):null,fresh=here&&Date.now()-hereAt<120000;
   if(busy)return '<div class="photo"><div class="drop busy">'+ICON_CAM+'<b>保存しています…</b></div></div>';
@@ -868,17 +886,37 @@ function shootBox(d){
   return '<div class="photo">'+main+'</div><div class="phact"><button class="btn sub" data-act="pick">撮った写真を選んで記録（経験値 +'+EXP_FAR+'）</button></div>';
 }
 const RADAR='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/><path d="M12 12l6-6"/></svg>';
+const LOCKED='<span class="lk">写真を撮ると読めます</span>';
+function missionsHTML(d,t){
+  const ms=MIS[d.cat];let h="";
+  for(let n=2;n<=3;n++){
+    const m=ms[n-2],key=XKEY(d.id,n),ph=photo(key),near=nearNow(d);
+    if(t>=n){
+      h+='<div class="kcard open"><em>'+"★".repeat(n)+' '+n+'枚目の解説</em>'+(ph&&ph.url?'<img class="mthumb" src="'+esc(ph.url)+'" alt="">':"")+'<b>'+esc(m.t)+'</b><p>'+esc(m.x)+'</p><button class="btn sub" data-act="'+(near?"cam":"pick")+'" data-slot="'+n+'">'+ICON_CAM+'撮り直す</button></div>';
+    }else if(t===n-1){
+      h+='<div class="kcard mission"><em>'+n+'枚目のミッション</em><b>'+esc(m.ask)+'</b><p>撮ると、ニッチな解説「'+esc(m.t)+'」が読めます。</p>'+
+        (busy?"":'<button class="btn '+(near?"pri":"")+'" data-act="'+(near?"cam":"pick")+'" data-slot="'+n+'">'+ICON_CAM+(near?"現地で撮る（経験値 +"+EXP_DET+"）":"写真を選ぶ（経験値 +"+EXP_DET_FAR+"）")+'</button>')+'</div>';
+    }else{
+      h+='<div class="kcard lock"><em>'+n+'枚目のミッション</em><b>まだ読めません</b><p>'+(n-1)+'枚目を撮ると挑戦できます。</p></div>';
+    }
+  }
+  return h;
+}
 function sheetHTML(d){
-  const ph=photo(d.id),c=CATS[d.cat],no=noOf[d.id],ak=areaOf[d.id];
+  const ph=photo(d.id),c=CATS[d.cat],no=noOf[d.id],ak=areaOf[d.id],t=tier(d.id);
   const inOverview=d.ll&&TM.inside(TOKYO_MAPS.overview,d.ll);
   const photoBox=ph&&ph.url?
-    '<div class="photo"><img src="'+esc(ph.url)+'" alt="'+esc(d.name)+'の写真">'+(ph.at?'<span class="date">'+fmtDate(ph.at)+"</span>":"")+(ph.near?'<span class="stamp">現地で発見 +'+EXP_NEAR+'</span>':'<span class="stamp off">記録 +'+EXP_FAR+'</span>')+'</div><div class="phact"><button class="btn" data-act="'+(here&&distM(here,d.ll)<=NEAR_M?"cam":"pick")+'">'+ICON_CAM+'写真を変える</button><button class="btn" data-act="del">写真を外す</button></div>':
+    '<div class="photo"><img src="'+esc(ph.url)+'" alt="'+esc(d.name)+'の写真">'+(ph.at?'<span class="date">'+fmtDate(ph.at)+"</span>":"")+(ph.near?'<span class="stamp">現地で発見 +'+EXP_NEAR+'</span>':'<span class="stamp off">記録 +'+EXP_FAR+'</span>')+'</div><div class="phact"><button class="btn" data-act="'+(nearNow(d)?"cam":"pick")+'">'+ICON_CAM+'写真を変える</button><button class="btn" data-act="del">写真を外す</button></div>':
     shootBox(d);
+  const first=String(d.note).split("。")[0]+"。";
   return '<button class="x" data-act="close" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div class="grab"></div>'+photoBox+
   '<div class="body"><h3 id="sh-title">'+(no?'<span class="n">'+no+"</span>":"")+esc(d.name)+(d.badge?'<span class="badge">'+esc(d.badge)+"</span>":"")+'</h3>'+
   '<span class="tag"><i style="background:var('+c.v+')"></i>'+esc(c.l)+(ak?" · "+esc(TOKYO_MAPS[ak].title):"")+"</span>"+
-  '<dl class="meta"><dt>年</dt><dd>'+esc(d.yl)+"</dd><dt>場所</dt><dd>"+esc(d.area)+"</dd><dt>設計・施工</dt><dd>"+esc(d.by)+"</dd><dt>諸元</dt><dd>"+esc(d.spec)+"</dd>"+(here&&d.ll?"<dt>現在地から</dt><dd>"+fmtDist(distM(here,d.ll))+"</dd>":"")+"</dl>"+
-  '<p class="note">'+esc(d.note)+"</p>"+
+  '<div class="tierbar" aria-label="解説の段階"><span class="'+(t>=1?"on":"")+'">発見</span><span class="'+(t>=2?"on":"")+'">2枚目</span><span class="'+(t>=3?"on":"")+'">3枚目</span><small>撮るほど解説が深まります（'+t+' / 3）</small></div>'+
+  '<dl class="meta"><dt>年</dt><dd>'+esc(d.yl)+"</dd><dt>場所</dt><dd>"+esc(d.area)+"</dd><dt>設計・施工</dt><dd>"+(t>=1?esc(d.by):LOCKED)+"</dd><dt>諸元</dt><dd>"+(t>=1?esc(d.spec):LOCKED)+"</dd>"+(here&&d.ll?"<dt>現在地から</dt><dd>"+fmtDist(distM(here,d.ll))+"</dd>":"")+"</dl>"+
+  (t>=1?'<p class="note">'+esc(d.note)+"</p>":'<p class="note">'+esc(first)+(first.length<String(d.note).length?'<span class="more">続きは、写真を撮ると読めます。</span>':"")+"</p>")+
+  (t>=1?'<div class="kcard open"><em>見どころ</em><b>'+esc(c.l)+'の見方</b><p>'+esc(SEE[d.cat])+'</p></div>':"")+
+  missionsHTML(d,t)+
   (function(){const T=titles().cats[d.cat];if(!T.star)return '<p class="khint">'+esc(c.l)+'の名所を発見していくと、この種類の知識が読めるようになります。</p>';
     const kc=KNOW[d.cat][T.star-1];return '<div class="kcard in"><em>'+"★".repeat(T.star)+' '+esc(c.l)+'の知識</em><b>'+esc(kc[0])+'</b><p>'+esc(kc[1])+'</p></div>'})()+
   '<div class="memo"><label for="memo">ひとことメモ</label><textarea id="memo" maxlength="400" placeholder="気づいたこと、撮った場所など">'+esc(ph&&ph.memo||"")+'</textarea><small id="memost"></small></div></div>'+
@@ -905,26 +943,33 @@ async function closeSheet(){
 }
 scrim.onclick=closeSheet;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!sheet.hidden)closeSheet()});
-let delArm=0;
+let delArm=0,pendingKey=null;
 sheet.addEventListener("click",async e=>{
   const b=e.target.closest("[data-act]");if(!b)return;const a=b.dataset.act,id=sheetId;
   if(a==="close")closeSheet();
-  else if(a==="pick"){if(busy)return;$("#file").value="";$("#file").click()}
-  else if(a==="cam"){if(busy)return;$("#cam").value="";$("#cam").click()}
+  else if(a==="pick"){if(busy)return;pendingKey=b.dataset.slot?XKEY(id,+b.dataset.slot):id;$("#file").value="";$("#file").click()}
+  else if(a==="cam"){if(busy)return;pendingKey=b.dataset.slot?XKEY(id,+b.dataset.slot):id;$("#cam").value="";$("#cam").click()}
   else if(a==="here"){b.classList.add("busy");const ll=await locate();if(ll){startWatch();drawMarks();renderNear();renderSide();renderList()}refreshSheet()}
   else if(a==="map"){const d=byId[id],k=areaOf[id]||"overview";await closeSheet();go("map");if(k!==mapKey)showMap(k);centerOn(d.ll,Math.min(vb.w,M.w/2.2))}
   else if(a==="del"){
-    if(Date.now()-delArm>3000){delArm=Date.now();b.textContent="もう一度押すと外します";b.style.color="var(--accent)";return}
+    if(Date.now()-delArm>3000){delArm=Date.now();b.textContent="もう一度押すと、2枚目以降も外します";b.style.color="var(--accent)";return}
     delArm=0;try{await removePhoto(id);toast("写真を外しました")}catch(err){toast("写真を外せませんでした")}renderAll();
   }
 });
 async function onPhoto(e,viaCam){
-  const f=e.target.files&&e.target.files[0],id=sheetId;if(!f||!id)return;
+  const f=e.target.files&&e.target.files[0],sid=sheetId;if(!f||!sid)return;
+  const key=pendingKey||sid,id=sid,slot=key===sid?1:+key.split("_")[1];
   busy=true;refreshSheet();
   let near=false;
   if(viaCam){const ll=await locate();near=!!(ll&&distM(ll,byId[id].ll)<=NEAR_M)}
-  const prev=photo(id);if(!near&&prev&&prev.near)near=true;
-  try{const b4=stats(),was=hasPhoto(id),T0=titles();await savePhoto(id,f,near);const af=stats(),T1=titles(),k=byId[id].cat;
+  const prev=photo(key);if(!near&&prev&&prev.near)near=true;
+  try{const b4=stats(),was=hasPhoto(key),T0=titles(),t0=tier(id);await savePhoto(key,f,near);const af=stats(),T1=titles(),k=byId[id].cat,t1=tier(id);
+    if(slot>1){
+      if(af.lv>b4.lv)fx("レベルアップ！","Lv."+af.lv+"　"+af.rank,"新しい解説も読めます");
+      else if(t1>t0)fx("解説が増えた！",byId[id].name,"「"+MIS[k][slot-2].t+"」が読めます");
+      else toast(byId[id].name+" の"+slot+"枚目を入れ替えました");
+      return done();
+    }
     if(T1.grand&&!T0.grand){fx("グランドマスター！","土木建築グランドマスター","すべての分類の称号を集めました");return done()}
     if(T1.master&&!T0.master){fx("称号ゲット！","構造物マスター",MASTER_N+" 種類の称号を集めました");return done()}
     const ak=areaOf[id];
@@ -932,7 +977,7 @@ async function onPhoto(e,viaCam){
     if(T1.cats[k].star>T0.cats[k].star){fx("称号ゲット！",T1.cats[k].name+" "+"★".repeat(T1.cats[k].star),"新しい知識「"+KNOW[k][T1.cats[k].star-1][0]+"」が読めます");knowCat=k;return done()}
     if(af.lv>b4.lv)fx("レベルアップ！","Lv."+af.lv+"　"+af.rank,byId[id].name+" を発見");
     else if(af.done>b4.done)fx("エリア制覇！",TOKYO_MAPS[areaOf[id]].title,"経験値 +"+(af.exp-b4.exp));
-    else if(!was&&near)fx("発見！",byId[id].name,"経験値 +"+(af.exp-b4.exp));
+    else if(!was&&near)fx("発見！",byId[id].name,"経験値 +"+(af.exp-b4.exp)+"　解説が増えました");
     else if(!was)toast(byId[id].name+" を記録しました（経験値 +"+(af.exp-b4.exp)+"）");
     else if(viaCam&&!near)toast("名所から離れているため、現地の発見にはなりませんでした");
     else toast(byId[id].name+" の写真を入れ替えました")}
@@ -983,6 +1028,31 @@ function knowHTML(k){
     KNOW[k].map((c,i)=>T.star>i?'<div class="kcard"><em>'+"★".repeat(i+1)+'</em><b>'+esc(c[0])+'</b><p>'+esc(c[1])+'</p></div>':
       '<div class="kcard lock"><em>'+"★".repeat(i+1)+'</em><b>まだ読めません</b><p>'+esc(CATS[k].l)+'の名所をあと '+(([Math.ceil(T.tot*.1)+1,Math.max(Math.ceil(T.tot*.1)+2,Math.ceil(T.tot/2)),T.tot][i])-T.n)+' か所発見すると読めます。</p></div>').join("")+'</div>';
 }
+const SEE={
+bridge:"橋を見るときは、①どこで重さを支えているか（桁・アーチ・ケーブル）、②橋のたもとの親柱、③橋の下の橋脚、の順に見ていく。架けた年は、親柱や欄干の銘板に刻まれていることが多い。",
+rail:"高架橋やトンネルは、①壁やアーチの材料（れんが・石・コンクリート・鋼）、②継ぎ目や換気口、③入口の板（トンネルの名前や年）、を見る。材料から、造られた時代が読める。",
+water:"水の施設は、①水の流れる向き、②水位を調整するゲートや堰、③水をためる・逃がす仕組み、を見る。普段は見えない場所で働く施設が多いので、水が増えたときの姿を想像するのがコツ。",
+port:"城や港の構造物は、①石の積み方と角度、②門や堀の配置、③岸壁や護岸の形、を見る。守る・荷を積む・水を受けるなど、使い方に合わせて形が決まっている。",
+tower:"塔は、①足元（基礎と脚）、②鉄骨や柱の組み方、③上にある設備（展望台やアンテナ）、を見る。風や地震にどう耐えるかが、形に表れている。",
+modern:"近代建築は、①正面の形（左右対称か）、②窓や柱の飾り、③壁の材料（れんが・石・タイル）、を見る。様式（古典主義・ゴシック・アール・デコ）を見分けるのが、楽しみ方の入口。",
+post:"戦後の建築は、①構造の形（柱・壁・屋根の組み方）、②外壁の材料（コンクリート・ガラス・金属）、③地面との関係（入口や広場）、を見る。構造そのものを外に見せる建物が多い。"
+};
+const MIS={
+bridge:[{ask:"橋の端にある柱（親柱）や欄干の文字を撮る",t:"親柱と銘板",x:"親柱には、橋の名前や架けた年、設計・施工者が刻まれていることが多い。橋名の由来をたどると、昔の渡し場や地名にたどり着くことが多い。"},
+ {ask:"桁の端にある金属の部品（支承）や、路面の継ぎ目を撮る",t:"支承と伸縮装置",x:"橋は温度で伸び縮みし、重い車が通るとわずかにたわむ。支承は、桁を橋脚に載せたまま、その動きと回転を逃がす部品。路面の櫛のような金属の継ぎ目が伸縮装置で、通るとガタンと鳴る。地震では支承が弱点になりやすく、近年は交換や補強が進んでいる。"}],
+rail:[{ask:"壁や柱の材料の表面を撮る",t:"表面の材料を読む",x:"れんが造なら、長い面（長手）と短い面（小口）の並べ方に注目。長手だけの段と小口だけの段を交互に積むのがイギリス積み、同じ段に交互に並べるのがフランス積み。日本では明治の初めにフランス積み、のちにイギリス積みが主流になった。コンクリートなら型枠の木目や継ぎ目、鋼なら鋲やボルトが手がかり。"},
+ {ask:"高架下や地下の天井・壁を撮る",t:"点検と水の対策",x:"高架や地下の構造には、地震や水への備えが隠れている。ひび割れをわざと一か所に集める目地、水を逃がす水抜きの穴（白く汚れていることが多い）、天井の点検口。構造物は点検できるように造られていて、その痕跡から日々の管理が見える。"}],
+water:[{ask:"水門や堰の扉（ゲート）を撮る",t:"ゲートのしくみ",x:"ゲートは鋼の扉を上下や回転で動かして水を止める。扉の下側を持ち上げる形、上から下ろす形、回転させる形など種類があり、川の幅や水位に合わせて選ぶ。巻き上げ装置やワイヤーの太さから、受け止める水の力が想像できる。"},
+ {ask:"水位標（目盛りのついた柱や壁）や排水口を撮る",t:"水位標と基準面",x:"川岸の水位標は、氾濫の危険度を知らせる目盛り。水位は、基準となる面（東京湾平均海面など）からの高さで表す。川によって基準の面が違うので、数字は同じでも比べるときは注意が必要。"}],
+port:[{ask:"石垣や岸壁の石の側面・表面を撮る",t:"矢穴と刻印",x:"石の側面に細長い穴や溝の跡（矢穴）が並んでいたら、石を割るときに楔を打った名残。石に刻まれた記号（刻印）は、石を出した大名家の目印と言われる。江戸城の石は、伊豆半島などから船で運ばれた。"},
+ {ask:"岸壁や水際の金具・緩衝材を撮る",t:"ビットと防舷材",x:"港の岸壁には、船をつなぐ係船柱（ビット）や、船が当たっても壊れないゴムの緩衝材（防舷材）がある。これらの大きさは、着く船の大きさに合わせて決まる。"}],
+tower:[{ask:"鉄骨の接合部、または木組みの軒下を撮る",t:"接合部で時代を読む",x:"鉄骨の塔は、接合部が鋲（リベット）か、ボルトか、溶接かで時代が分かる。木造の塔（五重塔）は、釘に頼らない木組みで、軒の重なりを支える斗栱（組物）が見どころ。"},
+ {ask:"塔の先端を見上げて撮る",t:"てっぺんの設備",x:"塔の先端には、航空障害灯（赤い光）や避雷針が付く。高い建物は雷を受けることを前提に造られ、電気を地面へ逃がす経路が決められている。五重塔の最上部の相輪は、避雷の役目も果たすと言われる。"}],
+modern:[{ask:"柱の上の飾り（柱頭）や窓のまわりを撮る",t:"柱頭で様式を見分ける",x:"柱の上の飾り（柱頭）は様式の手がかり。渦巻きのイオニア式、葉の飾りのコリント式、簡素なドリス式の3種類が、古代ギリシャ以来の定番。"},
+ {ask:"入口の扉・取っ手・床・照明を撮る",t:"入口は建物の顔",x:"近代建築の入口には、その時代の職人技が集まる。真鍮の取っ手、モザイクタイルの床、ステンドグラスなど。取っ手や手すりには、長年使われて磨かれた跡が残る。"}],
+post:[{ask:"コンクリートの壁の表面を撮る",t:"型枠の跡",x:"打放しコンクリートの壁には、型枠の板目や、型枠を締めるボルトの穴（丸い跡）が残る。その跡は、型枠の割り付けとして意図してデザインされていることが多い。"},
+ {ask:"ガラス面や金属の継ぎ目を撮る",t:"ガラスと継ぎ目",x:"ガラスの外壁は金属の枠（サッシ）で支えられ、継ぎ目にはゴムなどの充填材が入る。温度による伸び縮みを吸収する仕組み。ガラスに映る街を撮ると、建物とまわりの関係が分かる。"}]
+};
 const MASTER_N=4;
 function stars(n,tot){const t1=Math.ceil(tot*.1)+1,t2=Math.max(t1+1,Math.ceil(tot/2)),th=[t1,t2,tot];return {star:th.filter(x=>n>=x).length,next:th[th.filter(x=>n>=x).length]||null}}
 function titles(){
@@ -996,12 +1066,13 @@ function titles(){
   TM.AREA_KEYS.forEach(k=>{const s=SPOTS[k],n=s.filter(x=>hasPhoto(x.d.id)).length,st=stars(n,s.length);areas[k]={name:AREA_TITLES[k]||TOKYO_MAPS[k].title,n,tot:s.length,star:st.star,next:st.next}});
   return {cats:out,areas,have,master:have>=MASTER_N,grand:have===Object.keys(CATS).length};
 }
-const EXP_NEAR=30,EXP_FAR=5,EXP_AREA=100;
+const EXP_NEAR=30,EXP_FAR=5,EXP_AREA=100,EXP_DET=10,EXP_DET_FAR=2;
 const RANKS=[[1,"まち歩き初心者"],[3,"構造物ウォッチャー"],[5,"構造の目利き"],[8,"構造物探偵"],[11,"都市の語り部"],[14,"東京の生き字引"]];
 function stats(){
   const got=D.filter(d=>hasPhoto(d.id)),n=got.length,onsite=got.filter(d=>photo(d.id).near).length;
   const done=TM.AREA_KEYS.filter(k=>SPOTS[k].length&&SPOTS[k].every(x=>hasPhoto(x.d.id))).length;
-  const exp=onsite*EXP_NEAR+(n-onsite)*EXP_FAR+done*EXP_AREA,lv=Math.floor(Math.sqrt(exp/10))+1;
+  let det=0;D.forEach(d=>{for(let i=2;i<=3;i++){const q=photo(XKEY(d.id,i));if(q&&q.url)det+=q.near?EXP_DET:EXP_DET_FAR}});
+  const exp=onsite*EXP_NEAR+(n-onsite)*EXP_FAR+det+done*EXP_AREA,lv=Math.floor(Math.sqrt(exp/10))+1;
   const lo=10*(lv-1)*(lv-1),hi=10*lv*lv;
   let rank=RANKS[0][1];RANKS.forEach(r=>{if(lv>=r[0])rank=r[1]});
   return {n,onsite,done,exp,lv,lo,hi,rank};
