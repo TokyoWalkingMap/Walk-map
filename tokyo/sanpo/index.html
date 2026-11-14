@@ -31,6 +31,7 @@
   --shadow:0 4px 0 var(--line);--pin:#F4F6FF;
   color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:500 15px/1.6 var(--f-body);-webkit-tap-highlight-color:transparent;padding-bottom:calc(var(--tabh) + var(--safe-b))}
 button{font:inherit;color:inherit}
@@ -284,6 +285,29 @@ dl.meta dt{color:var(--ink2);font-weight:700}
 .memo textarea{border:2.5px solid var(--line);border-radius:14px;background:var(--bg2)}
 .memo label{font-weight:700}
 .toast{background:var(--win);color:var(--winink);border:2.5px solid var(--gold);border-radius:999px;font-weight:700}
+/* 称号 */
+.master{display:flex;align-items:center;gap:12px;background:var(--paper);border:3px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:12px;opacity:.75}
+.master.on{opacity:1;background:linear-gradient(135deg,#FFF3B8,var(--gold));color:#27335C}
+.master .crown{flex:none;width:48px;height:48px;border-radius:50%;border:3px solid var(--line);background:var(--bg2);display:grid;place-items:center}
+.master.on .crown{background:#fff}
+.master .crown svg{width:28px;height:28px;fill:var(--ink3);stroke:var(--line);stroke-width:1.6;stroke-linejoin:round}
+.master.on .crown svg{fill:var(--gold)}
+.master b{display:block;font:400 18px/1.3 var(--f-disp)}
+.master small{display:block;font-size:12px;font-weight:700;line-height:1.5}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tbadge{background:var(--paper);border:3px solid var(--line);border-radius:18px;box-shadow:0 3px 0 var(--line);padding:10px 10px 9px;text-align:center}
+.tbadge .tic{width:44px;height:44px;border-radius:50%;border:3px solid var(--line);display:grid;place-items:center;margin:0 auto 4px;filter:grayscale(1);opacity:.45}
+.tbadge.on .tic{filter:none;opacity:1}
+.tbadge .tic svg{width:28px;height:28px}
+.tic .ic{fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}.tic .ic.f{fill:#fff;stroke:none}
+.tbadge b{display:block;font:400 13px/1.4 var(--f-disp)}
+.tbadge:not(.on) b{color:var(--ink3)}
+.stars{display:block;font-size:17px;letter-spacing:2px;line-height:1.3}
+.stars i{font-style:normal;color:var(--rule)}.stars i.y{color:var(--gold);-webkit-text-stroke:1px var(--line)}
+.tbadge small{display:block;font-size:11px;font-weight:700;color:var(--ink2)}
+.subh{font:400 15px/1.3 var(--f-disp);margin:16px 2px 8px}
+.tic.area{background:var(--accent)}
+.tic.area svg{fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;width:24px;height:24px}
 /* 近くの名所 */
 .nearby{position:absolute;left:10px;right:10px;bottom:26px;display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;background:var(--paper);border:3px solid var(--line);border-radius:20px;box-shadow:0 4px 0 var(--line);cursor:pointer;text-align:left;z-index:3}
 .nearby.pop{animation:nbpop .5s cubic-bezier(.2,1.6,.4,1)}
@@ -410,6 +434,9 @@ dl.meta dt{color:var(--ink2);font-weight:700}
       </div>
       <div class="areas" id="aareas"></div>
     </div>
+    <h2 style="margin-top:22px">称号</h2>
+    <div id="atitles"></div>
+    <h2 style="margin-top:22px">発見した名所</h2>
     <div id="agrid"></div>
     <p class="store" id="storeinfo"></p>
   </section>
@@ -428,10 +455,10 @@ dl.meta dt{color:var(--ink2);font-weight:700}
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261114b" charset="utf-8"></script>
-<script src="tokyo-maps.js?v=20261114b" charset="utf-8"></script>
-<script src="tokyo-maps-gsi.js?v=20261114b" charset="utf-8"></script>
-<script src="tokyo-mapdraw.js?v=20261114b" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261114c" charset="utf-8"></script>
+<script src="tokyo-maps.js?v=20261114c" charset="utf-8"></script>
+<script src="tokyo-maps-gsi.js?v=20261114c" charset="utf-8"></script>
+<script src="tokyo-mapdraw.js?v=20261114c" charset="utf-8"></script>
 <script>
 (function(){
 "use strict";
@@ -796,6 +823,12 @@ function renderAlbum(){
   const other=D.filter(d=>!areaOf[d.id]),on=other.filter(d=>hasPhoto(d.id)).length;
   rows.push('<div class="arow" style="cursor:default"><span>エリア外の名所</span><em>'+on+" / "+other.length+'</em><span class="bar"><i style="width:'+(on/other.length*100)+'%"></i></span></div>');
   $("#aareas").innerHTML=rows.join("");
+  const T=titles();
+  $("#atitles").innerHTML='<div class="master'+(T.master?" on":"")+'"><span class="crown" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg></span><span><b>'+(T.grand?"土木建築グランドマスター":"構造物マスター")+'</b><small>'+(T.grand?"すべての分類の称号を集めました":T.master?"分類の称号を "+T.have+" 種類集めました。全 7 種類でグランドマスター":"分類の称号を "+MASTER_N+" 種類集めると「構造物マスター」（いま "+T.have+" 種類）")+'</small></span></div>'+
+    '<div class="tgrid">'+Object.keys(CATS).map(k=>{const c=T.cats[k];
+      return '<div class="tbadge'+(c.star?" on":"")+'"><span class="tic" style="background:var('+CATS[k].v+')"><svg viewBox="-12 -12 24 24">'+ICONS[k]+'</svg></span><b>'+esc(c.name)+'</b><span class="stars">'+[1,2,3].map(i=>'<i class="'+(c.star>=i?"y":"")+'">★</i>').join("")+'</span><small>'+c.n+" / "+c.tot+(c.next?"　次の★まで "+(c.next-c.n):"　すべて発見")+'</small></div>'}).join("")+'</div>'+
+    '<h3 class="subh">エリアの称号</h3><div class="tgrid">'+TM.AREA_KEYS.map(k=>{const c=T.areas[k];
+      return '<div class="tbadge'+(c.star?" on":"")+'"><span class="tic area"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg></span><b>'+esc(c.name)+'</b><span class="stars">'+[1,2,3].map(i=>'<i class="'+(c.star>=i?"y":"")+'">★</i>').join("")+'</span><small>'+esc(TOKYO_MAPS[k].title.replace(/（.*）/,""))+"　"+c.n+" / "+c.tot+(c.next?"　次の★まで "+(c.next-c.n):"　制覇")+'</small></div>'}).join("")+'</div>';
   const list=got.slice().sort((a,b)=>String(photo(b.id).at||"").localeCompare(String(photo(a.id).at||"")));
   $("#agrid").innerHTML=list.length?'<div class="grid">'+list.map(d=>'<button class="tile" data-id="'+d.id+'"><img src="'+esc(photo(d.id).url)+'" alt="'+esc(d.name)+'" loading="lazy"><div><b>'+esc(d.name)+"</b><span>"+fmtDate(photo(d.id).at)+"</span></div></button>").join("")+"</div>":
     '<div class="empty">'+ICON_CAM.replace("<svg","<svg aria-hidden=\"true\"")+'<p style="margin:8px 0 14px">まだ発見した名所がありません。<br>名所を訪ねて写真を撮ると、ここに集まります。</p><button class="btn pri" data-go="map">地図をひらく</button></div>';
@@ -871,7 +904,12 @@ async function onPhoto(e,viaCam){
   let near=false;
   if(viaCam){const ll=await locate();near=!!(ll&&distM(ll,byId[id].ll)<=NEAR_M)}
   const prev=photo(id);if(!near&&prev&&prev.near)near=true;
-  try{const b4=stats(),was=hasPhoto(id);await savePhoto(id,f,near);const af=stats();
+  try{const b4=stats(),was=hasPhoto(id),T0=titles();await savePhoto(id,f,near);const af=stats(),T1=titles(),k=byId[id].cat;
+    if(T1.grand&&!T0.grand){fx("グランドマスター！","土木建築グランドマスター","すべての分類の称号を集めました");return done()}
+    if(T1.master&&!T0.master){fx("称号ゲット！","構造物マスター",MASTER_N+" 種類の称号を集めました");return done()}
+    const ak=areaOf[id];
+    if(ak&&T1.areas[ak].star>T0.areas[ak].star){fx(T1.areas[ak].star===3?"エリア制覇！":"称号ゲット！",T1.areas[ak].name+" "+"★".repeat(T1.areas[ak].star),byId[id].name+" を発見");return done()}
+    if(T1.cats[k].star>T0.cats[k].star){fx("称号ゲット！",T1.cats[k].name+" "+"★".repeat(T1.cats[k].star),byId[id].name+" を発見");return done()}
     if(af.lv>b4.lv)fx("レベルアップ！","Lv."+af.lv+"　"+af.rank,byId[id].name+" を発見");
     else if(af.done>b4.done)fx("エリア制覇！",TOKYO_MAPS[areaOf[id]].title,"経験値 +"+(af.exp-b4.exp));
     else if(!was&&near)fx("発見！",byId[id].name,"経験値 +"+(af.exp-b4.exp));
@@ -879,7 +917,8 @@ async function onPhoto(e,viaCam){
     else if(viaCam&&!near)toast("名所から離れているため、現地の発見にはなりませんでした");
     else toast(byId[id].name+" の写真を入れ替えました")}
   catch(err){toast("写真を保存できませんでした")}
-  busy=false;renderAll();renderNear();
+  done();
+  function done(){busy=false;renderAll();renderNear()}
 }
 $("#file").addEventListener("change",e=>onPhoto(e,false));
 $("#cam").addEventListener("change",e=>onPhoto(e,true));
@@ -892,8 +931,23 @@ sheet.addEventListener("input",e=>{if(e.target.id!=="memo")return;const s=sheet.
 sheet.addEventListener("focusout",e=>{if(e.target.id==="memo")flushMemo()});
 
 /* ============ 全体 ============ */
+const TITLES={bridge:"橋梁マスター",rail:"鉄道・道路マスター",water:"治水マスター",port:"港湾・城郭マスター",tower:"塔マスター",modern:"近代建築マスター",post:"現代建築マスター"};
+const AREA_TITLES={marunouchi:"日本橋・丸の内の案内人",sumida:"隅田川の橋番",ueno:"上野の山の学芸員",wangan:"東京湾岸の港湾長",ochanomizu:"神田川の谷の名主",aoyama:"青山・六本木の建築通"};
+const MASTER_N=4;
+function stars(n,tot){const t1=Math.ceil(tot*.1)+1,t2=Math.max(t1+1,Math.ceil(tot/2)),th=[t1,t2,tot];return {star:th.filter(x=>n>=x).length,next:th[th.filter(x=>n>=x).length]||null}}
+function titles(){
+  const out={};let have=0,all3=0;
+  Object.keys(CATS).forEach(k=>{
+    const tot=D.filter(d=>d.cat===k).length,n=D.filter(d=>d.cat===k&&hasPhoto(d.id)).length;
+    const st=stars(n,tot);if(st.star)have++;
+    out[k]={name:TITLES[k],n,tot,star:st.star,next:st.next};
+  });
+  const areas={};
+  TM.AREA_KEYS.forEach(k=>{const s=SPOTS[k],n=s.filter(x=>hasPhoto(x.d.id)).length,st=stars(n,s.length);areas[k]={name:AREA_TITLES[k]||TOKYO_MAPS[k].title,n,tot:s.length,star:st.star,next:st.next}});
+  return {cats:out,areas,have,master:have>=MASTER_N,grand:have===Object.keys(CATS).length};
+}
 const EXP_NEAR=30,EXP_FAR=5,EXP_AREA=100;
-const RANKS=[[1,"見習い探検家"],[3,"街歩き隊員"],[5,"橋めぐり調査員"],[8,"構造物ハンター"],[11,"土木建築博士"],[14,"東京マスター"]];
+const RANKS=[[1,"見習い技術者"],[3,"測量士補"],[5,"現場監督"],[8,"設計技師"],[11,"技術士"],[14,"棟梁"]];
 function stats(){
   const got=D.filter(d=>hasPhoto(d.id)),n=got.length,onsite=got.filter(d=>photo(d.id).near).length;
   const done=TM.AREA_KEYS.filter(k=>SPOTS[k].length&&SPOTS[k].every(x=>hasPhoto(x.d.id))).length;
@@ -909,7 +963,8 @@ function renderProgress(){
   $("#lvn").textContent=st.lv;
   $("#expbar").style.width=((st.exp-st.lo)/(st.hi-st.lo)*100).toFixed(1)+"%";
   $("#expwrap").setAttribute("aria-label","レベル "+st.lv+"、経験値 "+st.exp);
-  $("#rank").textContent=st.rank+"　次のレベルまで "+(st.hi-st.exp);
+  const T=titles();
+  $("#rank").textContent=(T.grand?"土木建築グランドマスター｜":T.master?"構造物マスター｜":"")+st.rank+"　次のレベルまで "+(st.hi-st.exp);
 }
 let fxT;function fx(a,b,c){$("#fx1").textContent=a;$("#fx2").textContent=b;$("#fx3").textContent=c;const f=$("#fx");f.classList.add("on");clearTimeout(fxT);fxT=setTimeout(()=>f.classList.remove("on"),2300)}
 function renderAll(){renderProgress();if(M){drawMarks();renderChips();renderSide()}renderList();renderAlbum();refreshSheet()}
