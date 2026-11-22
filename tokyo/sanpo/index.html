@@ -489,7 +489,7 @@ dl.meta dd .lk{color:var(--ink3);font-size:12px;font-weight:700;background:repea
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261122b" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261122c" charset="utf-8"></script>
 <script src="tokyo-maps.js?v=20261114g" charset="utf-8"></script>
 <script src="tokyo-maps-gsi.js?v=20261114g" charset="utf-8"></script>
 <script src="tokyo-mapdraw.js?v=20261114g" charset="utf-8"></script>
@@ -665,7 +665,8 @@ function apply(){
   raf=requestAnimationFrame(()=>{raf=0;if(!svg)return;clampVB();
     svg.setAttribute("viewBox",vb.x.toFixed(2)+" "+vb.y.toFixed(2)+" "+vb.w.toFixed(2)+" "+vb.h.toFixed(2));
     const k=vb.w/boxSize()[0];
-    for(const m of marks)m.el.setAttribute("transform","translate("+m.x.toFixed(1)+","+m.y.toFixed(1)+") scale("+k.toFixed(4)+")");
+    const z=Math.max(1,M.w/vb.w),g=mapKey==="overview"?Math.min(3,Math.pow(z,.75)):1;
+    for(const m of marks)m.el.setAttribute("transform","translate("+m.x.toFixed(1)+","+m.y.toFixed(1)+") scale("+(m.el.classList.contains("mk")?k*g:k).toFixed(4)+")");
   });
 }
 function zoomAt(px,py,f){
@@ -711,7 +712,7 @@ function dotHTML(d){
   if(ph&&ph.url){const r=sel?14:11,cid="cp-"+d.id;
     return '<circle r="'+(r+3)+'" class="frame"/><clipPath id="'+cid+'"><circle r="'+r+'"/></clipPath><image href="'+esc(ph.url)+'" x="'+(-r)+'" y="'+(-r)+'" width="'+2*r+'" height="'+2*r+'" preserveAspectRatio="xMidYMid slice" clip-path="url(#'+cid+')"/><title>'+esc(d.name)+'</title>'}
   const ov=mapKey==="overview";
-  return '<circle class="dot" r="'+(sel?9.5:ov?4.4:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":ov?";stroke-width:1.4":"")+'"/><title>'+esc(d.name)+'</title>';
+  return '<circle r="15" fill="transparent" stroke="none"/><circle class="dot" r="'+(sel?9.5:ov?4.4:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":ov?";stroke-width:1.4":"")+'"/><title>'+esc(d.name)+'</title>';
 }
 const AVATAR='<circle class="halo" r="30"/><ellipse cx="0" cy="1" rx="11" ry="4" fill="rgb(20 30 70 / .3)"/>'+
   '<path class="o" fill="#FF7A2F" d="M-9,0Q-10,-17 0,-17Q10,-17 9,0Z"/><path fill="#FFE27A" d="M-3.2,-16.5h6.4L1.6,-1h-3.2Z"/>'+
