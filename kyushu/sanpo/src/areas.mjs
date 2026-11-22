@@ -47,12 +47,19 @@ for (const A of AREAS) {
   const roads = {}; Object.keys(RW).forEach(k => roads[k] = []);
   const water = [], rail = [];
   const [x0, y0] = txy(n, w).map(Math.floor), [x1, y1] = txy(s, e).map(Math.floor), N = 2 ** Z;
-  let cnt = 0;
+  let cnt = 0, miss = 0;
   for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) {
-    const t = await tile(tx, ty); cnt++; if (!t) continue;
+    const t = await tile(tx, ty); cnt++; const tuw = Math.abs(P(n, ((tx + 1) / N) * 360 - 180)[0] - P(n, (tx / N) * 360 - 180)[0]);
+    const empty = !t || Object.values(t.layers).every(l => !l.length);
+    if (empty) { // タイルが無い・中身が空の所は外洋（データなし）なので、海として塗る
+      const cn = [[0,0],[1,0],[1,1],[0,1]].map(([a,b]) => { const wx = (tx + a) / N, wy = (ty + b) / N; return P(Math.atan(Math.sinh(Math.PI * (1 - 2 * wy))) * 180 / Math.PI, wx * 360 - 180); });
+      const cp = clipPoly(cn, W, H, 2); if (cp.length > 2) { water.push(dstr(cp, true)); miss++; } continue; }
     const each = (name, fn) => { const l = t.layers[name]; if (!l) return; const E = l.extent;
-      const to = p => { const wx = (tx + p.x / E) / N, wy = (ty + p.y / E) / N; return P(Math.atan(Math.sinh(Math.PI * (1 - 2 * wy))) * 180 / Math.PI, wx * 360 - 180); };
-      for (let i = 0; i < l.length; i++) { const f = l.feature(i); fn(f.properties, f.loadGeometry().map(r => r.map(to)), f.type); } };
+      const to = p => { const px = p.x, py = p.y; const wx = (tx + px / E) / N, wy = (ty + py / E) / N; return P(Math.atan(Math.sinh(Math.PI * (1 - 2 * wy))) * 180 / Math.PI, wx * 360 - 180); };
+      for (let i = 0; i < l.length; i++) { const f = l.feature(i);
+        // 水面はタイルの外側の余白（バッファ）を切り落とす。隣のタイルと重なると、evenodd で穴になって格子状の筋が出るため
+        const geo = name === "WA" && f.type === 3 ? f.loadGeometry().map(r => { const c = clipPoly(r.map(p => [p.x, p.y]), E, E, 0); return c.map(q => to({ x: q[0], y: q[1] })); }) : f.loadGeometry().map(r => r.map(to));
+        fn(f.properties, geo, f.type); } };
     each("RdCL", (p, g) => {
       const last = p.vt_code % 10; if (last === 4) return;          // トンネルは描かない
       const kk = Math.floor(p.vt_code / 10) % 10, gg = p.vt_rdctg || "", wd = p.vt_rnkwidth || "";
@@ -67,6 +74,6 @@ for (const A of AREAS) {
   out[A.key] = { bbox: A.bbox, w: W, h: H, lat0, title: A.title, en: A.en, lede: A.lede, credit: "出典：国土地理院",
     layers: { water: water.join(""), sea: "", parks: "", roads: order.filter(k => roads[k].length).map(k => ({ cls: k, w: +(A.rw ? A.rw[k] || 1 : RW[k] / mpp).toFixed(2), d: roads[k].join("") })), rail: rail.join("") },
     labels: A.labels };
-  console.error(A.key, "tiles", cnt, "mpp", mpp.toFixed(2), "size", JSON.stringify(out[A.key]).length);
+  console.error(A.key, "tiles", cnt, "missing", miss, "mpp", mpp.toFixed(2), "size", JSON.stringify(out[A.key]).length);
 }
 fs.writeFileSync(OUT, JSON.stringify(out));
