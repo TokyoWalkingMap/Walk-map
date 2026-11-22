@@ -91,7 +91,7 @@ h2{font:400 20px/1.3 var(--f-disp);letter-spacing:.05em;margin:4px 0 10px}
 .lbl{font:700 13px var(--f-disp);fill:var(--m-label);text-anchor:middle;paint-order:stroke;stroke:var(--m-land);stroke-width:3.5px;letter-spacing:.15em;pointer-events:none}
 .area rect{fill:color-mix(in srgb,var(--m-navy) 8%,transparent);stroke:var(--m-navy);stroke-dasharray:8 4}
 .area text{font:400 13px var(--f-disp);fill:var(--m-navy);paint-order:stroke;stroke:var(--m-land);stroke-width:3.5px}
-.area{cursor:pointer}
+.area{cursor:pointer}.area>rect{pointer-events:stroke}.area .albl{pointer-events:all}
 .mk{cursor:pointer}
 .mk .star{fill:var(--m-star);stroke:var(--m-land);stroke-width:1.5}
 .mk .ph{stroke:var(--m-land);stroke-width:3}
@@ -376,7 +376,11 @@ dl.meta dd .lk{color:var(--ink3);font-size:12px;font-weight:700;background:repea
 .tmap .m-rail-dash{stroke:var(--m-land)}
 .lbl{font:400 12.5px var(--f-disp);letter-spacing:.08em;stroke-width:4px}
 .area rect{fill:color-mix(in srgb,var(--gold) 22%,transparent);stroke:var(--line);stroke-dasharray:10 6}
-.area text{font:400 13px var(--f-disp);fill:var(--paper);stroke:var(--line);stroke-width:5px;stroke-linejoin:round}
+.area rect{fill:color-mix(in srgb,var(--gold) 10%,transparent)}
+.area text{font:400 12px var(--f-disp);fill:var(--line);stroke:none}
+.area .apill{fill:var(--gold);stroke:var(--line);stroke-width:2.5px;stroke-dasharray:none}
+.area .acnt{font:400 12px var(--f-disp);fill:var(--paper)}
+.area .apill+text+.acnt{fill:var(--line);opacity:.6}
 .mk .shd{fill:rgb(20 30 70 / .28)}
 .mk .pin{stroke:var(--line);stroke-width:2.5;stroke-linejoin:round}
 .mk .shine{fill:#fff;opacity:.35}
@@ -485,7 +489,7 @@ dl.meta dd .lk{color:var(--ink3);font-size:12px;font-weight:700;background:repea
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261122a" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261122b" charset="utf-8"></script>
 <script src="tokyo-maps.js?v=20261114g" charset="utf-8"></script>
 <script src="tokyo-maps-gsi.js?v=20261114g" charset="utf-8"></script>
 <script src="tokyo-mapdraw.js?v=20261114g" charset="utf-8"></script>
@@ -706,7 +710,8 @@ function dotHTML(d){
   const ph=photo(d.id),col="var("+CATS[d.cat].v+")",sel=selId===d.id;
   if(ph&&ph.url){const r=sel?14:11,cid="cp-"+d.id;
     return '<circle r="'+(r+3)+'" class="frame"/><clipPath id="'+cid+'"><circle r="'+r+'"/></clipPath><image href="'+esc(ph.url)+'" x="'+(-r)+'" y="'+(-r)+'" width="'+2*r+'" height="'+2*r+'" preserveAspectRatio="xMidYMid slice" clip-path="url(#'+cid+')"/><title>'+esc(d.name)+'</title>'}
-  return '<circle class="dot" r="'+(sel?9.5:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":"")+'"/><title>'+esc(d.name)+'</title>';
+  const ov=mapKey==="overview";
+  return '<circle class="dot" r="'+(sel?9.5:ov?4.4:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":ov?";stroke-width:1.4":"")+'"/><title>'+esc(d.name)+'</title>';
 }
 const AVATAR='<circle class="halo" r="30"/><ellipse cx="0" cy="1" rx="11" ry="4" fill="rgb(20 30 70 / .3)"/>'+
   '<path class="o" fill="#FF7A2F" d="M-9,0Q-10,-17 0,-17Q10,-17 9,0Z"/><path fill="#FFE27A" d="M-3.2,-16.5h6.4L1.6,-1h-3.2Z"/>'+
@@ -720,7 +725,7 @@ function drawMarks(){
   (M.labels||[]).forEach(l=>{const p=proj(l[1],l[2]);h.push('<g class="lblg" data-x="'+p[0]+'" data-y="'+p[1]+'"><text class="lbl">'+esc(l[0])+'</text></g>')});
   if(mapKey==="overview"){
     TM.AREA_KEYS.forEach(k=>{const a=TOKYO_MAPS[k],p1=proj(a.bbox[2],a.bbox[1]),p2=proj(a.bbox[0],a.bbox[3]);
-      h.push('<g class="area" data-area="'+k+'" tabindex="0" role="button" aria-label="'+esc(a.title)+'の地図を開く"><rect x="'+S(p1[0])+'" y="'+S(p1[1])+'" width="'+S(p2[0]-p1[0])+'" height="'+S(p2[1]-p1[1])+'" vector-effect="non-scaling-stroke" stroke-width="2"/><g class="albl" data-x="'+p1[0]+'" data-y="'+p1[1]+'"><text x="3" y="-5">'+esc(a.title.replace(/（.*）/,""))+'</text></g></g>')});
+      h.push('<g class="area" data-area="'+k+'" tabindex="0" role="button" aria-label="'+esc(a.title)+'の地図を開く"><rect x="'+S(p1[0])+'" y="'+S(p1[1])+'" width="'+S(p2[0]-p1[0])+'" height="'+S(p2[1]-p1[1])+'" vector-effect="non-scaling-stroke" stroke-width="2"/><g class="albl" data-x="'+p1[0]+'" data-y="'+p1[1]+'">'+'<rect class="apill" rx="9"/><text class="atx">'+esc(a.title.replace(/（.*）/,""))+'</text><text class="acnt">'+(SPOTS[k]||[]).length+'</text>'+'</g></g>')});
     D.forEach(d=>{if(!TM.inside(M,d.ll))return;const p=proj(d.ll[0],d.ll[1]);
       h.push('<g class="mk'+(selId===d.id?" sel":"")+'" data-id="'+d.id+'" data-x="'+p[0]+'" data-y="'+p[1]+'" tabindex="0" role="button" aria-label="'+esc(d.name)+'">'+dotHTML(d)+'</g>')});
   }else{
@@ -729,6 +734,11 @@ function drawMarks(){
   }
   if(here&&TM.inside(M,here)){const p=proj(here[0],here[1]);h.push('<g class="me" data-x="'+p[0]+'" data-y="'+p[1]+'">'+AVATAR+'</g>')}
   g.innerHTML=h.join("");svg.appendChild(g);
+  g.querySelectorAll(".albl").forEach(l=>{const tx=l.querySelector(".atx"),cn=l.querySelector(".acnt"),r=l.querySelector(".apill");if(!tx||!r)return;
+    const w1=tx.getComputedTextLength(),w2=cn.getComputedTextLength();tx.setAttribute("x",9);tx.setAttribute("y",-10);cn.setAttribute("x",9+w1+6);cn.setAttribute("y",-10);
+    r.setAttribute("x",3);r.setAttribute("y",-26);r.setAttribute("width",w1+w2+24);r.setAttribute("height",22);
+    const kk=l.parentNode.dataset.area;if(kk==="ueno"||kk==="sumida"){const W=w1+w2+24,ar=TOKYO_MAPS[kk],q=proj(ar.bbox[2],ar.bbox[3]);l.dataset.x=q[0];l.dataset.y=q[1];l.querySelectorAll("rect,text").forEach(e=>e.setAttribute("transform","translate("+(kk==="ueno"?6:-W-6)+",0)"))}});
+  g.querySelectorAll(".area").forEach(a=>g.appendChild(a));
   g.querySelectorAll("[data-x]").forEach(el=>marks.push({el,x:+el.dataset.x,y:+el.dataset.y}));
   // 選択中を最前面に
   const s=g.querySelector(".mk.sel");if(s)g.appendChild(s);
