@@ -1100,6 +1100,8 @@ go(["map","list","album"].indexOf(view)<0?"map":view);
 showMap(mapKey);
 renderAll();
 (async()=>{idb=await idbOpen();await loadLocal();renderAll();await initCloud()})();
+// 他のページから ?spot=s12 のように名所を指定して開く
+{const q=new URLSearchParams(location.search).get("spot");if(q&&byId[q])setTimeout(()=>{try{openSpot(q)}catch(e){}},400)}
 })();
 </script>
 </body>
