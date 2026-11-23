@@ -489,10 +489,10 @@ dl.meta dd .lk{color:var(--ink3);font-size:12px;font-weight:700;background:repea
 <div class="toast" id="toast" role="status"></div>
 <div class="fx" id="fx" aria-hidden="true"><div><em id="fx1"></em><b id="fx2"></b><span id="fx3"></span></div></div>
 
-<script src="tokyo-data.js?v=20261122b" charset="utf-8"></script>
-<script src="tokyo-maps.js?v=20261114g" charset="utf-8"></script>
-<script src="tokyo-maps-gsi.js?v=20261114g" charset="utf-8"></script>
-<script src="tokyo-mapdraw.js?v=20261114g" charset="utf-8"></script>
+<script src="tokyo-data.js?v=20261122d" charset="utf-8"></script>
+<script src="tokyo-maps.js?v=20261122d" charset="utf-8"></script>
+<script src="tokyo-maps-gsi.js?v=20261122d" charset="utf-8"></script>
+<script src="tokyo-mapdraw.js?v=20261122d" charset="utf-8"></script>
 <script>
 (function(){
 "use strict";
@@ -665,7 +665,8 @@ function apply(){
   raf=requestAnimationFrame(()=>{raf=0;if(!svg)return;clampVB();
     svg.setAttribute("viewBox",vb.x.toFixed(2)+" "+vb.y.toFixed(2)+" "+vb.w.toFixed(2)+" "+vb.h.toFixed(2));
     const k=vb.w/boxSize()[0];
-    for(const m of marks)m.el.setAttribute("transform","translate("+m.x.toFixed(1)+","+m.y.toFixed(1)+") scale("+k.toFixed(4)+")");
+    const z=Math.max(1,M.w/vb.w),g=mapKey==="overview"?Math.min(3,Math.pow(z,.75)):1;
+    for(const m of marks)m.el.setAttribute("transform","translate("+m.x.toFixed(1)+","+m.y.toFixed(1)+") scale("+(m.el.classList.contains("mk")?k*g:k).toFixed(4)+")");
   });
 }
 function zoomAt(px,py,f){
@@ -711,7 +712,7 @@ function dotHTML(d){
   if(ph&&ph.url){const r=sel?14:11,cid="cp-"+d.id;
     return '<circle r="'+(r+3)+'" class="frame"/><clipPath id="'+cid+'"><circle r="'+r+'"/></clipPath><image href="'+esc(ph.url)+'" x="'+(-r)+'" y="'+(-r)+'" width="'+2*r+'" height="'+2*r+'" preserveAspectRatio="xMidYMid slice" clip-path="url(#'+cid+')"/><title>'+esc(d.name)+'</title>'}
   const ov=mapKey==="overview";
-  return '<circle class="dot" r="'+(sel?9.5:ov?4.4:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":ov?";stroke-width:1.4":"")+'"/><title>'+esc(d.name)+'</title>';
+  return '<circle r="15" fill="transparent" stroke="none"/><circle class="dot" r="'+(sel?9.5:ov?4.4:6.5)+'" style="fill:'+col+(sel?";stroke-width:3":ov?";stroke-width:1.4":"")+'"/><title>'+esc(d.name)+'</title>';
 }
 const AVATAR='<circle class="halo" r="30"/><ellipse cx="0" cy="1" rx="11" ry="4" fill="rgb(20 30 70 / .3)"/>'+
   '<path class="o" fill="#FF7A2F" d="M-9,0Q-10,-17 0,-17Q10,-17 9,0Z"/><path fill="#FFE27A" d="M-3.2,-16.5h6.4L1.6,-1h-3.2Z"/>'+
@@ -737,7 +738,7 @@ function drawMarks(){
   g.querySelectorAll(".albl").forEach(l=>{const tx=l.querySelector(".atx"),cn=l.querySelector(".acnt"),r=l.querySelector(".apill");if(!tx||!r)return;
     const w1=tx.getComputedTextLength(),w2=cn.getComputedTextLength();tx.setAttribute("x",9);tx.setAttribute("y",-10);cn.setAttribute("x",9+w1+6);cn.setAttribute("y",-10);
     r.setAttribute("x",3);r.setAttribute("y",-26);r.setAttribute("width",w1+w2+24);r.setAttribute("height",22);
-    const kk=l.parentNode.dataset.area;if(kk==="ueno"||kk==="sumida"){const W=w1+w2+24,ar=TOKYO_MAPS[kk],q=proj(ar.bbox[2],ar.bbox[3]);l.dataset.x=q[0];l.dataset.y=q[1];l.querySelectorAll("rect,text").forEach(e=>e.setAttribute("transform","translate("+(kk==="ueno"?6:-W-6)+",0)"))}});
+    const kk=l.parentNode.dataset.area;if(kk==="ueno"||kk==="sumida"||kk==="ikebukuro"){const W=w1+w2+24,ar=TOKYO_MAPS[kk],q=proj(kk==="ikebukuro"?ar.bbox[0]:ar.bbox[2],ar.bbox[3]);l.dataset.x=q[0];l.dataset.y=q[1];l.querySelectorAll("rect,text").forEach(e=>e.setAttribute("transform","translate("+(kk==="ueno"?6:kk==="ikebukuro"?-3:-W-6)+","+(kk==="ikebukuro"?27:0)+")"))}});
   g.querySelectorAll(".area").forEach(a=>g.appendChild(a));
   g.querySelectorAll("[data-x]").forEach(el=>marks.push({el,x:+el.dataset.x,y:+el.dataset.y}));
   // 選択中を最前面に
@@ -1007,7 +1008,7 @@ sheet.addEventListener("focusout",e=>{if(e.target.id==="memo")flushMemo()});
 
 /* ============ 全体 ============ */
 const TITLES={bridge:"橋梁マスター",rail:"鉄道・道路マスター",water:"治水マスター",port:"港湾・城郭マスター",tower:"塔マスター",modern:"近代建築マスター",post:"現代建築マスター"};
-const AREA_TITLES={marunouchi:"日本橋・丸の内の案内人",sumida:"隅田川の橋番",ueno:"上野の山の学芸員",wangan:"東京湾岸の港湾長",ochanomizu:"神田川の谷の名主",aoyama:"青山・六本木の建築通",shinagawa:"鉄道発祥の地の駅長"};
+const AREA_TITLES={marunouchi:"日本橋・丸の内の案内人",sumida:"隅田川の橋番",ueno:"上野の山の学芸員",wangan:"東京湾岸の港湾長",ochanomizu:"神田川の谷の名主",aoyama:"青山・六本木の建築通",shinagawa:"鉄道発祥の地の駅長",ikebukuro:"池袋の都電の車掌"};
 const KNOW={
 bridge:[["橋の形の見分け方","桁橋は、桁を渡しただけの基本の形。アーチ橋は弓形で、重さを両岸へ押す力に変える。トラス橋は三角形を組み合わせた骨組み。吊橋はケーブルで桁を吊る。まず「どこで重さを支えているか」を見ると形が分かる。"],
  ["隅田川が「橋の博物館」と呼ばれる理由","関東大震災の復興で隅田川に橋を架け直したとき、場所ごとに違う形式を選んだ。永代橋は力強いアーチ、清洲橋は優美な吊橋。地盤や船の通り道、景色に合わせて形を変えたので、歩くだけで橋の形式を見比べられる。"],
@@ -1114,6 +1115,8 @@ go(["map","list","album"].indexOf(view)<0?"map":view);
 showMap(mapKey);
 renderAll();
 (async()=>{idb=await idbOpen();await loadLocal();renderAll();await initCloud()})();
+// 他のページから ?spot=s12 のように名所を指定して開く
+{const q=new URLSearchParams(location.search).get("spot");if(q&&byId[q])setTimeout(()=>{try{openSpot(q)}catch(e){}},400)}
 })();
 </script>
 </body>

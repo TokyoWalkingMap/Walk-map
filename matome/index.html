@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>土木建築散歩 全国まとめ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&display=swap">
+<style>
+:root{--bg:#F6F7F4;--ink:#1C2630;--muted:#5F6B72;--rule:#D5DAD5;--chip:#fff;--accent:#E8641E;
+  --c-bridge:#2F8CFF;--c-rail:#9A5CF0;--c-water:#10B3AE;--c-port:#5DAA2B;--c-tower:#FF5C7A;--c-modern:#E89A00;--c-post:#5B6787;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#151A1E;--ink:#E3E7E4;--muted:#97A3A8;--rule:#2F3940;--chip:#1E262C;--accent:#FF9548;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:500 14px/1.5 "Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;display:flex;flex-direction:column}
+header{padding:10px 16px 8px;display:grid;gap:8px;border-bottom:1px solid var(--rule)}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700;margin:0}
+.top span{color:var(--muted);font-size:12.5px}
+.top a{margin-left:auto;color:var(--accent);font-size:13px;text-decoration:none}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1.5px solid var(--rule);background:var(--chip);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-weight:700;cursor:pointer}
+.chips button b{font-weight:500;color:var(--muted);margin-left:4px;font-size:12px}
+.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips button[aria-pressed="true"] b{color:#fff}
+#map{flex:1;min-height:0;background:#C9DDEA}
+.legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.hint{font-size:11.5px;color:var(--muted)}
+.rg{background:none;border:none}
+.rg div{transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#FFD54A;color:#27335C;border:2.5px solid #27335C;border-radius:999px;padding:4px 12px;font:700 14px "Zen Kaku Gothic New",sans-serif;box-shadow:0 3px 0 #27335C;cursor:pointer}
+.rg div b{font-weight:500;font-size:12px;opacity:.75}
+.leaflet-popup-content{font:500 13px/1.5 "Zen Kaku Gothic New",sans-serif;margin:10px 12px}
+.pp b{font-size:15px;display:block}
+.pp .m{color:#5F6B72;font-size:12px}
+.pp a{display:inline-block;margin-top:6px;background:#E8641E;color:#fff;border-radius:999px;padding:4px 12px;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>土木建築散歩 全国まとめ</h1><span id="sum"></span><a href="../">トップへ</a></div>
+  <div class="chips" id="chips"></div>
+  <div class="legend" id="legend"></div>
+</header>
+<div id="map"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="data.js?v=20261122a"></script>
+<script>
+const M=MATOME,CV=k=>getComputedStyle(document.documentElement).getPropertyValue("--c-"+k).trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RB=r=>L.latLngBounds([r.bbox[0],r.bbox[1]],[r.bbox[2],r.bbox[3]]);
+document.getElementById("sum").textContent="4地方・"+M.spots.length+"件";
+// 凡例
+document.getElementById("legend").innerHTML=Object.keys(M.cats).map(k=>'<span><i style="background:'+CV(k)+'"></i>'+esc(M.cats[k])+'</span>').join("")+'<span class="hint">広く見ているときは地方ごとの件数、近づくと名所の点が出ます</span>';
+const map=L.map("map",{preferCanvas:true,zoomControl:true,minZoom:4,maxZoom:18}).setView([35.0,135.5],5);
+L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",{maxZoom:18,attribution:'<a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'}).addTo(map);
+// 地方の枠と件数ラベル（広域表示用）
+const far=L.layerGroup().addTo(map),near=L.layerGroup();
+M.regions.forEach(r=>{const b=RB(r);
+  L.rectangle(b,{color:"#27335C",weight:1.5,dashArray:"6 5",fill:true,fillColor:"#FFD54A",fillOpacity:.12,interactive:false}).addTo(far);
+  L.marker(b.getCenter(),{icon:L.divIcon({className:"rg",html:'<div>'+esc(r.title)+'<b>'+r.count+'件</b></div>',iconSize:[0,0]})}).on("click",()=>go(r.key)).addTo(far)});
+// 名所の点（近づいたときだけ）
+const R=z=>Math.max(3.5,Math.min(10,(z-6)*1.1+2.5));
+const dots=M.spots.map(s=>{const [rk,id,name,cat,yl,place,lat,lon,area]=s,r=M.regions.find(x=>x.key===rk);
+  return L.circleMarker([lat,lon],{radius:R(8),color:"#27335C",weight:1.2,fillColor:CV(cat),fillOpacity:1})
+    .bindPopup('<div class="pp"><b>'+esc(name)+'</b><span class="m">'+esc(M.cats[cat]||"")+'・'+esc(yl)+'<br>'+esc(place)+'（'+esc(r.title)+(area?'・'+esc(area)+'エリア':'')+'）</span><br><a href="'+r.url+'?spot='+id+'">'+esc(r.title)+'版アプリで開く</a></div>',{maxWidth:260})
+    .addTo(near)});
+function upd(){const z=map.getZoom();
+  if(z>=7){if(map.hasLayer(far))map.removeLayer(far);if(!map.hasLayer(near))map.addLayer(near);const r=R(z);dots.forEach(d=>d.setRadius(r))}
+  else{if(map.hasLayer(near))map.removeLayer(near);if(!map.hasLayer(far))map.addLayer(far)}}
+map.on("zoomend",upd);upd();
+// 地方の切り替え
+const chips=document.getElementById("chips");
+chips.innerHTML='<button data-k="all" aria-pressed="true">全国<b>'+M.spots.length+'</b></button>'+M.regions.map(r=>'<button data-k="'+r.key+'" aria-pressed="false">'+esc(r.title)+'<b>'+r.count+'</b></button>').join("");
+function go(k){chips.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===k));
+  if(k==="all")map.fitBounds(L.latLngBounds(M.regions.flatMap(r=>[[r.bbox[0],r.bbox[1]],[r.bbox[2],r.bbox[3]]])),{padding:[10,10]});
+  else{const r=M.regions.find(x=>x.key===k);map.fitBounds(RB(r),{padding:[6,6]});}}
+chips.addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.k)});
+go("all");
+</script>
+</body>
+</html>
