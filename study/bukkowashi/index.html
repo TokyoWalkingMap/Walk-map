@@ -1,0 +1,598 @@
+<title>ぶっ壊し構造ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* Layout: one-screen lab. Header strip, canvas fills the middle, an instruction sheet at the bottom. Risograph print palette. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--f-body);}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy);background:var(--paper)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);letter-spacing:.02em;white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#stageName{font-weight:900;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+#score{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+#wrap{position:relative;flex:1;min-height:0}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+#gauge{position:absolute;left:max(12px,env(safe-area-inset-left,0px));top:10px;background:var(--sheet);border:2px solid var(--navy);padding:6px 10px;font-weight:900;font-size:13px;font-variant-numeric:tabular-nums;pointer-events:none}
+#gauge .bar{height:6px;background:var(--line);margin-top:4px;width:140px}
+#gauge .bar i{display:block;height:100%;background:var(--red);width:0}
+#legend{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:10px;background:var(--sheet);border:2px solid var(--navy);padding:6px 10px;font-size:12px;font-weight:700;display:flex;flex-direction:column;gap:3px;pointer-events:none}
+#legend span{display:flex;align-items:center;gap:6px}
+#legend i{display:inline-block;width:22px;height:5px}
+#tip{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:var(--navy);color:var(--paper);padding:5px 12px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#panel{background:var(--sheet);border-top:2px solid var(--navy);padding-block:10px 12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-height:46%;overflow-y:auto}
+#panel h2{font-family:var(--f-disp);font-weight:400;font-size:19px;margin:0 0 4px;color:var(--navy);text-wrap:balance}
+#panel p{margin:0 0 8px;font-size:14px;line-height:1.7;max-width:68ch}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:8px 14px;cursor:pointer;min-height:40px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button.b.on{background:var(--navy);color:var(--paper)}
+button.b:disabled{opacity:.4;cursor:default}
+button.b:focus-visible,.card:focus-visible,.logo:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.verdict{font-family:var(--f-disp);font-size:26px;line-height:1.1}
+.verdict.ok{color:var(--red)} .verdict.near{color:var(--blue)} .verdict.ng{color:var(--muted)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px;margin:6px 0 8px}
+.facts dt{color:var(--muted);font-weight:700}.facts dd{margin:0;font-weight:700}
+.lesson{border-left:4px solid var(--blue);padding-left:10px}
+.kw{display:inline-block;font-size:11px;font-weight:900;border:1.5px solid var(--ink);padding:0 6px;margin:0 4px 4px 0}
+/* home */
+#home{position:absolute;inset:0;overflow-y:auto;background:var(--paper);padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{max-width:900px;margin:0 auto 18px}
+.hero h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(34px,7vw,64px);line-height:1.05;margin:0;color:var(--navy);text-wrap:balance}
+.hero h1 b{color:var(--red);font-weight:400}
+.hero p{font-size:15px;line-height:1.8;max-width:60ch;margin:10px 0 0}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.steps span{font-weight:900;font-size:13px;background:var(--navy);color:var(--paper);padding:4px 10px}
+.grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{background:var(--sheet);border:2px solid var(--navy);padding:0;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column}
+.card canvas{position:static;width:100%;height:96px;background:var(--paper);border-bottom:2px solid var(--navy)}
+.card .ct{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}
+.card .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.card .nm{font-weight:900;font-size:16px}
+.card .ds{font-size:12px;color:var(--muted)}
+.card .rs{font-size:12px;font-weight:900;color:var(--blue)}
+.foot{max-width:900px;margin:18px auto 0;font-size:12px;color:var(--muted);line-height:1.7}
+@media (max-width:520px){ .logo{font-size:15px} #legend{font-size:11px} #gauge{font-size:12px} #panel p{font-size:13px} }
+@media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto} }
+</style>
+
+<div id="app">
+  <header>
+    <button class="logo" id="logo" title="ステージ一覧へ">ぶっ壊し<b>構造</b>ラボ</button>
+    <div id="stageName"></div>
+    <div id="score"></div>
+  </header>
+  <div id="wrap">
+    <canvas id="cv"></canvas>
+    <div id="gauge" hidden></div>
+    <div id="legend" hidden>
+      <span><i style="background:var(--red)"></i>引っ張られている</span>
+      <span><i style="background:var(--blue)"></i>押されている</span>
+      <span style="color:var(--muted)">太く濃いほど限界に近い</span>
+    </div>
+    <div id="tip" hidden></div>
+  </div>
+  <section id="panel"></section>
+</div>
+
+<div id="home">
+  <div class="hero">
+    <h1>どこが<b>壊れる</b>か、<br>考えてから壊せ。</h1>
+    <p>橋、ビル、ダム、トンネル。重さや地震をかけたとき、最初に壊れるのはどの部材でしょう。予想してから実験し、力の流れを見て答え合わせをします。そのあとは自由に壊してかまいません。</p>
+    <div class="steps"><span>1 部材をタップして予想</span><span>2 実験スタート</span><span>3 力の流れで答え合わせ</span><span>4 自由に壊す</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="foot">部材の色は、赤が引っ張られている力、青が押されている力です。シミュレーションは部材を棒とばねで表した簡単なもので、実際の構造物の強さを計算するものではありません。</p>
+</div>
+
+<script>
+"use strict";
+// ================= physics =================
+const G = 500;
+const H = 1/60/16;            // fixed substep
+const MAT = {
+  steel:{E:1.5e6, st:3e4,  sc:6e4,  beta:5e7},
+  cable:{E:1.5e6, st:4.5e4, sc:1e12, beta:0, tensionOnly:true},
+  rc:   {E:1.2e6, st:2.5e4, sc:5e4,  beta:0},
+  conc: {E:1.0e6, st:2.2e3, sc:4e4,  beta:0, concrete:true},
+  soil: {E:2e4, st:1e12,  sc:1e12, beta:0, hidden:true, unbreakable:true},
+};
+function newWorld(){ return {nodes:[],beams:[],joints:[],solids:[],ground:null,water:null,balls:[],parts:[],qx:0,gScale:1,damp:.0008,t:0,events:[],breakOn:false,quakeT:0,shake:0}; }
+function N(w,x,y,o={}){ const n={id:w.nodes.length,x,y,px:x,py:y,ax:x,ay:y,m:o.m||1,pin:o.pin||0,fx:0,fy:0,ex:0,ey:0,ghost:!!o.ghost,wet:false}; w.nodes.push(n); return n; }
+function B(w,a,b,mat,s,name,o={}){
+  const L=Math.hypot(b.x-a.x,b.y-a.y), M=MAT[mat];
+  const capT=M.st*s, capCrush=M.sc*s, capBuck=M.beta? M.beta*s*s/(L*L) : 1e12;
+  const bm={id:w.beams.length,a,b,L0:L,mat:M,matName:mat,s,name,broken:false,F:0,r:0,EA:M.E*s,capT,capC:Math.min(capCrush,capBuck),buckles:capBuck<capCrush,c:0,group:o.group||name,hidden:!!M.hidden};
+  w.beams.push(bm); return bm;
+}
+function J(w,a,c,b,kr,thy,owner){ const j={a,c,b,kr,thy,owner,phi0:0,prev:0,pl:0,yielded:false,dead:false}; w.joints.push(j); return j; }
+function angOf(j){ const ux=j.a.x-j.c.x,uy=j.a.y-j.c.y,vx=j.b.x-j.c.x,vy=j.b.y-j.c.y; return Math.atan2(ux*vy-uy*vx, ux*vx+uy*vy); }
+function rigidNode(w,n,kr,thy){
+  const bs=w.beams.filter(b=>!b.hidden&&(b.a===n||b.b===n));
+  const arr=bs.map(b=>{const o=b.a===n?b.b:b.a; return {b,o,ang:Math.atan2(o.y-n.y,o.x-n.x)};}).sort((p,q)=>p.ang-q.ang);
+  if(arr.length<2) return;
+  const cnt = arr.length===2?1:arr.length;
+  for(let i=0;i<cnt;i++){ const p=arr[i],q=arr[(i+1)%arr.length];
+    const owner = Math.abs(p.o.y-n.y)>Math.abs(q.o.y-n.y)? p.b : q.b; // the more vertical member (column) owns the hinge
+    J(w,p.o,n,q.o,kr,thy,owner); }
+}
+function fixBase(w,n,col,kr,thy){ const g=N(w,n.x+30,n.y,{pin:1,ghost:true}); J(w,g,n,col.a===n?col.b:col.a,kr,thy,col); }
+function finalize(w){
+  for(const b of w.beams){ const k=b.EA/b.L0; const m=Math.min(b.a.pin?1e9:b.a.m, b.b.pin?1e9:b.b.m); const mm=Math.min(m, Math.max(b.a.m,b.b.m)); b.c=2*0.22*Math.sqrt(k*mm); }
+  for(const j of w.joints){ j.phi0=angOf(j); j.prev=j.phi0; j.cr=j.kr*0.02; }
+}
+function wrapA(a){ while(a>Math.PI)a-=2*Math.PI; while(a<-Math.PI)a+=2*Math.PI; return a; }
+
+function breakBeam(w,b,type){
+  if(b.broken) return; b.broken=true;
+  const mx=(b.a.x+b.b.x)/2,my=(b.a.y+b.b.y)/2;
+  w.events.push({beam:b,type,t:w.t,x:mx,y:my});
+  const col = type==='tension'||type==='crack' ? '#C62422' : type==='cut' ? '#12286B' : '#3286BE';
+  for(let i=0;i<7;i++) w.parts.push({x:mx,y:my,vx:(Math.random()-.5)*260,vy:-Math.random()*220,life:1.2,len:4+Math.random()*7,ang:Math.random()*6,va:(Math.random()-.5)*14,col});
+  w.shake=Math.min(1,w.shake+.35); sfx(type);
+  // free up joints that referenced this member's far ends via this member
+  for(const j of w.joints){ if(j.dead) continue; if((j.a===b.a||j.a===b.b)&&(j.c===b.a||j.c===b.b) || (j.b===b.a||j.b===b.b)&&(j.c===b.a||j.c===b.b)) j.dead=true; }
+}
+
+function crackBeam(w,b){ b.cracked=true; const mx=(b.a.x+b.b.x)/2,my=(b.a.y+b.b.y)/2; w.events.push({beam:b,type:'crack',t:w.t,x:mx,y:my});
+  for(let i=0;i<3;i++) w.parts.push({x:mx,y:my,vx:(Math.random()-.5)*120,vy:-Math.random()*100,life:.8,len:3,ang:Math.random()*6,va:6,col:'#9AA0AE'}); w.shake=Math.min(1,w.shake+.12); sfx('crack'); }
+function groundAt(w,x){ const g=w.ground; if(!g) return 1e9; if(x<=g[0][0]) return g[0][1]; for(let i=1;i<g.length;i++){ if(x<=g[i][0]){ const [x0,y0]=g[i-1],[x1,y1]=g[i]; return y0+(y1-y0)*(x-x0)/(x1-x0);} } return g[g.length-1][1]; }
+
+function step(w){
+  const h=H, ns=w.nodes, g=G*w.gScale;
+  for(const n of ns){ n.fx=n.ex; n.fy=n.ey+n.m*g; }
+  for(const b of w.beams){
+    if(b.broken) continue;
+    const a=b.a,c=b.b; let dx=c.x-a.x,dy=c.y-a.y; const L=Math.hypot(dx,dy)||1e-6; const ux=dx/L,uy=dy/L;
+    let F=b.EA*(L-b.L0)/b.L0;
+    if(b.mat.tensionOnly&&F<0) F=0;
+    if((b.mat.compressionOnly||b.cracked)&&F>0) F=0;
+    const rv=(((c.x-c.px)-(a.x-a.px))*ux+((c.y-c.py)-(a.y-a.py))*uy)/h;
+    const T=F + (F!==0||(!b.mat.tensionOnly&&!b.mat.compressionOnly&&!b.cracked)? b.c*rv : 0);
+    a.fx+=T*ux; a.fy+=T*uy; c.fx-=T*ux; c.fy-=T*uy;
+    b.F=F; b.r = F>=0 ? F/b.capT : -F/b.capC;
+    if(w.breakOn && b.r>1 && !b.mat.unbreakable){
+      if(F>0 && b.mat.concrete){ crackBeam(w,b); }
+      else breakBeam(w,b, F>0 ? 'tension' : (b.buckles?'buckle':'crush'));
+    }
+  }
+  for(const j of w.joints){
+    if(j.dead) continue;
+    const ux=j.a.x-j.c.x,uy=j.a.y-j.c.y,vx=j.b.x-j.c.x,vy=j.b.y-j.c.y;
+    const lu=ux*ux+uy*uy, lv=vx*vx+vy*vy; if(lu<1e-6||lv<1e-6) continue;
+    const phi=Math.atan2(ux*vy-uy*vx,ux*vx+uy*vy);
+    let d=wrapA(phi-j.phi0);
+    if(w.breakOn && Math.abs(d)>j.thy){
+      const ex=d-Math.sign(d)*j.thy; j.phi0=wrapA(j.phi0+ex); j.pl+=Math.abs(ex); d=Math.sign(d)*j.thy;
+      if(!j.yielded){ j.yielded=true; w.events.push({beam:j.owner,type:'hinge',t:w.t,x:j.c.x,y:j.c.y,joint:j}); w.shake=Math.min(1,w.shake+.2); sfx('hinge'); }
+      if(j.pl>0.45){ j.dead=true; }
+    }
+    const rate=wrapA(phi-j.prev)/h; j.prev=phi;
+    const M=j.kr*d + j.cr*rate;  // dE/dphi
+    // dphi/da = -(-uy,ux)/lu ; dphi/db = (-vy,vx)/lv
+    const gax= uy/lu, gay=-ux/lu, gbx=-vy/lv, gby=vx/lv;
+    j.a.fx-=M*gax; j.a.fy-=M*gay; j.b.fx-=M*gbx; j.b.fy-=M*gby; j.c.fx+=M*(gax+gbx); j.c.fy+=M*(gay+gby);
+  }
+  const gd=w.damp, h2=h*h;
+  for(const n of ns){
+    if(n.pin===1){ n.px=n.x; n.py=n.y; n.x=n.ax+w.qx; n.y=n.ay; continue; }
+    const vx=(n.x-n.px)*(1-gd), vy=(n.y-n.py)*(1-gd);
+    n.px=n.x; n.py=n.y; n.x+=vx+n.fx/n.m*h2; n.y+=vy+n.fy/n.m*h2;
+    if(n.pin===2){ n.y=n.ay; n.py=n.ay; }
+    collideNode(w,n);
+  }
+  for(const bl of w.balls) stepBall(w,bl);
+  w.t+=h;
+}
+function collideNode(w,n){
+  for(const s of w.solids){
+    const x0=s[0]+w.qx,y0=s[1],x1=s[2]+w.qx,y1=s[3];
+    if(n.x>x0&&n.x<x1&&n.y>y0&&n.y<y1){
+      const l=n.x-x0,r=x1-n.x,t=n.y-y0,bt=y1-n.y,m=Math.min(l,r,t,bt);
+      if(m===t){ n.y=y0; n.py=n.y; n.px=n.x-(n.x-n.px)*.5; }
+      else if(m===l){ n.x=x0; n.px=n.x; } else if(m===r){ n.x=x1; n.px=n.x; } else { n.y=y1; n.py=n.y; }
+    }
+  }
+  if(w.ground){ const gy=groundAt(w,n.x-w.qx); if(n.y>gy){ n.y=gy; n.py=n.y; n.px=n.x-(n.x-n.px)*.5; } }
+  if(w.water && n.y>w.water.y && n.x>w.water.x0 && n.x<w.water.x1){
+    n.px=n.x-(n.x-n.px)*.985; n.py=n.y-(n.y-n.py)*.985;
+    if(!n.wet){ n.wet=true; for(let i=0;i<5;i++) w.parts.push({x:n.x,y:w.water.y,vx:(Math.random()-.5)*120,vy:-80-Math.random()*160,life:.8,len:3,ang:0,va:0,col:'#93BCD6',drop:1}); }
+  }
+}
+function stepBall(w,bl){
+  const vx=(bl.x-bl.px)*.9995, vy=(bl.y-bl.py)*.9995; bl.px=bl.x; bl.py=bl.y; bl.x+=vx; bl.y+=vy+G*H*H;
+  for(const b of w.beams){
+    if(b.broken||b.hidden) continue;
+    const a=b.a,c=b.b, dx=c.x-a.x,dy=c.y-a.y, l2=dx*dx+dy*dy||1e-6;
+    let t=((bl.x-a.x)*dx+(bl.y-a.y)*dy)/l2; t=t<0?0:t>1?1:t;
+    const qx=a.x+dx*t, qy=a.y+dy*t, ox=bl.x-qx, oy=bl.y-qy, d=Math.hypot(ox,oy), rr=bl.r+2;
+    if(d<rr && d>1e-6){
+      const nx=ox/d, ny=oy/d, pen=rr-d;
+      const ia=a.pin?0:1/a.m, ic=c.pin?0:1/c.m, wa=1-t, wc=t;
+      const iseg=wa*wa*ia+wc*wc*ic, ib=1/bl.m, lam=pen/(ib+iseg);
+      bl.x+=nx*lam*ib; bl.y+=ny*lam*ib;
+      if(ia){ a.x-=nx*lam*wa*ia; a.y-=ny*lam*wa*ia; }
+      if(ic){ c.x-=nx*lam*wc*ic; c.y-=ny*lam*wc*ic; }
+    }
+  }
+  const fake={x:bl.x,y:bl.y+bl.r,px:bl.px,py:bl.py+bl.r};
+  collideNode(w,fake); bl.x=fake.x; bl.y=fake.y-bl.r; bl.px=fake.px; bl.py=fake.py-bl.r;
+}
+function settle(w,sec=1.6){
+  w.breakOn=false; const steps=Math.round(sec/H); const oldD=w.damp; w.damp=.03;
+  for(let i=0;i<steps;i++){ w.gScale=Math.min(1,i/(steps*.5)); step(w); }
+  w.damp=oldD; w.gScale=1; w.t=0;
+  for(const n of w.nodes){ n.rx=n.x; n.ry=n.y; n.px=n.x; n.py=n.y; }
+  for(const j of w.joints){ j.prev=angOf(j); }
+}
+
+// ================= terrain helpers =================
+function gorge(w){ w.solids.push([-2000,400,250,3000],[750,400,3000,3000],[-2000,560,3000,3000]); w.water={x0:250,x1:750,y:505}; w.terrain='gorge'; }
+function flat(w,y=480){ w.ground=[[-2000,y],[3000,y]]; w.terrain='flat'; }
+
+// ================= stages =================
+const STAGES = [
+{ key:'truss', name:'トラス橋', sub:'真ん中にトラックが止まると？', load:'重さ', view:[150,230,850,560], symX:500,
+  kws:['トラス','引張','圧縮','座屈'],
+  intro:'三角形を組み合わせた「トラス橋」です。真ん中にどんどん重いトラックが載っていきます。最初に壊れる部材はどれでしょう。',
+  build(w){ gorge(w); const x0=250,p=50,n=10,y=400,h=70,bot=[],top=[];
+    for(let i=0;i<=n;i++) bot[i]=N(w,x0+p*i,y,{m:2,pin:i===0?1:i===n?2:0});
+    for(let i=1;i<n;i++) top[i]=N(w,x0+p*i,y-h);
+    for(let i=0;i<n;i++) B(w,bot[i],bot[i+1],'steel',1.4,'下弦材（下側の横の部材）');
+    for(let i=1;i<n-1;i++) B(w,top[i],top[i+1],'steel',2,'上弦材（上側の横の部材）');
+    B(w,bot[0],top[1],'steel',2,'端柱（はしの斜めの部材）'); B(w,bot[n],top[n-1],'steel',2,'端柱（はしの斜めの部材）');
+    for(let i=1;i<n;i++) B(w,bot[i],top[i],'steel',1.2,'垂直材（たての部材）');
+    for(let i=1;i<n-1;i++){ if(i<n/2) B(w,top[i],bot[i+1],'steel',.9,'斜材（ななめの部材）'); else B(w,bot[i],top[i+1],'steel',.9,'斜材（ななめの部材）'); }
+    this.ln=[bot[5]]; },
+  apply(w,te){ const F=3200*te; this.ln[0].ey=F; return {label:`トラックの重さ ${(F/1000).toFixed(1)} t`, v:Math.min(1,te/12)}; },
+  lesson:'トラスは三角形を組み合わせた骨組みで、部材は「引っ張られる」か「押される」かのどちらかで力を伝えます。真ん中に重さがかかると橋全体が下にたわもうとし、下側の下弦材は引っ張られ、上側の上弦材は押されます。この力は真ん中ほど大きくなります。実際の橋の点検でも、力が集中する部材やさびやすい支点まわりを重点的に調べます。'
+},
+{ key:'arch', name:'アーチ橋', sub:'片側だけ重くすると？', load:'重さ', view:[150,300,850,580],
+  kws:['アーチ','偏載荷','曲げ'],
+  intro:'弓なりのアーチが道路を下から支える「上路式アーチ橋」です。左側だけに重い荷物を載せていきます。最初に壊れるのはどこでしょう。',
+  build(w){ gorge(w); const dt=[],db=[],ai=[],ae=[];
+    const yA=x=>540-90*(1-((x-500)/250)**2);
+    for(let i=0;i<=10;i++){ const x=250+50*i, end=i===0||i===10;
+      dt[i]=N(w,x,400,{m:2.5,pin:end?1:0}); db[i]=N(w,x,414,{m:1,pin:end?1:0});
+      ai[i]=N(w,x,yA(x),{pin:end?1:0}); ae[i]=N(w,x,yA(x)-16,{pin:end?1:0}); }
+    for(let i=0;i<10;i++){ B(w,dt[i],dt[i+1],'steel',1,'桁（道路の部分）'); B(w,db[i],db[i+1],'steel',1,'桁（道路の部分）'); B(w,i%2?dt[i]:db[i], i%2?db[i+1]:dt[i+1],'steel',.6,'桁（道路の部分）');
+      B(w,ai[i],ai[i+1],'steel',1.6,'アーチリブ（弓なりの部材）'); B(w,ae[i],ae[i+1],'steel',1.6,'アーチリブ（弓なりの部材）'); B(w,i%2?ai[i]:ae[i], i%2?ae[i+1]:ai[i+1],'steel',.8,'アーチリブ（弓なりの部材）'); }
+    for(let i=1;i<10;i++){ B(w,dt[i],db[i],'steel',.6,'桁（道路の部分）'); B(w,ai[i],ae[i],'steel',.8,'アーチリブ（弓なりの部材）'); B(w,ae[i],db[i],'steel',.8,'支柱（アーチと道路をつなぐ柱）'); }
+    this.ln=[dt[2],dt[3]]; },
+  apply(w,te){ const F=750*te; for(const n of this.ln) n.ey=F; return {label:`左側の荷物 ${(2*F/1000).toFixed(1)} t`, v:Math.min(1,te/10)}; },
+  lesson:'アーチは、上からの重さを「押す力」に変えて両岸へ流す形です。橋全体に均等に重さがかかると、アーチはほぼ押されるだけなのでとても強くなります。ところが片側だけに重さがかかるとアーチが曲げられ、重さのかかった側のアーチは押しつぶされるように曲げられ、押される力が強すぎると部材がぐにゃりと曲がる「座屈」が起きます。片寄った重さはアーチ橋の苦手な荷重です。'
+},
+{ key:'susp', name:'吊り橋', sub:'ハンガー1本に重さが集中すると？', load:'重さ', view:[30,150,970,560], symX:500,
+  kws:['吊り橋','主ケーブル','ハンガー','連鎖崩壊'],
+  intro:'主塔から垂れた主ケーブルが、細いハンガー（吊り材）で道路を吊っています。真ん中に重さが集中していきます。最初に壊れるのはどこでしょう。',
+  build(w){ gorge(w);
+    const tower=(cx)=>{ const L=[],R=[]; for(let k=0;k<5;k++){ const y=400-50*k; L[k]=N(w,cx-10,y,{pin:k===0?1:0}); R[k]=N(w,cx+10,y,{pin:k===0?1:0}); }
+      const top=N(w,cx,188); for(let k=0;k<4;k++){ B(w,L[k],L[k+1],'steel',2.2,'主塔'); B(w,R[k],R[k+1],'steel',2.2,'主塔'); B(w,L[k],R[k+1],'steel',1.6,'主塔'); B(w,R[k],L[k+1],'steel',1.6,'主塔'); B(w,L[k+1],R[k+1],'steel',1.6,'主塔'); }
+      B(w,L[4],top,'steel',2.2,'主塔'); B(w,R[4],top,'steel',2.2,'主塔'); return top; };
+    const tl=tower(240), tr=tower(760);
+    const side=(ax,top)=>{ const an=N(w,ax,400,{pin:1}); let prev=an; for(let k=1;k<3;k++){ const n=N(w,ax+(top.x-ax)*k/3,400+(top.y-400)*k/3,{m:.3}); B(w,prev,n,'cable',2.5,'主ケーブル'); prev=n; } B(w,prev,top,'cable',2.5,'主ケーブル'); };
+    side(70,tl); side(930,tr);
+    const c=[],gt=[],gb=[];
+    for(let k=0;k<=13;k++){ const x=240+40*k; c[k]= k===0?tl : k===13?tr : N(w,x,188+(340-188)*(1-((x-500)/260)**2),{m:.3});
+      gt[k]=N(w,x,392,{m:1.5,pin:k===0||k===13?1:0}); gb[k]=N(w,x,406,{m:.8,pin:k===0||k===13?1:0}); }
+    for(let k=0;k<13;k++){ B(w,c[k],c[k+1],'cable',2.5,'主ケーブル'); B(w,gt[k],gt[k+1],'steel',1.8,'補剛桁（道路の下のトラス）'); B(w,gb[k],gb[k+1],'steel',1.8,'補剛桁（道路の下のトラス）'); B(w,k<6.5?gt[k]:gb[k], k<6.5?gb[k+1]:gt[k+1],'steel',1.0,'補剛桁（道路の下のトラス）'); }
+    for(let k=1;k<13;k++){ B(w,gt[k],gb[k],'steel',1.0,'補剛桁（道路の下のトラス）'); { const hb=B(w,c[k],gt[k],'cable',.6,'ハンガー（吊り材）'); hb.capT=6000; hb.thin=.25; } }
+    this.ln=[gt[6],gt[7]]; },
+  apply(w,te){ const F=2600*te; for(const n of this.ln) n.ey=F; return {label:`真ん中の重さ ${(2*F/1000).toFixed(1)} t`, v:Math.min(1,te/12)}; },
+  lesson:'吊り橋では、道路の重さがハンガー（吊り材）から主ケーブル、主塔、そして両端のアンカー（固定部）へと流れます。重さが一か所に集中すると、すぐ上のハンガーが最初に限界をこえます。1本切れるとその分の重さが隣に移り、次々に切れていくことがあります。これを連鎖的な崩壊と呼びます。道路の下の補剛桁は、重さを広く分散させてこれを防ぐ役割を持っています。'
+},
+{ key:'rahmen', name:'ラーメン構造のビル', sub:'地震で揺らすと？', load:'揺れ', view:[300,220,700,500], symX:500, quake:true, nameMatch:true,
+  kws:['ラーメン構造','地震','曲げ','ヒンジ'],
+  intro:'柱と梁をがっちり固めてつないだ「ラーメン構造」の4階建てです。地震の揺れがだんだん強くなります。最初に曲げに耐えられなくなる柱はどれでしょう。',
+  build(w){ flat(w); buildFrame(w,{bays:3,stories:4,walls:[]}); },
+  apply(w,te){ return quakeApply(w,te,this.f||1.45,.5); },
+  lesson:'ラーメン構造は、柱と梁のつなぎ目を固めて四角い枠で支える骨組みです（ラーメンはドイツ語で「枠」の意味）。地震で横に揺れると、つなぎ目が曲げられます。いちばん大きな力がかかるのは、上の階すべての重さと揺れを受け止める1階の柱です。曲げに耐えきれなくなった所は「ヒンジ（ちょうつがい）」のように曲がり始めます。'
+},
+{ key:'piloti', name:'ピロティの建物', sub:'1階だけ壁がないと？', load:'揺れ', view:[300,220,700,500], symX:500, quake:true, nameMatch:true,
+  kws:['ピロティ','耐震壁','層崩壊','阪神・淡路大震災'],
+  intro:'2階から上は筋交い（壁）でがっちり固め、1階は駐車場にするため柱だけにした建物です。地震の揺れがだんだん強くなります。最初に壊れるのはどの階でしょう。',
+  build(w){ flat(w); buildFrame(w,{bays:3,stories:4,walls:[2,3,4]}); },
+  apply(w,te){ return quakeApply(w,te,this.f||1.3,.5); },
+  lesson:'1階を駐車場や店にするため壁を少なくした形式を「ピロティ」と呼びます。2階から上は壁で固いのに1階だけ柔らかいと、地震による変形が1階に集中します。1995年の阪神・淡路大震災では、こうした建物の1階がつぶれる被害が多く見られました。今は1階の柱を太くしたり、壁の配置のバランスを確かめたりして対策します。'
+},
+{ key:'viaduct', name:'高架橋', sub:'長い橋脚と短い橋脚、先に壊れるのは？', load:'揺れ', view:[200,200,800,580], quake:true,
+  kws:['橋脚','短柱','せん断','地震'],
+  intro:'坂の上を通る高架橋で、橋脚（橋を支える柱）の高さがばらばらです。地震の揺れがだんだん強くなります。最初に壊れる橋脚はどれでしょう。',
+  build(w){ w.ground=[[-2000,560],[250,550],[300,520],[433,480],[567,420],[700,360],[760,350],[3000,350]]; w.terrain='slope';
+    const xs=[300,433,567,700], hs=['高さ22m','高さ18m','高さ12m','高さ6m']; const tops=[];
+    const kr=1.6e5, thy=.03;
+    const dk=[]; const dxs=[300,433,567,700];
+    for(const x of dxs) dk.push(N(w,x,300,{m:4}));
+    for(let i=0;i<dk.length-1;i++) B(w,dk[i],dk[i+1],'rc',2.2,'桁（道路の部分）');
+    xs.forEach((x,i)=>{ const top=dk[dxs.indexOf(x)]; const base=N(w,x,groundAt(w,x),{pin:1}); const col=B(w,base,top,'rc',1.4,`橋脚（${hs[i]}）`); fixBase(w,base,col,kr,thy); });
+    for(const n of dk) rigidNode(w,n,kr,thy);
+  },
+  apply(w,te){ return quakeApply(w,te,this.f||2.0,.5); },
+  lesson:'地震で橋桁が横に揺れると、どの橋脚の頭も同じだけ動かされます。同じ量だけ動かされると、短い橋脚ほど急な角度で曲げられて大きな力を受けます。長い橋脚はしなって力を逃がせますが、短い橋脚は逃げ場がありません。これを「短柱」の問題と呼び、実際の地震でも短い柱がせん断（ずれるような力）で壊れる被害が起きています。細く長い柱より、太く短い柱のほうが危ないこともあるのです。'
+},
+{ key:'dam', name:'重力式ダム', sub:'水位がどんどん上がると？', load:'水位', view:[200,180,800,520], nameMatch:true,
+  kws:['重力式ダム','水圧','コンクリート','引張に弱い'],
+  intro:'コンクリートの重さで水を受け止める「重力式ダム」です。大雨で水位がどんどん上がっていきます。最初にひびが入るのはどこでしょう。',
+  build(w){ flat(w); const rows=[]; const yTop=240, yB=480, dy=30;
+    for(let j=0;j<=8;j++){ const y=yB-dy*j; const xr=450+170*(y-yTop)/(yB-yTop); const n=Math.max(2,Math.round((xr-420)/28)+1); const r=[];
+      for(let i=0;i<n;i++) r.push(N(w,420+(xr-420)*i/(n-1),y,{m:3,pin:j===0?1:0})); rows.push(r); }
+    const nm=(y)=> y>=420?'ダムの根元':y>=330?'ダムの中ほど':'ダムの上のほう';
+    for(let j=0;j<=8;j++){ const r=rows[j]; for(let i=0;i<r.length-1;i++) if(j>0) B(w,r[i],r[i+1],'conc',3,nm(r[i].y)); }
+    for(let j=0;j<8;j++){ const A=rows[j],C=rows[j+1]; let i=0,k=0; B(w,A[0],C[0],'conc',3,nm(A[0].y-15));
+      while(i<A.length-1||k<C.length-1){ let adv; if(i>=A.length-1) adv='c'; else if(k>=C.length-1) adv='a'; else { const da=Math.hypot(A[i+1].x-C[k].x,A[i+1].y-C[k].y), dc=Math.hypot(C[k+1].x-A[i].x,C[k+1].y-A[i].y); adv=da<dc?'a':'c'; }
+        if(adv==='a'){ i++; } else { k++; } B(w,A[i],C[k],'conc',3,nm((A[i].y+C[k].y)/2)); } }
+    this.face=rows.map(r=>r[0]); this.lvl0=430; },
+  apply(w,te){ const lvl=this.lvl0-14*te; this.level=lvl; const gam=4.2;
+    for(const n of this.face){ const d=n.ry-lvl; const att=w.beams.some(b=>!b.broken&&(b.a===n||b.b===n)); n.ex = d>0&&att&&n.x<445? gam*d*30 : 0; }
+    const pct=Math.round((480-lvl)/(480-240)*100);
+    return {label:`水位 ${pct}%（満水=100%）`, v:Math.min(1,(480-lvl)/300)}; },
+  lesson:'重力式コンクリートダムは、自分の重さで水圧に耐えるダムです。水圧は深いほど大きく、ダムを下流側へ押し倒そうとします。このとき、上流側（水のある側）の根元は持ち上げられるように引っ張られます。コンクリートは押す力にはとても強いのに、引っ張りにはその10分の1ほどしか耐えられません。だからダムは、上流側に引っ張りが生まれないように重さと形を決めています。'
+},
+{ key:'tunnel', name:'トンネル', sub:'上からの土の重さが増えると？', load:'土圧', view:[300,150,700,520], symX:500, nameMatch:true,
+  kws:['トンネル','土かぶり圧','覆工','ひび割れ'],
+  intro:'地中を通るトンネルの断面です。コンクリートの壁（覆工）を周りの地盤が支えています。上からの土の重さがだんだん増えます。最初にひびが入るのはどこでしょう。',
+  build(w){ w.terrain='under'; const cx=500,cy=340,ri=88,ro=104,N0=24,In=[],Out=[];
+    const nm=(a)=>{ const s=-Math.sin(a); return s>.7?'天井（天端）': s<-.7?'底（インバート）': s>.2?'肩（ななめ上）': s<-.2?'足元（ななめ下）':'横の壁（側壁）'; };
+    for(let k=0;k<N0;k++){ const a=k/N0*Math.PI*2; In[k]=N(w,cx+ri*Math.cos(a),cy+ri*Math.sin(a),{m:1.5}); Out[k]=N(w,cx+ro*Math.cos(a),cy+ro*Math.sin(a),{m:1.5}); In[k].ang=a; Out[k].ang=a; }
+    for(let k=0;k<N0;k++){ const k2=(k+1)%N0, a=(k+.5)/N0*Math.PI*2;
+      B(w,In[k],In[k2],'conc',2.4,nm(a)); B(w,Out[k],Out[k2],'conc',2.4,nm(a)); B(w,In[k],Out[k],'conc',2.4,nm(k/N0*Math.PI*2)); B(w,k%2?In[k]:Out[k], k%2?Out[k2]:In[k2],'conc',2.4,nm(a));
+      const an=N(w,cx+150*Math.cos(k/N0*Math.PI*2),cy+150*Math.sin(k/N0*Math.PI*2),{pin:1,ghost:true}); B(w,Out[k],an,'soil',1,'地盤'); }
+    this.out=Out; this.cx=cx; this.cy=cy; this.ro=ro; },
+  apply(w,te){ const p=34*te; const seg=2*Math.PI*this.ro/this.out.length;
+    for(const n of this.out){ const a=n.ang, s=Math.sin(a), c=Math.cos(a);
+      n.ey = s<0 ? p*Math.abs(s)*seg : -0.15*p*Math.abs(s)*seg*0;   // vertical earth pressure on the upper half
+      n.ex = -Math.sign(c)*0.35*p*Math.abs(c)*seg; }
+    return {label:`土かぶり圧 ${(p/10).toFixed(0)} kN/m²相当`, v:Math.min(1,te/14)}; },
+  lesson:'トンネルは、周りの地盤と一緒に支え合う構造です。上からの土の重さ（土かぶり圧）が横からの圧力より大きいと、トンネルは上下につぶれて横に広がろうとします。すると天井（天端）が下向きに曲げられ、引っ張られた内側のコンクリートにひびが入ります。続いて肩（ななめ上）や横の壁にもひびが広がっていきます。トンネルの点検では、たたいた音や目で見て、このひび割れやコンクリートのはがれを調べています。'
+},
+];
+
+function buildFrame(w,{bays,stories,walls}){
+  const bw=60, sh=50, x0=500-bw*bays/2, y0=480; const f=[];
+  const kr=1.4e5, thy=.035;
+  for(let j=0;j<=stories;j++){ f[j]=[]; for(let i=0;i<=bays;i++) f[j][i]=N(w,x0+bw*i+(j?0.15*j:0),y0-sh*j,{m:j?3:1,pin:j===0?1:0}); }
+  const cols=[];
+  for(let j=0;j<stories;j++) for(let i=0;i<=bays;i++){ const c=B(w,f[j][i],f[j+1][i],'rc',1,`${j+1}階の柱`); if(j===0) cols.push(c); }
+  for(let j=1;j<=stories;j++) for(let i=0;i<bays;i++) B(w,f[j][i],f[j][i+1],'rc',1.4, j===stories?'屋上の梁':`${j+1}階の床の梁`);
+  for(const st of walls) for(let i=0;i<bays;i++){ B(w,f[st-1][i],f[st][i+1],'rc',.9,`${st}階の壁（筋交い）`); B(w,f[st-1][i+1],f[st][i],'rc',.9,`${st}階の壁（筋交い）`); }
+  for(let j=1;j<=stories;j++) for(let i=0;i<=bays;i++) rigidNode(w,f[j][i],kr,thy);
+  cols.forEach(c=>fixBase(w,c.a,c,kr,thy));
+}
+function quakeApply(w,te,f,amp){ const A=Math.min(60, amp*te); w.qx=A*Math.sin(2*Math.PI*f*te); w.quakeA=A; return {label:`揺れの強さ レベル ${Math.min(10,Math.max(1,Math.ceil(A)))}`, v:Math.min(1,A/10)}; }
+
+// ================= sound =================
+let AC=null, soundOn=true;
+function sfx(type){
+  if(!soundOn||!AC) return; try{
+    const t=AC.currentTime, len=type==='hinge'?.12:.22, buf=AC.createBuffer(1,AC.sampleRate*len,AC.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+    const src=AC.createBufferSource(); src.buffer=buf; const fl=AC.createBiquadFilter(); fl.type='bandpass'; fl.frequency.value= type==='tension'?2400: type==='crack'?3200: type==='hinge'?500:900; fl.Q.value=1.2;
+    const g=AC.createGain(); g.gain.setValueAtTime(.5,t); g.gain.exponentialRampToValueAtTime(.001,t+len);
+    src.connect(fl).connect(g).connect(AC.destination); src.start(t);
+  }catch(e){}
+}
+function initAudio(){ if(AC) return; try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+
+// ================= game state =================
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let W=null, stage=null, mode='home', pick=null, hover=null, texp=0, firstEv=null, timeScale=1, slowT=0, afterT=0, tool='cut', hint=false, verdict=null;
+let view={s:1,ox:0,oy:0};
+let best={}; try{ best=JSON.parse(localStorage.getItem('bk-best')||'{}'); }catch(e){ best={}; }
+function saveBest(){ try{ localStorage.setItem('bk-best',JSON.stringify(best)); }catch(e){} }
+
+function loadStage(i,keepMode){
+  stage=STAGES[i]; stage.idx=i; W=newWorld(); stage.build(W); finalize(W); settle(W);
+  W.breakOn=true; pick=null; hover=null; texp=0; firstEv=null; timeScale=1; afterT=0; verdict=null; hint=false;
+  $('home').hidden=true; $('stageName').textContent=`${i+1}. ${stage.name}`;
+  setMode('predict'); resize();
+}
+function setMode(m){ mode=m; render(); }
+function updScore(){ const n=Object.values(best).filter(v=>v==='ok').length; $('score').textContent=`正解 ${n} / ${STAGES.length}`; }
+
+function render(){
+  updScore(); requestAnimationFrame(resize);
+  const P=$('panel'); $('legend').hidden=!(mode==='run'||mode==='result'||mode==='free'||hint); $('gauge').hidden=!(mode==='run'||mode==='result');
+  if(mode==='predict'){
+    P.innerHTML=`<h2>${stage.sub}</h2><p>${stage.intro}</p>
+      <div class="row"><button class="b main" id="go" ${pick?'':'disabled'}>実験スタート</button>
+      <button class="b ${hint?'on':''}" id="hintB">ヒント：力の流れを見る</button>
+      <span style="font-size:13px;font-weight:700">${pick?'予想：'+pick.name:'壊れると思う部材をタップ'}</span></div>`;
+    $('go').onclick=()=>{ initAudio(); startRun(); };
+    $('hintB').onclick=()=>{ hint=!hint; render(); };
+  } else if(mode==='run'){
+    P.innerHTML=`<h2>実験中…</h2><p>赤は引っ張られている部材、青は押されている部材です。色が濃く太いほど限界に近づいています。</p>
+      <div class="row"><button class="b" id="slowB">${timeScale<1?'通常の速さ':'スローにする'}</button></div>`;
+    $('slowB').onclick=()=>{ timeScale = timeScale<1?1:.3; render(); };
+  } else if(mode==='result'){
+    const ev=firstEv; const tl={tension:'引っ張られてちぎれた（引張破断）',buckle:'押されてぐにゃりと曲がった（座屈）',crush:'押しつぶされた（圧壊）',crack:'引っ張られてひびが入った（コンクリートは引っ張りに弱い）',hinge:'曲げに耐えきれず折れ曲がった（ヒンジができた）',cut:'切られた'};
+    const vt = verdict==='ok'?'<div class="verdict ok">大正解！</div>': verdict==='near'?'<div class="verdict near">おしい！ 近い場所です</div>':'<div class="verdict ng">はずれ</div>';
+    P.innerHTML=`${vt}
+      <dl class="facts"><dt>あなたの予想</dt><dd>${pick?pick.name:'—'}</dd><dt>最初に壊れた</dt><dd>${ev?ev.beam.name:'壊れなかった'}</dd><dt>壊れ方</dt><dd>${ev?tl[ev.type]:'—'}</dd></dl>
+      <p class="lesson">${stage.lesson}</p>
+      <div>${stage.kws.map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+      <div class="row" style="margin-top:6px"><button class="b main" id="nextB">${stage.idx<STAGES.length-1?'次のステージへ':'ステージ一覧へ'}</button>
+      <button class="b" id="freeB">自由に壊す</button><button class="b" id="againB">もう一度予想する</button></div>`;
+    $('nextB').onclick=()=>{ if(stage.idx<STAGES.length-1) loadStage(stage.idx+1); else goHome(); };
+    $('freeB').onclick=()=>{ const i=stage.idx; loadStage(i); setMode('free'); };
+    $('againB').onclick=()=>loadStage(stage.idx);
+  } else if(mode==='free'){
+    P.innerHTML=`<h2>自由に壊す</h2><p>道具を選んで、好きなように壊してみましょう。部材の色で力の流れが変わる様子が見えます。</p>
+      <div class="row">${[['cut','部材を切る'],['ball','鉄球を落とす']].map(([k,l])=>`<button class="b ${tool===k?'on':''}" data-t="${k}">${l}</button>`).join('')}
+      <button class="b" id="qB">地震を起こす</button><button class="b" id="lB">${W.freeLoad?'荷重を止める':'荷重をかける'}</button><button class="b" id="rB">元に戻す</button></div>`;
+    P.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{ tool=b.dataset.t; render(); });
+    $('qB').onclick=()=>{ initAudio(); W.quakeT=4; };
+    $('lB').onclick=()=>{ initAudio(); W.freeLoad=!W.freeLoad; if(W.freeLoad) W.freeT=0; else clearLoads(); render(); };
+    $('rB').onclick=()=>{ const i=stage.idx; loadStage(i); setMode('free'); };
+  }
+}
+function clearLoads(){ for(const n of W.nodes){ n.ex=0; n.ey=0; } W.qx=0; }
+function startRun(){ texp=0; W.events=[]; firstEv=null; afterT=0; hint=false; setMode('run'); }
+function goHome(){ mode='home'; $('home').hidden=false; $('stageName').textContent=''; $('panel').innerHTML=''; $('gauge').hidden=true; $('legend').hidden=true; drawThumbs(); updScore(); }
+
+function judge(){
+  const ev=firstEv; if(!ev||!pick){ verdict='ng'; return; }
+  const b=ev.beam; const mid=x=>({x:(x.a.rx+x.b.rx)/2,y:(x.a.ry+x.b.ry)/2});
+  const pm=mid(pick), em=mid(b);
+  let ok = pick===b || (stage.nameMatch && pick.name===b.name);
+  if(!ok && stage.symX!=null){ const mx=2*stage.symX-pm.x; if(Math.hypot(mx-em.x,pm.y-em.y)<3 && pick.name===b.name) ok=true; }
+  // events in the same instant count too
+  if(!ok) for(const e of W.events){ if(e.t-ev.t>0.02) break; if(e.beam===pick) ok=true; }
+  let near=false;
+  if(!ok){ const d1=Math.hypot(pm.x-em.x,pm.y-em.y); const d2=stage.symX!=null?Math.hypot(2*stage.symX-pm.x-em.x,pm.y-em.y):1e9; near = Math.min(d1,d2)<60 || pick.name===b.name; }
+  verdict = ok?'ok': near?'near':'ng';
+  const prev=best[stage.key]; const rank={ok:3,near:2,ng:1};
+  if(!prev||rank[verdict]>rank[prev]) { best[stage.key]=verdict; saveBest(); }
+}
+
+// ================= loop =================
+let last=performance.now(), acc=0;
+function frame(now){
+  let dt=Math.min(1/30,(now-last)/1000); last=now;
+  if(W && mode!=='home'){
+    let ts=timeScale; if(slowT>0){ ts=Math.min(ts,.25); slowT-=dt; }
+    acc+=dt*ts; let steps=0;
+    while(acc>=H && steps<40){
+      if(mode==='run'||mode==='result'){
+        if(!firstEv || texp<firstEv.te+1.5) texp+=H; const info=stage.apply(W,texp); W.info=info;
+      }
+      if(mode==='free'){
+        if(W.quakeT>0){ W.quakeT-=H; const t=4-W.quakeT; W.qx=18*Math.sin(2*Math.PI*1.6*t)*Math.min(1,W.quakeT,t); } else if(!W.freeLoad) W.qx=0;
+        if(W.freeLoad){ W.freeT+=H; W.info=stage.apply(W,W.freeT); }
+      }
+      step(W); steps++; acc-=H;
+      if(mode==='run' && !firstEv && W.events.length){ firstEv=W.events[0]; firstEv.te=texp; slowT=1.4; }
+    }
+    if(acc>H*40) acc=0;
+    if(mode==='run'){
+      if(firstEv){ afterT+=dt; if(afterT>2.6){ judge(); setMode('result'); } }
+      else if(texp>40){ judge(); setMode('result'); }
+    }
+    for(const p of W.parts){ p.vy+=600*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.ang+=p.va*dt; p.life-=dt; }
+    W.parts=W.parts.filter(p=>p.life>0); W.balls=W.balls.filter(b=>b.y<1500);
+    W.shake*=Math.pow(.02,dt);
+    draw();
+    if((mode==='run'||mode==='result') && W.info){ const g=$('gauge'); g.innerHTML=`${W.info.label}<div class="bar"><i style="width:${(W.info.v*100).toFixed(0)}%"></i></div>`; }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ================= drawing =================
+const C={paper:'#F4F3EF',ink:'#1C3A7E',navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',earth:'#D8CFBE',earth2:'#C2B59C',neutral:'#8A90A0'};
+function resize(){
+  const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr);
+  if(stage){ const [x0,y0,x1,y1]=stage.view; const pad=r.width<520?8:20; const s=Math.min((r.width-pad*2)/(x1-x0),(r.height-pad*2-(r.width<520?40:30))/(y1-y0));
+    view={s:s*dpr, ox:(r.width/2-(x0+x1)/2*s)*dpr, oy:((r.height+ (r.width<520?20:10))/2-(y0+y1)/2*s)*dpr, dpr}; }
+  if(mode!=='home'&&W) draw();
+}
+window.addEventListener('resize',resize);
+function lerpC(a,b,t){ const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16); const r=(pa>>16)+(((pb>>16)-(pa>>16))*t)|0, g=((pa>>8&255)+(((pb>>8&255)-(pa>>8&255))*t))|0, bl=((pa&255)+(((pb&255)-(pa&255))*t))|0; return `rgb(${r},${g},${bl})`; }
+function draw(){
+  const w=W, c=ctx; c.setTransform(1,0,0,1,0,0); c.fillStyle=C.paper; c.fillRect(0,0,cv.width,cv.height);
+  const sh=w.shake*6*view.dpr; c.setTransform(view.s,0,0,view.s,view.ox+(Math.random()-.5)*sh,view.oy+(Math.random()-.5)*sh);
+  drawScene(c,w,stage,view.s,true);
+}
+function drawScene(c,w,st,scale,live){
+  const px=1/scale*(view.dpr||1);
+  // terrain
+  c.save(); c.translate(w.qx,0);
+  if(w.terrain==='under'){ c.fillStyle=C.earth; c.fillRect(-1000,150,3000,1500); c.fillStyle=C.mid; c.fillRect(-1000,-1000,3000,1150); c.fillStyle=C.navy; c.fillRect(-1000,148,3000,4);
+    hatch(c,-1000,152,3000,1400); c.fillStyle=C.paper; c.beginPath(); c.arc(st.cx||500,st.cy||340,86,0,7); c.fill(); }
+  else { if(w.water){ c.fillStyle=C.mid; c.globalAlpha=.75; c.fillRect(w.water.x0-w.qx,w.water.y,w.water.x1-w.water.x0,600); c.globalAlpha=1; }
+    for(const s of w.solids){ c.fillStyle=C.earth; c.fillRect(s[0],s[1],s[2]-s[0],s[3]-s[1]); }
+    for(const s of w.solids){ c.fillStyle=C.navy; c.fillRect(s[0],s[1]-1.5,s[2]-s[0],3); }
+    if(w.ground){ c.fillStyle=C.earth; c.beginPath(); c.moveTo(w.ground[0][0],2000); for(const p of w.ground) c.lineTo(p[0],p[1]); c.lineTo(w.ground[w.ground.length-1][0],2000); c.fill();
+      c.strokeStyle=C.navy; c.lineWidth=3; c.beginPath(); w.ground.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1])); c.stroke(); }
+  }
+  c.restore();
+  // dam water
+  if(st.key==='dam'){ const lvl=st.level??st.lvl0; c.fillStyle=C.mid; c.globalAlpha=.8; c.fillRect(-1000,lvl,1420,480-lvl); c.globalAlpha=1; c.strokeStyle=C.blue; c.lineWidth=2*px; c.beginPath(); c.moveTo(-1000,lvl); c.lineTo(420,lvl); c.stroke();
+    if(lvl<240){ c.fillStyle=C.mid; c.globalAlpha=.6; c.beginPath(); c.moveTo(420,lvl); c.lineTo(455,lvl+4); c.lineTo(620,480); c.lineTo(600,480); c.lineTo(440,244); c.fill(); c.globalAlpha=1; } }
+  const showF = mode==='run'||mode==='result'||mode==='free'||hint;
+  // beams
+  c.lineCap='round';
+  for(const b of w.beams){
+    if(b.broken||b.hidden) continue;
+    let col=C.navy, lw=(1.4+1.3*Math.sqrt(b.thin||b.s))*px*(scale>1.2?1:1.15);
+    if(st.key==='dam'||st.key==='tunnel') lw*=.8;
+    if(showF){ const r=Math.min(1,Math.abs(b.r)); const tens=b.F>0; const k=Math.pow(r,.7);
+      col = b.F===0? C.neutral : lerpC('#9AA0AE', tens?C.red:C.blue, k); lw*= (1+1.2*k); }
+    if(b===hover && mode!=='run'){ lw*=1.8; }
+    c.strokeStyle=col; c.lineWidth=lw; c.beginPath(); c.moveTo(b.a.x,b.a.y); c.lineTo(b.b.x,b.b.y); c.stroke();
+    if(b.cracked){ const mx=(b.a.x+b.b.x)/2,my=(b.a.y+b.b.y)/2,dx=b.b.x-b.a.x,dy=b.b.y-b.a.y,L=Math.hypot(dx,dy)||1,nx=-dy/L*7*px,ny=dx/L*7*px,tx=dx/L*2.5*px,ty=dy/L*2.5*px; c.strokeStyle=C.red; c.lineWidth=2*px; c.beginPath(); c.moveTo(mx-nx-tx,my-ny-ty); c.lineTo(mx-nx*.3+tx,my-ny*.3+ty); c.lineTo(mx+nx*.3-tx,my+ny*.3-ty); c.lineTo(mx+nx+tx,my+ny+ty); c.stroke(); }
+  }
+  // tunnel soil springs hint
+  // predicted member
+  if(pick && live && !pick.broken){ c.strokeStyle=C.red; c.globalAlpha=.35; c.lineWidth=12*px; c.beginPath(); c.moveTo(pick.a.x,pick.a.y); c.lineTo(pick.b.x,pick.b.y); c.stroke(); c.globalAlpha=1;
+    const mx=(pick.a.x+pick.b.x)/2,my=(pick.a.y+pick.b.y)/2; tag(c,mx,my-14*px,'予想',C.red,px); }
+  if(pick && live && pick.broken){ const mx=(pick.a.rx+pick.b.rx)/2,my=(pick.a.ry+pick.b.ry)/2; tag(c,mx,my-14*px,'予想',C.red,px); }
+  // rubble: nodes whose members are all gone
+  if(live){ const deg=new Map(); for(const b of w.beams){ if(b.broken||b.hidden) continue; deg.set(b.a,1); deg.set(b.b,1); }
+    for(const n of w.nodes){ if(n.ghost||n.pin||deg.has(n)) continue; c.fillStyle=(st.key==='dam'||st.key==='tunnel')?'#9AA0AE':C.navy; const r=(st.key==='dam'?6:3)*px*1.4; c.fillRect(n.x-r,n.y-r,2*r,2*r); } }
+  // nodes
+  for(const n of w.nodes){ if(n.ghost) continue; if(n.pin){ c.fillStyle=C.navy; c.beginPath(); c.moveTo(n.x,n.y); c.lineTo(n.x-6*px,n.y+9*px); c.lineTo(n.x+6*px,n.y+9*px); c.closePath(); c.fill(); } }
+  // hinges
+  for(const j of w.joints){ if(!j.yielded) continue; const o=j.owner, far=o.a===j.c?o.b:o.a; const dx=far.x-j.c.x,dy=far.y-j.c.y,L=Math.hypot(dx,dy)||1; const hx=j.c.x+dx/L*7, hy=j.c.y+dy/L*7;
+    c.fillStyle=j.dead?C.red:C.paper; c.strokeStyle=C.red; c.lineWidth=2*px; c.beginPath(); c.arc(hx,hy,4.5*px*1.3,0,7); c.fill(); c.stroke(); }
+  // loads (arrows)
+  if(live && (mode==='run'||mode==='result'||(mode==='free'&&w.freeLoad)) && st.key!=='dam' && !st.quake){
+    let mx=0; for(const n of w.nodes) mx=Math.max(mx,Math.hypot(n.ex,n.ey));
+    if(mx>0) for(const n of w.nodes){ const m=Math.hypot(n.ex,n.ey); if(m<mx*.05) continue; const L=(st.key==='tunnel'?18:22+36*Math.min(1,m/2e4)); arrow(c,n.x-n.ex/m*L,n.y-n.ey/m*L,n.x,n.y,px,st.key==='tunnel'?C.ink:C.red); }
+  }
+  // first-break marker
+  if(live && firstEv && (mode==='run'||mode==='result')){ const pulse=1+.2*Math.sin(performance.now()/120);
+    c.strokeStyle=C.red; c.lineWidth=3*px; c.beginPath(); c.arc(firstEv.x,firstEv.y,16*px*pulse,0,7); c.stroke(); tag(c,firstEv.x,firstEv.y+30*px,'最初に壊れた',C.navy,px); }
+  // balls
+  for(const bl of w.balls){ c.fillStyle=C.navy; c.beginPath(); c.arc(bl.x,bl.y,bl.r,0,7); c.fill(); c.fillStyle=C.mid; c.beginPath(); c.arc(bl.x-bl.r*.35,bl.y-bl.r*.35,bl.r*.25,0,7); c.fill(); }
+  // particles
+  for(const p of w.parts){ c.strokeStyle=p.col; c.globalAlpha=Math.max(0,Math.min(1,p.life)); c.lineWidth=2*px; c.beginPath(); c.moveTo(p.x,p.y); c.lineTo(p.x+Math.cos(p.ang)*p.len,p.y+Math.sin(p.ang)*p.len); c.stroke(); } c.globalAlpha=1;
+}
+function hatch(c,x,y,w,h){ c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip(); c.strokeStyle=C.earth2; c.lineWidth=1.2; for(let i=x-h;i<x+w;i+=14){ c.beginPath(); c.moveTo(i,y); c.lineTo(i+h,y+h); c.stroke(); } c.restore(); }
+function arrow(c,x0,y0,x1,y1,px,col){ c.strokeStyle=col; c.fillStyle=col; c.lineWidth=3*px; c.beginPath(); c.moveTo(x0,y0); c.lineTo(x1,y1); c.stroke(); const a=Math.atan2(y1-y0,x1-x0); c.beginPath(); c.moveTo(x1,y1); c.lineTo(x1-9*px*Math.cos(a-.45),y1-9*px*Math.sin(a-.45)); c.lineTo(x1-9*px*Math.cos(a+.45),y1-9*px*Math.sin(a+.45)); c.fill(); }
+function tag(c,x,y,t,col,px){ c.font=`900 ${12*px}px "Zen Kaku Gothic New",sans-serif`; const w=c.measureText(t).width+10*px; c.fillStyle=col; c.fillRect(x-w/2,y-9*px,w,18*px); c.fillStyle='#fff'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(t,x,y+.5*px); }
+
+// ================= input =================
+function toWorld(e){ const r=cv.getBoundingClientRect(), d=view.dpr||1; return {x:((e.clientX-r.left)*d-view.ox)/view.s, y:((e.clientY-r.top)*d-view.oy)/view.s}; }
+function nearestBeam(p,tolPx){ let best=null,bd=1e9; const tol=tolPx*(view.dpr||1)/view.s;
+  for(const b of W.beams){ if(b.broken||b.hidden) continue; const a=b.a,c=b.b,dx=c.x-a.x,dy=c.y-a.y,l2=dx*dx+dy*dy||1; let t=((p.x-a.x)*dx+(p.y-a.y)*dy)/l2; t=Math.max(0,Math.min(1,t)); const d=Math.hypot(a.x+dx*t-p.x,a.y+dy*t-p.y); if(d<bd){bd=d;best=b;} }
+  return bd<tol?best:null; }
+cv.addEventListener('pointermove',e=>{ if(!W||mode==='home') return; const p=toWorld(e); hover=(mode==='predict'||(mode==='free'&&tool==='cut'))? nearestBeam(p,18):null;
+  const tip=$('tip'); if(hover&&mode==='predict'){ tip.hidden=false; tip.textContent=hover.name; } else tip.hidden=true; });
+cv.addEventListener('pointerleave',()=>{ hover=null; $('tip').hidden=true; });
+cv.addEventListener('pointerdown',e=>{
+  if(!W||mode==='home') return; initAudio(); const p=toWorld(e);
+  if(mode==='predict'){ const b=nearestBeam(p,26); if(b){ pick=b; const tip=$('tip'); tip.hidden=false; tip.textContent='予想：'+b.name; render(); } }
+  else if(mode==='free'){
+    if(tool==='cut'){ const b=nearestBeam(p,26); if(b) breakBeam(W,b,'cut'); }
+    else if(tool==='ball'){ W.balls.push({x:p.x,y:Math.min(p.y,stage.view[1]+10),px:p.x,py:Math.min(p.y,stage.view[1]+10),r:18,m:30}); }
+  }
+});
+$('logo').onclick=goHome;
+
+// ================= home =================
+function drawThumbs(){
+  const g=$('grid'); if(!g.children.length){
+    STAGES.forEach((s,i)=>{ const b=document.createElement('button'); b.className='card'; b.innerHTML=`<canvas></canvas><div class="ct"><span class="no">STAGE ${i+1}</span><span class="nm">${s.name}</span><span class="ds">${s.sub}</span><span class="rs"></span></div>`; b.onclick=()=>{ initAudio(); loadStage(i); }; g.appendChild(b); });
+  }
+  [...g.children].forEach((b,i)=>{ const s=STAGES[i]; const r=best[s.key]; b.querySelector('.rs').textContent= r==='ok'?'◎ 大正解':r==='near'?'○ おしい':r==='ng'?'× 挑戦済み':'';
+    const cvs=b.querySelector('canvas'); const rr=cvs.getBoundingClientRect(); const d=Math.min(2,window.devicePixelRatio||1); cvs.width=(rr.width||200)*d; cvs.height=(rr.height||96)*d;
+    const c=cvs.getContext('2d'); const w=newWorld(); s.build(w); finalize(w); const [x0,y0,x1,y1]=s.view; const sc=Math.min(cvs.width/(x1-x0),cvs.height/(y1-y0))*.95;
+    c.fillStyle=C.paper; c.fillRect(0,0,cvs.width,cvs.height); c.setTransform(sc,0,0,sc,cvs.width/2-(x0+x1)/2*sc,cvs.height/2-(y0+y1)/2*sc);
+    const sv=view; view={s:sc,dpr:1}; const sm=mode; mode='thumb'; drawScene(c,w,s,sc*1.3,false); mode=sm; view=sv; });
+}
+updScore();
+window.addEventListener('load',()=>{ drawThumbs(); });
+drawThumbs();
+requestAnimationFrame(frame);
+// test hook
+window.__bk={STAGES,newWorld,finalize,settle,step,H,st:()=>({W,view,mode})};
+</script>

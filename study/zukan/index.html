@@ -1,0 +1,688 @@
+<title>まちの構造図鑑</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap">
+<style>
+/* レイアウト: リソグラフ刷りの図鑑カード。上に称号バー、中央に図鑑グリッド、下に固定タブ。単色の紙面に統一（暗色テーマは持たない） */
+:root{
+  --paper:#F4F3EF; --paper2:#EAE8E1; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6; --white:#FFFFFF;
+  --f-display:"Dela Gothic One","Zen Kaku Gothic New","Hiragino Sans",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.65;-webkit-text-size-adjust:100%;
+  background-image:radial-gradient(rgba(50,134,190,.10) 1px,transparent 1.2px);background-size:7px 7px;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--navy)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ヘッダー */
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--navy);color:var(--paper)}
+header.top .wrap{padding-block:10px 12px;display:flex;align-items:center;gap:12px}
+.logo{font-family:var(--f-display);font-size:20px;letter-spacing:.02em;line-height:1.1;white-space:nowrap;
+  text-shadow:2px 2px 0 var(--red)}
+.lv{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:0}
+.lv-badge{font-family:var(--f-display);background:var(--paper);color:var(--navy);border-radius:999px;padding:2px 10px;font-size:13px;white-space:nowrap}
+.lv-text{min-width:0;text-align:right}
+.lv-title{font-weight:900;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xpbar{height:6px;width:120px;max-width:30vw;background:rgba(244,243,239,.25);border-radius:4px;overflow:hidden;margin-top:3px;margin-left:auto}
+.xpbar i{display:block;height:100%;background:var(--mid)}
+.syncnote{font-size:12px;background:var(--red);color:var(--paper);text-align:center;padding:4px 16px}
+
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+section.view{padding-block:18px 8px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.h-sec{font-family:var(--f-display);font-size:22px;color:var(--navy);line-height:1.2;position:relative;display:inline-block}
+.h-sec::after{content:"";position:absolute;left:3px;right:-6px;bottom:-2px;height:8px;background:var(--mid);opacity:.55;z-index:-1}
+.lead{margin:8px 0 0;max-width:38em}
+
+/* 進み具合 */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 6px}
+.stat{background:var(--white);border:2px solid var(--navy);border-radius:10px;padding:8px 10px;box-shadow:3px 3px 0 var(--blue)}
+.stat b{font-family:var(--f-display);font-size:24px;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.1;display:block}
+.stat span{font-size:12px;letter-spacing:.04em}
+
+/* 見分けナビ */
+.navi{margin:18px 0 4px;background:var(--paper2);border-radius:12px;padding:12px}
+.navi-q{font-weight:900;font-size:14px;margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--navy);background:var(--paper);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700}
+.chip[aria-pressed="true"]{background:var(--navy);color:var(--paper)}
+
+/* 図鑑 */
+.group{margin-top:22px}
+.group-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--navy);padding-bottom:4px}
+.group-h h3{font-family:var(--f-display);font-size:17px;color:var(--navy)}
+.group-h small{font-size:12px}
+.group-h .cnt{margin-left:auto;font-weight:900;font-variant-numeric:tabular-nums;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.card{position:relative;text-align:left;background:var(--white);border:2px solid var(--navy);border-radius:12px;padding:0;overflow:hidden;
+  box-shadow:4px 4px 0 var(--navy);transition:transform .12s,box-shadow .12s;display:flex;flex-direction:column}
+.card:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--navy)}
+.card .pic{aspect-ratio:12/7;max-width:100%;background:var(--paper);display:grid;place-items:center;overflow:hidden;border-bottom:2px solid var(--navy)}
+.card .pic svg{width:100%;height:100%}
+.card .pic img{width:100%;height:100%;object-fit:cover}
+.card.locked .pic svg{opacity:.35;filter:grayscale(1)}
+.card .meta{padding:6px 10px 8px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.card .no{font-size:11px;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+.card .nm{font-weight:900;font-size:15px;line-height:1.3}
+.card .rar{font-size:12px;color:var(--red);letter-spacing:.1em}
+.card .got{position:absolute;top:6px;right:6px;background:var(--red);color:var(--paper);font-family:var(--f-display);font-size:11px;
+  border-radius:6px;padding:1px 6px;transform:rotate(4deg)}
+.card.dim{opacity:.3}
+
+/* タブ */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);border-top:2px solid var(--navy);
+  padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .wrap{display:grid;grid-template-columns:1fr 1fr 1.2fr 1fr 1fr;align-items:end;gap:4px;padding-block:6px}
+.tab{background:none;border:0;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;font-weight:700;color:var(--ink)}
+.tab svg{width:24px;height:24px}
+.tab[aria-current="page"]{color:var(--red)}
+.tab.shoot{background:var(--red);color:var(--paper);border:2px solid var(--navy);border-radius:16px;margin-top:-22px;padding:8px 0 6px;box-shadow:3px 3px 0 var(--navy)}
+.tab.shoot svg{width:28px;height:28px}
+
+/* シート */
+.sheet-bg{position:fixed;inset:0;z-index:40;background:rgba(18,40,107,.45);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--paper);width:100%;max-width:760px;max-height:92%;overflow-y:auto;border-radius:18px 18px 0 0;border:2px solid var(--navy);border-bottom:0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}.card{transition:none}}
+.sheet-head{position:sticky;top:0;background:var(--paper);display:flex;align-items:center;gap:10px;padding:12px 0 8px;z-index:2}
+.sheet-head h2{font-family:var(--f-display);font-size:20px;color:var(--navy);line-height:1.2;min-width:0}
+.x{margin-left:auto;flex:none;width:36px;height:36px;border-radius:50%;border:2px solid var(--navy);background:var(--white);font-size:18px;line-height:1;font-weight:900}
+.big-pic{background:var(--white);border:2px solid var(--navy);border-radius:12px;overflow:hidden;aspect-ratio:12/7;max-width:100%}
+.big-pic svg{width:100%;height:100%;display:block}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.tag{font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;background:var(--mid);color:var(--navy)}
+.tag.r{background:var(--red);color:var(--paper)}
+.blk{margin-top:14px}
+.blk h4{margin:0 0 4px;font-size:13px;letter-spacing:.08em;color:var(--red);font-weight:900}
+.blk p,.blk ul{margin:0}
+.blk ul{padding-left:1.2em}
+.blk.insp{background:var(--white);border:2px dashed var(--blue);border-radius:10px;padding:10px 12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:2px solid var(--navy);border-radius:12px;padding:10px 16px;font-weight:900;
+  background:var(--white);box-shadow:3px 3px 0 var(--navy);text-decoration:none;color:var(--navy)}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--navy)}
+.btn.red{background:var(--red);color:var(--paper)}
+.btn.navy{background:var(--navy);color:var(--paper)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.btn-row .btn{flex:1 1 140px}
+.mine{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:6px}
+.mine button{padding:0;border:2px solid var(--navy);border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--paper2)}
+.mine img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* 記録フォーム */
+.step{margin-top:16px}
+.step-h{font-weight:900;font-size:14px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.step-h i{font-style:normal;font-family:var(--f-display);background:var(--navy);color:var(--paper);border-radius:50%;width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pick button{border:2px solid var(--navy);background:var(--white);border-radius:10px;padding:4px 4px 6px;font-size:12px;font-weight:700;line-height:1.25}
+.pick button svg{width:100%;height:auto;display:block}
+.pick button[aria-pressed="true"]{background:var(--navy);color:var(--paper)}
+.pick button[aria-pressed="true"] svg{background:var(--paper);border-radius:6px}
+.photo-box{border:2px dashed var(--navy);border-radius:12px;background:var(--white);min-height:150px;display:grid;place-items:center;overflow:hidden;text-align:center;padding:10px}
+.photo-box img{max-height:260px;width:auto;max-width:100%;border-radius:8px}
+.photo-btns{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.photo-btns label{flex:1 1 140px}
+.photo-btns input{position:absolute;width:1px;height:1px;opacity:0}
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--white);border:2px solid var(--paper2);border-radius:10px;margin-top:6px}
+.checks input{width:20px;height:20px;margin-top:2px;accent-color:var(--red);flex:none}
+.states{display:flex;flex-wrap:wrap;gap:8px}
+.field{display:block;margin-top:8px}
+.field span{font-size:12px;font-weight:700;display:block;margin-bottom:2px}
+.field input,.field textarea{width:100%;border:2px solid var(--navy);border-radius:10px;padding:8px 10px;background:var(--white)}
+.field textarea{min-height:64px;resize:vertical}
+.pts-preview{margin-top:14px;font-weight:900;color:var(--red);font-variant-numeric:tabular-nums}
+
+/* 足あと */
+.log{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.log-item{display:grid;grid-template-columns:96px 1fr;gap:12px;background:var(--white);border:2px solid var(--navy);border-radius:12px;padding:8px;text-align:left;box-shadow:3px 3px 0 var(--blue)}
+.log-item .th{aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper2)}
+.log-item .th img{width:100%;height:100%;object-fit:cover;display:block}
+.log-item .bd{min-width:0;display:flex;flex-direction:column;gap:2px}
+.log-item .t{font-weight:900}
+.log-item .s{font-size:12px}
+.log-item .p{font-family:var(--f-display);color:var(--red);font-size:14px;font-variant-numeric:tabular-nums}
+.empty{margin-top:18px;background:var(--white);border:2px dashed var(--navy);border-radius:12px;padding:18px;text-align:center}
+.st-pill{display:inline-block;font-size:11px;font-weight:900;border-radius:6px;padding:0 6px;background:var(--mid);color:var(--navy)}
+.st-pill.warn{background:var(--red);color:var(--paper)}
+
+/* 称号 */
+.rank{background:var(--navy);color:var(--paper);border-radius:14px;padding:16px;margin-top:14px;position:relative;overflow:hidden}
+.rank .now{font-family:var(--f-display);font-size:26px;line-height:1.2;text-shadow:2px 2px 0 var(--red)}
+.rank .next{font-size:13px;margin-top:6px}
+.ladder{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.ladder li{display:flex;gap:10px;font-variant-numeric:tabular-nums}
+.ladder li.done{opacity:.6}
+.ladder li.cur{font-weight:900;color:var(--mid)}
+.ladder b{width:58px;text-align:right;flex:none}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+.badge{background:var(--white);border:2px solid var(--navy);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:4px}
+.badge.off{border-style:dashed;opacity:.65}
+.badge .bn{font-weight:900;font-size:14px;display:flex;gap:6px;align-items:center}
+.badge .bn svg{width:22px;height:22px;flex:none}
+.badge .bd{font-size:12px}
+.badge .prog{height:5px;background:var(--paper2);border-radius:3px;overflow:hidden}
+.badge .prog i{display:block;height:100%;background:var(--red)}
+.rule{margin-top:18px;background:var(--paper2);border-radius:12px;padding:12px 14px;font-size:13px}
+.rule table{border-collapse:collapse;width:100%}
+.rule td{padding:2px 0;vertical-align:top}
+.rule td:last-child{text-align:right;font-weight:900;white-space:nowrap;font-variant-numeric:tabular-nums;padding-left:8px}
+
+/* トースト */
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--red);color:var(--paper);
+  border:2px solid var(--navy);border-radius:14px;padding:12px 18px;box-shadow:4px 4px 0 var(--navy);width:min(92vw,360px);font-size:14px}
+.toast b{font-family:var(--f-display);font-size:20px;display:block}
+.toast ul{margin:4px 0 0;padding-left:1.1em;font-size:13px}
+.photo-view{max-width:100%;border-radius:12px;border:2px solid var(--navy);display:block;margin:0 auto}
+.muted{font-size:12px;opacity:.8}
+a.inline{color:var(--blue);font-weight:700}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="logo">まちの構造図鑑</div>
+    <div class="lv">
+      <div class="lv-text"><div class="lv-title" id="lvTitle">まち歩き初心者</div><div class="xpbar"><i id="xpFill" style="width:0%"></i></div></div>
+      <div class="lv-badge" id="lvBadge">Lv.1</div>
+    </div>
+  </div>
+  <div class="syncnote" id="syncNote" hidden></div>
+</header>
+
+<main>
+  <div class="wrap">
+    <section class="view" id="v-zukan">
+      <h1 class="h-sec">構造形式を探して歩こう</h1>
+      <p class="lead">橋もビルも屋根も、力の流し方で「形式」に分けられます。街で見つけたら写真を撮って記録すると、図鑑が埋まってポイントがたまります。</p>
+      <div class="stats">
+        <div class="stat"><b id="stForms">0/20</b><span>見つけた形式</span></div>
+        <div class="stat"><b id="stFinds">0</b><span>記録した数</span></div>
+        <div class="stat"><b id="stXp">0</b><span>ポイント</span></div>
+      </div>
+      <div class="navi">
+        <div class="navi-q">見分けナビ：目の前の構造物はどう支えている？</div>
+        <div class="chips" id="naviChips"></div>
+      </div>
+      <div id="zukan"></div>
+    </section>
+
+    <section class="view" id="v-log" hidden>
+      <h1 class="h-sec">足あと</h1>
+      <p class="lead">これまでの記録です。点検メモを付けた記録には状態が出ます。</p>
+      <div class="log" id="logList"></div>
+    </section>
+
+    <section class="view" id="v-rank" hidden>
+      <h1 class="h-sec">称号</h1>
+      <div class="rank" id="rankBox"></div>
+      <h2 class="h-sec" style="font-size:18px;margin-top:24px">勲章</h2>
+      <div class="badges" id="badgeList"></div>
+      <div class="rule">
+        <b>ポイントのつき方</b>
+        <table>
+          <tr><td>記録する（★1 / ★2 / ★3 の形式）</td><td>10 / 20 / 40</td></tr>
+          <tr><td>その形式を初めて見つけた</td><td>+30</td></tr>
+          <tr><td>見分けポイントを確かめた（1つにつき）</td><td>+3</td></tr>
+          <tr><td>点検メモ（状態）を付けた</td><td>+5</td></tr>
+          <tr><td>勲章を取った</td><td>勲章ごと</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="view" id="v-learn" hidden>
+      <h1 class="h-sec">見方のコツ</h1>
+      <div class="blk"><h4>まず支え方を見る</h4><p>どこで地面や柱に載っているか、何本で支えているかを数えます。両端だけなら単純梁、途中にも支えがあれば連続梁、片側だけなら片持ち梁です。</p></div>
+      <div class="blk"><h4>次に部材の形を見る</h4><p>細い材が三角形を作っていればトラス、曲線で押していればアーチ、ケーブルで吊っていれば吊橋か斜張橋。柱と梁の角ががっしり一体ならラーメンです。</p></div>
+      <div class="blk"><h4>力の流れを想像する</h4><p>上から押された重さが、どの部材を通って地面に届くかをたどります。梁は曲がって運び、アーチは押して運び、ケーブルは引いて運びます。</p></div>
+      <div class="blk insp"><h4>点検の目で見る</h4><p>形式がわかると、傷みやすい場所もわかります。片持ち梁なら根元、トラスなら部材が集まる格点、ゲルバー橋なら継ぎ目です。記録のときに状態を選ぶと、まちの点検記録にもなります。危ない場所には近づかず、道路や線路の中には入らないでください。</p></div>
+      <div class="blk"><h4>力学ラボで動かしてみる</h4><p>梁やラーメンは<a class="inline" href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a>で荷重を動かせます。全体の入口は<a class="inline" href="../kozo/" target="_blank" rel="noopener">構造力学ラボ</a>、擁壁は<a class="inline" href="../jiban/" target="_blank" rel="noopener">地盤力学ラボ</a>です。</p></div>
+    </section>
+  </div>
+</main>
+
+<nav class="tabs" aria-label="画面">
+  <div class="wrap">
+    <button class="tab" data-v="zukan" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>図鑑</button>
+    <button class="tab" data-v="log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 20c-2 0-3-2-2.5-4S7 13 8 14s1 6-1 6zM16 11c-2 0-3-2-2.5-4S16 4 17 5s1 6-1 6z"/></svg>足あと</button>
+    <button class="tab shoot" id="shootBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="4"/></svg>記録する</button>
+    <button class="tab" data-v="rank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>称号</button>
+    <button class="tab" data-v="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5L20 20"/></svg>見方</button>
+  </div>
+</nav>
+
+<div id="sheetRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+// ================= 図（模式図） =================
+const C={N:'#12286B',B:'#3286BE',R:'#C62422',M:'#93BCD6',P:'#F4F3EF',G:'#B9AD95'};
+const L=(x1,y1,x2,y2,c=C.N,w=3)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`;
+const ground=(y,x1=4,x2=116)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${C.G}" stroke-width="2"/>`;
+const pin=(x,y)=>`<polygon points="${x},${y} ${x-6},${y+10} ${x+6},${y+10}" fill="${C.P}" stroke="${C.N}" stroke-width="2"/>`+L(x-9,y+11,x+9,y+11,C.N,2);
+const roller=(x,y)=>`<polygon points="${x},${y} ${x-6},${y+8} ${x+6},${y+8}" fill="${C.P}" stroke="${C.N}" stroke-width="2"/><circle cx="${x-3}" cy="${y+10}" r="1.8" fill="${C.N}"/><circle cx="${x+3}" cy="${y+10}" r="1.8" fill="${C.N}"/>`+L(x-9,y+13,x+9,y+13,C.N,2);
+const hinge=(x,y)=>`<circle cx="${x}" cy="${y}" r="3.6" fill="${C.P}" stroke="${C.N}" stroke-width="2"/>`;
+const hatchV=(x,y1,y2,side=-1)=>{let s=L(x,y1,x,y2,C.N,3);for(let y=y1+2;y<y2;y+=6)s+=L(x,y,x+side*6,y+5,C.N,1.5);return s};
+const hatchH=(x1,x2,y)=>{let s=L(x1,y,x2,y,C.N,3);for(let x=x1+2;x<x2;x+=6)s+=L(x,y,x-5,y+6,C.N,1.5);return s};
+const arrow=(x,y1,y2,c=C.R)=>L(x,y1,x,y2-4,c,2.5)+`<polygon points="${x},${y2} ${x-4},${y2-7} ${x+4},${y2-7}" fill="${c}"/>`;
+const arrowH=(x1,x2,y,c=C.R)=>{const d=x2>x1?1:-1;return L(x1,y,x2-4*d,y,c,2.5)+`<polygon points="${x2},${y} ${x2-7*d},${y-4} ${x2-7*d},${y+4}" fill="${c}"/>`};
+const q=(p0,p1,p2,t)=>(1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;
+const svg=b=>`<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${b}</svg>`;
+
+const DRAW={
+ simple:()=>ground(60)+`<rect x="12" y="30" width="96" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/>`+pin(16,37)+roller(104,37)+arrow(60,8,28),
+ cont:()=>ground(60)+`<rect x="6" y="30" width="108" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/>`+pin(10,37)+roller(60,37)+roller(110,37)+arrow(35,10,28)+arrow(85,10,28),
+ cant:()=>hatchV(16,10,60)+`<rect x="16" y="26" width="86" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/>`+arrow(98,4,24),
+ over:()=>ground(60)+`<rect x="8" y="30" width="106" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/>`+pin(24,37)+roller(80,37)+arrow(110,8,28)+arrow(52,12,28),
+ gerber:()=>ground(60)+`<rect x="6" y="30" width="38" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/><rect x="76" y="30" width="38" height="7" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/><rect x="44" y="30" width="32" height="7" fill="${C.P}" stroke="${C.N}" stroke-width="2.5"/>`+hinge(44,33.5)+hinge(76,33.5)+pin(12,37)+roller(36,37)+roller(84,37)+pin(108,37)+arrow(60,8,28),
+ rahmen:()=>ground(64)+L(20,62,20,12,C.N,4)+L(60,62,60,12,C.N,4)+L(100,62,100,12,C.N,4)+L(20,12,100,12,C.N,4)+L(20,37,100,37,C.N,4)+hatchH(12,28,62)+hatchH(52,68,62)+hatchH(92,108,62)+arrowH(2,16,12),
+ portal:()=>ground(64)+L(30,62,30,18,C.N,4)+L(90,62,90,18,C.N,4)+L(22,18,98,18,C.N,5)+L(26,26,94,26,C.N,2.5)+hatchH(22,38,62)+hatchH(82,98,62)+`<rect x="44" y="30" width="32" height="12" rx="2" fill="${C.B}"/>`,
+ hinge3:()=>ground(64)+`<polyline points="20,62 20,32 60,12 100,32 100,62" fill="none" stroke="${C.N}" stroke-width="4" stroke-linejoin="round"/>`+hinge(60,12)+pin(20,54)+pin(100,54)+arrow(40,0,18)+arrow(80,0,18),
+ brace:()=>ground(64)+`<rect x="20" y="12" width="80" height="50" fill="none" stroke="${C.N}" stroke-width="4"/>`+L(20,62,60,12,C.B,3)+L(60,12,100,62,C.B,3)+L(20,12,60,62,C.B,3)+L(60,62,100,12,C.B,3)+L(60,12,60,62,C.N,3)+arrowH(2,16,12),
+ truss:()=>{const b=[10,35,60,85,110],t=[22.5,47.5,72.5,97.5];let s=ground(64)+L(10,50,110,50,C.N,3.5)+L(22.5,22,97.5,22,C.N,3.5);for(let i=0;i<4;i++){s+=L(b[i],50,t[i],22,C.B,3)+L(t[i],22,b[i+1],50,C.B,3)}return s+pin(10,50)+roller(110,50)},
+ arch:()=>ground(60)+`<path d="M14 60 Q60 -14 106 60" fill="none" stroke="${C.N}" stroke-width="7"/><path d="M14 60 Q60 -14 106 60" fill="none" stroke="${C.M}" stroke-width="3" stroke-dasharray="2 6"/>`+arrowH(14,2,56)+arrowH(106,118,56)+arrow(60,0,16),
+ tiedarch:()=>{let s=ground(64)+`<rect x="8" y="50" width="104" height="6" fill="${C.M}" stroke="${C.N}" stroke-width="2.5"/><path d="M14 50 Q60 -10 106 50" fill="none" stroke="${C.N}" stroke-width="4"/>`;for(let t=.15;t<.9;t+=.14){const x=q(14,60,106,t),y=q(50,-10,50,t);s+=L(x,y,x,50,C.B,2)}return s+pin(14,56)+roller(106,56)},
+ suspension:()=>{let s=ground(64)+`<rect x="4" y="44" width="112" height="5" fill="${C.M}" stroke="${C.N}" stroke-width="2"/>`+L(30,62,30,6,C.N,4)+L(90,62,90,6,C.N,4)+`<path d="M2 36 L30 8 Q60 64 90 8 L118 36" fill="none" stroke="${C.R}" stroke-width="2.5"/>`;for(let t=.12;t<.92;t+=.11){const x=q(30,60,90,t),y=q(8,64,8,t);s+=L(x,y,x,44,C.B,1.6)}return s},
+ stayed:()=>{let s=ground(64)+`<rect x="6" y="44" width="108" height="5" fill="${C.M}" stroke="${C.N}" stroke-width="2"/>`+L(60,62,60,4,C.N,5);[14,26,38,82,94,106].forEach((x,i)=>{s+=L(60,8+(i%3)*4,x,44,C.R,1.8)});return s},
+ beamstring:()=>ground(64)+L(14,62,14,22,C.N,3)+L(106,62,106,22,C.N,3)+`<path d="M10 22 Q60 12 110 22" fill="none" stroke="${C.N}" stroke-width="5"/><polyline points="14,22 38,40 60,44 82,40 106,22" fill="none" stroke="${C.R}" stroke-width="2"/>`+L(38,19,38,40,C.B,2.5)+L(60,17,60,44,C.B,2.5)+L(82,19,82,40,C.B,2.5),
+ shell:()=>ground(62)+`<path d="M10 62 A50 48 0 0 1 110 62 Z" fill="${C.M}" stroke="${C.N}" stroke-width="3.5"/><path d="M60 14 Q34 30 30 62 M60 14 Q86 30 90 62 M60 14 L60 62" fill="none" stroke="${C.N}" stroke-width="1.4" opacity=".7"/><path d="M20 44 Q60 36 100 44" fill="none" stroke="${C.N}" stroke-width="1.4" opacity=".7"/>`,
+ membrane:()=>ground(64)+`<path d="M8 50 Q24 30 34 8 Q60 34 86 8 Q96 30 112 50 Q60 40 8 50 Z" fill="${C.M}" stroke="${C.N}" stroke-width="2.5" stroke-linejoin="round"/>`+L(34,8,34,62,C.N,3)+L(86,8,86,62,C.N,3)+L(8,50,4,62,C.R,1.6)+L(112,50,116,62,C.R,1.6)+L(34,8,14,62,C.R,1.4)+L(86,8,106,62,C.R,1.4),
+ wall:()=>{let s=ground(64)+`<rect x="22" y="8" width="76" height="54" fill="${C.P}" stroke="${C.N}" stroke-width="3.5"/>`;for(let r=0;r<4;r++)for(let c=0;c<4;c++)s+=`<rect x="${30+c*17}" y="${14+r*12}" width="9" height="6" fill="${C.B}"/>`;return s+L(22,8,98,8,C.N,4)},
+ folded:()=>{let p='',p2='';for(let i=0;i<=10;i++){const x=10+i*10,y=i%2?16:28;p+=`${x},${y} `;p2+=`${x},${y+14} `}return ground(64)+`<polyline points="${p}" fill="none" stroke="${C.N}" stroke-width="3" stroke-linejoin="round"/><polyline points="${p2}" fill="none" stroke="${C.B}" stroke-width="2" stroke-linejoin="round" opacity=".8"/>`+[10,30,50,70,90,110].map((x,i)=>L(x,i%2?16:28,x,i%2?30:42,C.B,1.2)).join('')+L(14,44,14,62,C.N,3)+L(106,44,106,62,C.N,3)+L(10,42,110,42,C.N,2.5)},
+ retain:()=>`<polygon points="58,12 118,12 118,62 58,62" fill="${C.G}" opacity=".45"/>`+ground(62,4,58)+`<polygon points="50,12 58,12 58,54 88,54 88,62 34,62 34,54 50,54" fill="${C.M}" stroke="${C.N}" stroke-width="2.5" stroke-linejoin="round"/><circle cx="54" cy="46" r="2.2" fill="${C.N}"/>`+arrowH(80,62,24)+arrowH(90,62,36)+arrowH(100,62,48),
+};
+
+// ================= 構造形式のデータ =================
+const LAB='../dan/';
+const GROUPS=[
+ {id:'beam',name:'梁の仲間',sub:'曲げて運ぶ'},
+ {id:'frame',name:'骨組の仲間',sub:'柱と梁を組む'},
+ {id:'curve',name:'アーチと吊り',sub:'押して運ぶ・引いて運ぶ'},
+ {id:'surface',name:'面で支える',sub:'壁・板・膜・殻'},
+];
+const F=[
+ {id:'simple',g:'beam',name:'単純梁',rar:1,lab:0,
+  look:'1本の桁が両端の2か所だけで支えられ、途中に支えがない形。小さな川に架かる桁橋が代表です。',
+  where:['小さな川や水路の桁橋','歩道橋の1スパン分','駅の跨線橋の桁'],
+  force:'上から押されると下へたわみ、桁の下側が引っ張られ、上側が押されます。曲げモーメントは真ん中で最大です。',
+  insp:'桁の端（支承のまわり）のさびや漏水、真ん中付近の下面のひび割れを見ます。',
+  checks:['支えが両端の2か所だけ','途中に柱や橋脚がない','桁はまっすぐで、上に飾りの構造がない']},
+ {id:'cont',g:'beam',name:'連続梁',rar:1,lab:7,
+  look:'1本につながった桁を、3か所以上の支えで受ける形。継ぎ目のない長い高架橋に多く見られます。',
+  where:['道路や鉄道の高架橋','長い歩道橋','川をまたぐ桁橋（橋脚が複数）'],
+  force:'中間の支えの上では桁の上側が引っ張られ、スパンの中央では下側が引っ張られます。力がスパンどうしで分け合われます。',
+  insp:'中間の支えの真上の桁や舗装のひび割れ、支承の動きを見ます。',
+  checks:['支えが3か所以上ある','桁が支えの上で切れずに続いている','桁の高さがほぼ一定']},
+ {id:'cant',g:'beam',name:'片持ち梁',rar:1,lab:1,
+  look:'片側だけが壁や柱に固定され、先端は空中に浮いている形。ベランダや庇が代表です。',
+  where:['マンションのベランダ','玄関や店先の庇','バス停や駅ホームの屋根','突き出した看板'],
+  force:'先端の重さが根元を回そうとするので、根元で曲げモーメントが最大になり、上側が引っ張られます。',
+  insp:'根元のひび割れ、鉄筋のさび汁、先端の垂れ下がりを見ます。',
+  checks:['支えは片側だけ','先端の下に柱がない','根元が太く、先へ行くほど薄くなっている']},
+ {id:'over',g:'beam',name:'張出し梁',rar:2,lab:3,
+  look:'支えと支えの間だけでなく、支えの外側へ桁が張り出している形。橋の歩道部分や、駅ホームの端に見られます。',
+  where:['橋脚から左右に張り出した床版','駅ホームの端','建物の跳ね出し床'],
+  force:'張り出した部分の重さが、スパン中央の曲げを打ち消す向きに働きます。支えの真上では上側が引っ張られます。',
+  insp:'張出し部の先端の垂れや、付け根の上面のひび割れを見ます。',
+  checks:['支えの外側へ桁が出ている','張り出した先には支えがない','支えは2か所以上ある']},
+ {id:'gerber',g:'beam',name:'ゲルバー梁',rar:3,lab:5,
+  look:'張り出した桁の先に、短い桁をヒンジ（回転できる継ぎ目）で載せた形。継ぎ目には段差のような切り欠き（かけ違い部）があります。',
+  where:['古い高架橋や首都高の一部','港大橋（ゲルバートラス橋）','昔の鉄道橋'],
+  force:'ヒンジでは曲げモーメントがゼロになります。真ん中の短い桁は単純梁として働き、その重さが両側の張り出しに載ります。',
+  insp:'かけ違い部は狭くて水がたまりやすく、点検の重点箇所です。継ぎ目の下からの漏水やひび割れを見ます。',
+  checks:['桁の途中に継ぎ目（切り欠き）がある','継ぎ目は支えの上ではなく、スパンの途中にある','継ぎ目の両側の桁が支えから張り出している']},
+ {id:'rahmen',g:'frame',name:'ラーメン構造',rar:1,lab:10,
+  look:'柱と梁をがっちり一体につないだ骨組み。斜めの材がなく、角が四角くしっかりしています。多くのビルがこの形です。',
+  where:['鉄筋コンクリートや鉄骨のビル','高架下の柱と梁','立体駐車場'],
+  force:'地震や風の横からの力を、柱と梁の曲げで受けます。柱と梁の接合部に大きな力が集まります。',
+  insp:'柱と梁の接合部や柱の根元のひび割れ、外壁の斜めのひびを見ます。',
+  checks:['柱と梁が四角い格子になっている','斜めの材（筋かい）がない','柱と梁の角がしっかり一体']},
+ {id:'portal',g:'frame',name:'門形ラーメン',rar:1,lab:8,
+  look:'2本の柱の上に梁を渡し、角を剛につないだ門の形。道路をまたぐ標識柱がわかりやすい例です。',
+  where:['道路をまたぐ門形の標識柱','高架橋の門形橋脚','鳥居','ゲート'],
+  force:'梁の重さや横からの力を、柱と梁の曲げで地面まで伝えます。隅の角で柱と梁の曲げがつながります。',
+  insp:'柱の根元（基礎との境目）のさびやボルトのゆるみ、梁との接合部を見ます。',
+  checks:['柱が2本で、上に梁が1本','柱と梁の角が一体','道路や通路をまたいでいる']},
+ {id:'hinge3',g:'frame',name:'3ヒンジ構造',rar:3,lab:9,
+  look:'左右の柱脚と頂部の3か所に、回転できるヒンジがある山形の骨組み。体育館や工場、大きな木造屋根に見られます。',
+  where:['体育館や工場の山形屋根','木造の大屋根','一部のアーチ橋'],
+  force:'頂部のヒンジで曲げモーメントがゼロになります。柱脚では外へ開こうとする力を基礎が押さえます。',
+  insp:'柱脚やヒンジの金物のさび、ボルトのゆるみを見ます。',
+  checks:['山形または弓形の骨組み','頂部に継ぎ目（ヒンジ）がある','柱脚がピン（細く絞った金物）になっている']},
+ {id:'brace',g:'frame',name:'ブレース構造',rar:1,lab:null,
+  look:'四角い枠に、斜めの材（筋かい）をX字やV字に入れた骨組み。耐震補強した校舎の外側にもよく付いています。',
+  where:['鉄骨の倉庫や工場','耐震補強された校舎','立体駐車場','鉄塔の一部'],
+  force:'地震や風の横からの力を、斜めの材の引っ張りと押しで受けます。四角形が平行四辺形につぶれるのを止めています。',
+  insp:'ブレースのたるみ、端部のボルトのゆるみやさびを見ます。',
+  checks:['四角い枠の中に斜めの材がある','斜めの材がX字かV字','斜めの材が細い（丸鋼や山形鋼）']},
+ {id:'truss',g:'frame',name:'トラス',rar:2,lab:null,
+  look:'細い部材を三角形に組み合わせた骨組み。鉄道の鉄橋や送電鉄塔、駅の大屋根で見つかります。',
+  where:['鉄道の鉄橋','送電鉄塔','駅や体育館の屋根','クレーン・歩道橋'],
+  force:'三角形は形が崩れないので、部材は主に引っ張りか押しの力（軸力）だけを受けます。細い材で長い距離を渡れます。',
+  insp:'部材が集まる格点のボルトや溶接、下側の材のさびを見ます。鳥のふんや水がたまる所も傷みやすい場所です。',
+  checks:['細い部材が三角形を作っている','上下に長い材（弦材）がある','部材が集まる点にボルトや板がある']},
+ {id:'arch',g:'curve',name:'アーチ',rar:2,lab:null,
+  look:'上に向かって弓なりに曲がった形。石橋やレンガのトンネルの入口、大きなアーチ橋があります。',
+  where:['石造りのアーチ橋','レンガのトンネル坑門','鉄やコンクリートのアーチ橋','門や地下通路'],
+  force:'重さを曲線に沿った押しの力（圧縮）で両端へ運びます。足元は外へ開こうとするので、地盤がそれを押さえます。',
+  insp:'足元の基礎の動き、石やレンガの目地のずれ、アーチ頂部のひび割れを見ます。',
+  checks:['上に凸の曲線で支えている','両端の足元が地面や岩にしっかり載っている','アーチの上に路面か壁が載っている']},
+ {id:'tiedarch',g:'curve',name:'タイドアーチ',rar:2,lab:null,
+  look:'アーチの両端を下の桁でつなぎ、桁をアーチから縦の吊材で吊った形。ローゼ橋やランガー橋もこの仲間で、川の橋に多い形です。',
+  where:['河川に架かる道路橋','鉄道橋','運河の橋'],
+  force:'アーチが外へ開こうとする力を、下の桁が引っ張って受け止めます。そのため足元に大きな横向きの力が出ません。',
+  insp:'吊材の上下の付け根のさびや、吊材の振動を見ます。',
+  checks:['路面より上にアーチがある','アーチから縦の吊材が並んでいる','アーチの両端が路面の桁とつながっている']},
+ {id:'suspension',g:'curve',name:'吊橋',rar:3,lab:null,
+  look:'2本の主塔の間に太いケーブルを垂らし、そこから縦のハンガーで桁を吊った形。ケーブルは曲線を描きます。',
+  where:['レインボーブリッジ','明石海峡大橋','山や渓谷の歩行者用吊橋'],
+  force:'桁の重さをケーブルの引っ張りで主塔へ運び、ケーブルの端はアンカレイジ（大きなおもり）で地面につなぎ止めます。',
+  insp:'ケーブルやハンガーのさび、アンカレイジ付近の水を見ます。',
+  checks:['主塔の間でケーブルが曲線に垂れている','ケーブルから縦の吊材で桁を吊っている','ケーブルの端が地面のアンカーにつながる']},
+ {id:'stayed',g:'curve',name:'斜張橋',rar:2,lab:null,
+  look:'塔から斜めにまっすぐ張ったケーブルで、桁を直接吊った形。ケーブルが扇やハープのように並びます。',
+  where:['横浜ベイブリッジ','都市高速の橋','川や運河の歩道橋'],
+  force:'桁の重さを斜めのケーブルの引っ張りで塔へ運びます。塔には押す力、桁には水平方向の押す力が加わります。',
+  insp:'ケーブルが桁に取り付く定着部のさび、ケーブルの揺れを止める装置を見ます。',
+  checks:['塔から斜めにまっすぐケーブルが出ている','ケーブルが直接桁につながっている','吊橋のような垂れた太いケーブルがない']},
+ {id:'beamstring',g:'curve',name:'張弦梁',rar:3,lab:null,
+  look:'屋根の梁の下にケーブルを弓の弦のように張り、短い束（つか）で梁を押し上げた形。駅や空港、体育館の大屋根で見られます。',
+  where:['駅のコンコースの屋根','空港ターミナル','体育館・アトリウム'],
+  force:'ケーブルの引っ張りで梁を下から持ち上げ、梁の曲げを小さくします。細い部材で大きな空間を覆えます。',
+  insp:'ケーブルと束の接合金物、ケーブルのゆるみを見ます。',
+  checks:['梁の下にケーブルが張られている','梁とケーブルの間に短い束がある','大きな屋根を柱なしで覆っている']},
+ {id:'shell',g:'surface',name:'シェル・ドーム',rar:3,lab:null,
+  look:'卵の殻のように、薄い曲面だけで屋根を作った形。ドーム、かまぼこ屋根、鞍のような曲面などがあります。',
+  where:['ドーム球場・プラネタリウム','駅や体育館の曲面屋根','かまぼこ形の倉庫'],
+  force:'曲面全体に力を広げ、面の中の押しや引っ張りで受けます。薄くても強いのは、曲面が曲げにくい形だからです。',
+  insp:'曲面のひび割れや雨水のしみ、縁の部分の傷みを見ます。',
+  checks:['屋根が曲面になっている','梁や柱が見えず、面だけで支えている','厚みが薄い']},
+ {id:'membrane',g:'surface',name:'膜構造',rar:2,lab:null,
+  look:'布のような膜をケーブルや柱でぴんと張った屋根。白いテントのような形が多く、空気で膨らませるものもあります。',
+  where:['駅前広場や駐輪場のテント屋根','スタジアムの屋根','東京ドーム（空気膜）'],
+  force:'膜は押しには弱いので、引っ張りだけで形を保ちます。張りを保つために、膜は鞍のように反った曲面にします。',
+  insp:'膜の破れや汚れ、端部のケーブルや金物のゆるみを見ます。',
+  checks:['布のような膜で屋根を作っている','膜がぴんと張られ、曲面になっている','柱やケーブルで引っ張っている']},
+ {id:'wall',g:'surface',name:'壁式構造',rar:1,lab:null,
+  look:'柱と梁ではなく、壁そのもので建物を支える形。5階建てくらいまでの団地や低層マンションに多く、窓が小さめで外に柱の出っ張りがありません。',
+  where:['団地・低層マンション','小さな公共建築','地下の箱形の構造物'],
+  force:'重さも地震の力も、壁が面として受けます。壁が多いほど強く、窓や開口部の角に力が集まります。',
+  insp:'窓や開口部の角から斜めに走るひび割れ、外壁のはがれを見ます。',
+  checks:['外壁に柱や梁の出っ張りがない','窓が小さめで、壁の面積が多い','5階建てくらいまでの建物']},
+ {id:'folded',g:'surface',name:'折板構造',rar:1,lab:null,
+  look:'板をジグザグに折り曲げて強くした形。工場や駐輪場の金属屋根、波板がわかりやすい例です。',
+  where:['工場や倉庫の金属屋根','駐輪場の屋根','ホームの屋根'],
+  force:'平らな板は曲がりやすいのに、折ると高さ（せい）が出て曲げに強くなります。紙を折ると立つのと同じしくみです。',
+  insp:'折り目のさびや穴、固定ボルトのゆるみ、雨どいのつまりを見ます。',
+  checks:['屋根や壁の板がジグザグに折れている','折り目の方向に長く渡している','下に細かい梁が少ない']},
+ {id:'retain',g:'surface',name:'擁壁',rar:1,lab:null,ext:{name:'地盤力学ラボ',url:'../jiban/'},
+  look:'段差の土が崩れないように支える壁。L字や逆T字の擁壁は、壁が土に押される片持ち梁として働きます。',
+  where:['坂道沿いの段差','駐車場や宅地の境','線路や道路の切り土'],
+  force:'背中の土が壁を前へ押します（土圧）。雨で土に水がたまると押す力が大きくなるので、水抜き穴で水を逃がします。',
+  insp:'水抜き穴から水が出ているか、壁のふくらみや傾き、ひび割れ、上の地面の割れを見ます。大雨の後は特に大事です。',
+  checks:['段差の土を壁で押さえている','壁に水抜き穴が並んでいる','壁の上に地面や建物がある']},
+];
+const FI=Object.fromEntries(F.map((f,i)=>[f.id,{...f,idx:i}]));
+const RAR_PTS={1:10,2:20,3:40};
+const NAVI=[
+ {k:'all',label:'すべて',ids:null},
+ {k:'beam',label:'桁がまっすぐ',ids:['simple','cont','cant','over','gerber']},
+ {k:'grid',label:'柱と梁の格子',ids:['rahmen','portal','hinge3','brace']},
+ {k:'tri',label:'三角形や斜めの材',ids:['truss','brace']},
+ {k:'curve',label:'曲線で押す',ids:['arch','tiedarch','shell']},
+ {k:'cable',label:'ケーブルで吊る・引く',ids:['suspension','stayed','beamstring','membrane']},
+ {k:'face',label:'壁や板で支える',ids:['wall','folded','retain','shell']},
+];
+const STATES=[{k:'ok',l:'異常なし'},{k:'rust',l:'さび',w:1},{k:'crack',l:'ひび割れ',w:1},{k:'water',l:'水もれ・しみ',w:1},{k:'deform',l:'変形・傾き',w:1},{k:'other',l:'その他',w:1}];
+const LEVELS=[[0,'まち歩き初心者'],[100,'構造物ウォッチャー'],[300,'構造の目利き'],[700,'構造物探偵'],[1300,'都市の語り部'],[2200,'まちの生き字引']];
+
+// ================= 状態 =================
+let finds=[]; // {id,form,ts,checks:[bool],state,place,memo,assetId,thumb,pts}
+let filter='all', view='zukan';
+let store=null; // {kind:'db'|'local', ...}
+let assets=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+const dayKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const fmtDate=ts=>{const d=new Date(ts);return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+const imgSrc=f=>f.assetId?('/_blob/'+f.assetId):(f.thumb||'');
+
+function badgesState(){
+  const got=new Set(finds.map(f=>f.form));
+  const byDay={};finds.forEach(f=>{(byDay[dayKey(f.ts)]=byDay[dayKey(f.ts)]||new Set()).add(f.form)});
+  const maxDay=Math.max(0,...Object.values(byDay).map(s=>s.size));
+  const insp=finds.filter(f=>f.state).length;
+  const rare3=F.filter(f=>f.rar===3&&got.has(f.id)).length;
+  const B=[];
+  GROUPS.forEach(g=>{const ids=F.filter(f=>f.g===g.id).map(f=>f.id);const n=ids.filter(i=>got.has(i)).length;
+    B.push({id:'g_'+g.id,name:g.name+'を全部',desc:`${g.name}の${ids.length}形式をすべて見つける`,n,max:ids.length,pts:100})});
+  B.push({id:'first',name:'はじめの一枚',desc:'最初の記録をする',n:Math.min(finds.length,1),max:1,pts:10});
+  B.push({id:'day5',name:'一日五形式',desc:'同じ日に5種類の形式を記録する',n:Math.min(maxDay,5),max:5,pts:60});
+  B.push({id:'rare',name:'レア構造ハンター',desc:'★3の形式を3種類見つける',n:Math.min(rare3,3),max:3,pts:80});
+  B.push({id:'insp10',name:'まちの点検員',desc:'点検メモ付きの記録を10件ためる',n:Math.min(insp,10),max:10,pts:60});
+  B.push({id:'insp30',name:'まちの見守り役',desc:'点検メモ付きの記録を30件ためる',n:Math.min(insp,30),max:30,pts:150});
+  B.push({id:'all',name:'構造形式マスター',desc:'20形式すべてを見つける',n:got.size,max:F.length,pts:300});
+  return B;
+}
+function totalXp(){const base=finds.reduce((s,f)=>s+(f.pts||0),0);const bonus=badgesState().filter(b=>b.n>=b.max).reduce((s,b)=>s+b.pts,0);return base+bonus}
+function level(xp){let i=0;for(let k=0;k<LEVELS.length;k++)if(xp>=LEVELS[k][0])i=k;return i}
+function calcPts(formId,checks,state,excludeId){
+  const f=FI[formId];const first=!finds.some(x=>x.form===formId&&x.id!==excludeId);
+  const parts=[[`${f.name}（★${f.rar}）`,RAR_PTS[f.rar]]];
+  if(first)parts.push(['初めて見つけた',30]);
+  const c=checks.filter(Boolean).length;if(c)parts.push([`見分けポイント ${c}つ`,c*3]);
+  if(state)parts.push(['点検メモ',5]);
+  return {parts,total:parts.reduce((s,p)=>s+p[1],0)};
+}
+
+// ================= 描画 =================
+function renderHeader(){
+  const xp=totalXp(),li=level(xp),cur=LEVELS[li],nx=LEVELS[li+1];
+  $('#lvBadge').textContent='Lv.'+(li+1);$('#lvTitle').textContent=cur[1];
+  $('#xpFill').style.width=(nx?Math.round((xp-cur[0])/(nx[0]-cur[0])*100):100)+'%';
+  const got=new Set(finds.map(f=>f.form));
+  $('#stForms').textContent=got.size+'/'+F.length;$('#stFinds').textContent=finds.length;$('#stXp').textContent=xp;
+}
+function renderNavi(){
+  $('#naviChips').innerHTML=NAVI.map(n=>`<button class="chip" data-k="${n.k}" aria-pressed="${filter===n.k}">${n.label}</button>`).join('');
+  $('#naviChips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{filter=b.dataset.k;renderNavi();renderZukan()});
+}
+function latestFind(formId){return finds.filter(f=>f.form===formId).sort((a,b)=>b.ts-a.ts)[0]}
+function renderZukan(){
+  const nv=NAVI.find(n=>n.k===filter);const show=nv.ids?new Set(nv.ids):null;
+  $('#zukan').innerHTML=GROUPS.map(g=>{
+    const items=F.filter(f=>f.g===g.id);const n=items.filter(f=>latestFind(f.id)).length;
+    return `<div class="group"><div class="group-h"><h3>${g.name}</h3><small>${g.sub}</small><span class="cnt">${n}/${items.length}</span></div>
+    <div class="grid">${items.map(f=>{const lf=latestFind(f.id);const src=lf&&imgSrc(lf);const i=FI[f.id].idx;
+      return `<button class="card ${lf?'':'locked'} ${show&&!show.has(f.id)?'dim':''}" data-f="${f.id}">
+        <div class="pic">${src?`<img src="${esc(src)}" alt="${esc(f.name)}の写真" loading="lazy">`:svg(DRAW[f.id]())}</div>
+        ${lf?`<span class="got">発見</span>`:''}
+        <div class="meta"><span class="no">No.${String(i+1).padStart(2,'0')}</span><span class="nm">${f.name}</span><span class="rar">${'★'.repeat(f.rar)}${'☆'.repeat(3-f.rar)}</span></div>
+      </button>`}).join('')}</div></div>`}).join('');
+  $('#zukan').querySelectorAll('.card').forEach(b=>b.onclick=()=>openForm(b.dataset.f));
+}
+function renderLog(){
+  const list=[...finds].sort((a,b)=>b.ts-a.ts);
+  if(!list.length){$('#logList').innerHTML=`<div class="empty"><b>まだ記録がありません</b><br>下の「記録する」から、街で見つけた構造形式の写真を撮ってみましょう。最初はベランダ（片持ち梁）や鉄塔（トラス）が見つけやすいです。</div>`;return}
+  $('#logList').innerHTML=list.map(x=>{const f=FI[x.form];const st=STATES.find(s=>s.k===x.state);
+    return `<button class="log-item" data-id="${esc(x.id)}"><div class="th">${imgSrc(x)?`<img src="${esc(imgSrc(x))}" alt="" loading="lazy">`:svg(DRAW[x.form]())}</div>
+    <div class="bd"><span class="t">${esc(f?f.name:x.form)}</span><span class="s">${fmtDate(x.ts)}${x.place?' ・ '+esc(x.place):''}</span>
+    <span>${st?`<span class="st-pill ${st.w?'warn':''}">${st.l}</span>`:''}</span><span class="p">+${x.pts||0}</span></div></button>`}).join('');
+  $('#logList').querySelectorAll('.log-item').forEach(b=>b.onclick=()=>openFind(b.dataset.id));
+}
+function renderRank(){
+  const xp=totalXp(),li=level(xp),nx=LEVELS[li+1];
+  $('#rankBox').innerHTML=`<div class="muted" style="color:var(--mid)">いまの称号</div><div class="now">${LEVELS[li][1]}</div>
+   <div class="next">${nx?`次の「${nx[1]}」まで あと <b>${nx[0]-xp}</b> ポイント`:'最高の称号です'}</div>
+   <ol class="ladder">${LEVELS.map((l,i)=>`<li class="${i<li?'done':i===li?'cur':''}"><b>${l[0]}</b><span>Lv.${i+1} ${l[1]}</span></li>`).join('')}</ol>`;
+  $('#badgeList').innerHTML=badgesState().map(b=>{const ok=b.n>=b.max;
+    return `<div class="badge ${ok?'':'off'}"><div class="bn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="${ok?C.R:C.P}" stroke="${C.N}" stroke-width="2"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="${ok?C.P:C.M}" stroke-width="2.5"/></svg>${b.name}</div>
+      <div class="bd">${b.desc}（+${b.pts}）</div><div class="prog"><i style="width:${Math.round(b.n/b.max*100)}%"></i></div><div class="muted">${b.n}/${b.max}</div></div>`}).join('');
+}
+function renderAll(){renderHeader();renderZukan();renderLog();renderRank()}
+function setView(v){view=v;['zukan','log','rank','learn'].forEach(k=>$('#v-'+k).hidden=k!==v);
+  document.querySelectorAll('.tab[data-v]').forEach(t=>t.toggleAttribute('aria-current',t.dataset.v===v));
+  document.querySelectorAll('.tab[data-v]').forEach(t=>{if(t.dataset.v===v)t.setAttribute('aria-current','page')});
+  window.scrollTo(0,0)}
+document.querySelectorAll('.tab[data-v]').forEach(t=>t.onclick=()=>setView(t.dataset.v));
+$('#shootBtn').onclick=()=>openRecord(null);
+
+// ================= シート =================
+function sheet(title,html,onMount){
+  $('#sheetRoot').innerHTML=`<div class="sheet-bg"><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-head"><h2>${esc(title)}</h2><button class="x" aria-label="閉じる">×</button></div>${html}</div></div>`;
+  const bg=$('#sheetRoot .sheet-bg');bg.onclick=e=>{if(e.target===bg)closeSheet()};bg.querySelector('.x').onclick=closeSheet;
+  document.body.style.overflow='hidden';onMount&&onMount(bg);
+}
+function closeSheet(){$('#sheetRoot').innerHTML='';document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+
+function openForm(id){
+  const f=FI[id];const mine=finds.filter(x=>x.form===id).sort((a,b)=>b.ts-a.ts);
+  const labLink=f.lab!=null?`<a class="btn" href="${LAB}#nqm-${f.lab}" target="_blank" rel="noopener">断面力図ラボで動かす</a>`:
+    f.ext?`<a class="btn" href="${f.ext.url}" target="_blank" rel="noopener">${f.ext.name}で考える</a>`:'';
+  sheet(f.name,`
+   <div class="big-pic">${svg(DRAW[id]())}</div>
+   <div class="tag-row"><span class="tag r">${'★'.repeat(f.rar)} ${RAR_PTS[f.rar]}ポイント</span><span class="tag">${GROUPS.find(g=>g.id===f.g).name}</span>${mine.length?`<span class="tag">記録 ${mine.length}件</span>`:''}</div>
+   <div class="blk"><h4>どんな形</h4><p>${f.look}</p></div>
+   <div class="blk"><h4>街で見つかる所</h4><ul>${f.where.map(w=>`<li>${w}</li>`).join('')}</ul></div>
+   <div class="blk"><h4>見分けポイント</h4><ul>${f.checks.map(w=>`<li>${w}</li>`).join('')}</ul></div>
+   <div class="blk"><h4>力の流れ</h4><p>${f.force}</p></div>
+   <div class="blk insp"><h4>点検で見る所</h4><p>${f.insp}</p></div>
+   ${mine.length?`<div class="blk"><h4>自分の記録</h4><div class="mine">${mine.map(x=>`<button data-id="${esc(x.id)}">${imgSrc(x)?`<img src="${esc(imgSrc(x))}" alt="${fmtDate(x.ts)}の記録">`:svg(DRAW[id]())}</button>`).join('')}</div></div>`:''}
+   <div class="btn-row"><button class="btn red" id="recThis">この形式を記録する</button>${labLink}</div>`,
+   bg=>{bg.querySelector('#recThis').onclick=()=>openRecord(id);bg.querySelectorAll('.mine button').forEach(b=>b.onclick=()=>openFind(b.dataset.id))});
+}
+
+function openFind(fid){
+  const x=finds.find(f=>f.id===fid);if(!x)return;const f=FI[x.form];const st=STATES.find(s=>s.k===x.state);
+  sheet(f.name+'の記録',`
+   ${imgSrc(x)?`<img class="photo-view" src="${esc(imgSrc(x))}" alt="${esc(f.name)}の写真">`:`<div class="big-pic">${svg(DRAW[x.form]())}</div>`}
+   <div class="tag-row"><span class="tag r">+${x.pts||0}ポイント</span>${st?`<span class="tag ${st.w?'r':''}">点検: ${st.l}</span>`:''}</div>
+   <p class="muted">${fmtDate(x.ts)}${x.place?' ・ '+esc(x.place):''}</p>
+   <div class="blk"><h4>確かめた見分けポイント</h4><ul>${f.checks.map((c,i)=>`<li>${x.checks&&x.checks[i]?'✓ ':'－ '}${c}</li>`).join('')}</ul></div>
+   ${x.memo?`<div class="blk"><h4>メモ</h4><p>${esc(x.memo)}</p></div>`:''}
+   <div class="btn-row"><button class="btn" id="toForm">${f.name}の説明を見る</button><button class="btn" id="delFind">この記録を消す</button></div>
+   <div id="delConfirm" hidden class="blk insp"><p>写真と記録を消します。元に戻せません。</p><div class="btn-row"><button class="btn red" id="delYes">消す</button><button class="btn" id="delNo">やめる</button></div></div>`,
+   bg=>{bg.querySelector('#toForm').onclick=()=>openForm(x.form);
+     bg.querySelector('#delFind').onclick=()=>{bg.querySelector('#delConfirm').hidden=false};
+     bg.querySelector('#delNo').onclick=()=>{bg.querySelector('#delConfirm').hidden=true};
+     bg.querySelector('#delYes').onclick=async()=>{await removeFind(x);closeSheet();toast('<b>記録を消しました</b>')}});
+}
+
+// 写真の縮小
+function loadImage(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file);const im=new Image();im.onload=()=>{res(im)};im.onerror=()=>rej(new Error('画像を読めませんでした'));im.src=u})}
+function shrink(im,max,q){const s=Math.min(1,max/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c}
+const toBlob=(c,q)=>new Promise(r=>c.toBlob(r,'image/jpeg',q));
+
+function openRecord(preset){
+  let form=preset, photo=null, checks=[false,false,false], state=null, nav='all';
+  const html=`
+   <div class="step"><div class="step-h"><i>1</i>どの形式？</div>
+     <div class="chips" id="rNavi" style="margin-bottom:8px"></div>
+     <div class="pick" id="rPick"></div></div>
+   <div class="step"><div class="step-h"><i>2</i>写真</div>
+     <div class="photo-box" id="rPhoto"><span class="muted">構造形式がわかるように、全体が入る向きで撮りましょう。</span></div>
+     <div class="photo-btns">
+       <label class="btn navy" for="rCam">カメラで撮る<input type="file" id="rCam" accept="image/*" capture="environment"></label>
+       <label class="btn" for="rFile">写真を選ぶ<input type="file" id="rFile" accept="image/*"></label>
+     </div></div>
+   <div class="step" id="rChecksWrap"><div class="step-h"><i>3</i>見分けポイントを確かめる</div><div class="checks" id="rChecks"></div></div>
+   <div class="step"><div class="step-h"><i>4</i>点検メモ（任意）</div>
+     <div class="states" id="rStates"></div>
+     <label class="field" for="rPlace"><span>場所</span><input id="rPlace" maxlength="60" placeholder="例：○○川の橋、駅前の駐輪場"></label>
+     <label class="field" for="rMemo"><span>メモ</span><textarea id="rMemo" maxlength="400" placeholder="気づいたこと、気になった所"></textarea></label>
+   </div>
+   <div class="pts-preview" id="rPts"></div>
+   <div class="btn-row"><button class="btn red" id="rSave" disabled>記録する</button></div>
+   <p class="muted" id="rErr"></p>`;
+  sheet('記録する',html,bg=>{
+    const pick=bg.querySelector('#rPick');
+    const drawNavi=()=>{bg.querySelector('#rNavi').innerHTML=NAVI.map(n=>`<button class="chip" data-k="${n.k}" aria-pressed="${nav===n.k}">${n.label}</button>`).join('');
+      bg.querySelectorAll('#rNavi .chip').forEach(b=>b.onclick=()=>{nav=b.dataset.k;drawNavi();drawPick()})};
+    const drawPick=()=>{const nv=NAVI.find(n=>n.k===nav);const list=nv.ids?F.filter(f=>nv.ids.includes(f.id)):F;
+      pick.innerHTML=list.map(f=>`<button data-f="${f.id}" aria-pressed="${form===f.id}">${svg(DRAW[f.id]())}${f.name}</button>`).join('');
+      pick.querySelectorAll('button').forEach(b=>b.onclick=()=>{form=b.dataset.f;checks=[false,false,false];drawPick();drawChecks();upd()})};
+    const drawChecks=()=>{const w=bg.querySelector('#rChecks');if(!form){w.innerHTML='<p class="muted">形式を選ぶと、確かめるポイントが出ます。</p>';return}
+      w.innerHTML=FI[form].checks.map((c,i)=>`<label for="rc${i}"><input type="checkbox" id="rc${i}" ${checks[i]?'checked':''}><span>${c}</span></label>`).join('');
+      w.querySelectorAll('input').forEach((el,i)=>el.onchange=()=>{checks[i]=el.checked;upd()})};
+    const drawStates=()=>{bg.querySelector('#rStates').innerHTML=STATES.map(s=>`<button class="chip" data-k="${s.k}" aria-pressed="${state===s.k}">${s.l}</button>`).join('');
+      bg.querySelectorAll('#rStates .chip').forEach(b=>b.onclick=()=>{state=state===b.dataset.k?null:b.dataset.k;drawStates();upd()})};
+    const upd=()=>{const ok=form&&photo;bg.querySelector('#rSave').disabled=!ok;
+      bg.querySelector('#rPts').textContent=form?`この記録で +${calcPts(form,checks,state).total} ポイント`+(photo?'':'（写真を入れると記録できます）'):''};
+    const onFile=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;bg.querySelector('#rErr').textContent='';
+      try{const im=await loadImage(file);const big=shrink(im,1400);const small=shrink(im,360);
+        photo={big:await toBlob(big,.82),thumb:small.toDataURL('image/jpeg',.7)};
+        bg.querySelector('#rPhoto').innerHTML=`<img src="${photo.thumb}" alt="選んだ写真">`;upd();
+      }catch(err){bg.querySelector('#rErr').textContent='写真を読み込めませんでした。別の写真で試してください。'}
+      e.target.value=''};
+    bg.querySelector('#rCam').onchange=onFile;bg.querySelector('#rFile').onchange=onFile;
+    bg.querySelector('#rSave').onclick=async()=>{
+      const btn=bg.querySelector('#rSave');btn.disabled=true;btn.textContent='保存しています…';
+      const before=badgesState().filter(b=>b.n>=b.max).map(b=>b.id);
+      const p=calcPts(form,checks,state);const li0=level(totalXp());
+      const rec={id:'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),form,ts:Date.now(),checks,state:state||null,
+        place:bg.querySelector('#rPlace').value.trim(),memo:bg.querySelector('#rMemo').value.trim(),pts:p.total,assetId:null,thumb:photo.thumb};
+      try{
+        if(assets){try{const a=await assets.upload(photo.big);rec.assetId=a.id}catch(e){}}
+        await addFind(rec);
+        const after=badgesState().filter(b=>b.n>=b.max);const newB=after.filter(b=>!before.includes(b.id));const li1=level(totalXp());
+        closeSheet();
+        toast(`<b>+${p.total + newB.reduce((s,b)=>s+b.pts,0)} ポイント</b><ul>${p.parts.map(x=>`<li>${x[0]} +${x[1]}</li>`).join('')}${newB.map(b=>`<li>勲章「${b.name}」 +${b.pts}</li>`).join('')}</ul>${li1>li0?`<div style="margin-top:6px;font-weight:900">称号が「${LEVELS[li1][1]}」になりました</div>`:''}`,5200);
+      }catch(err){btn.disabled=false;btn.textContent='記録する';bg.querySelector('#rErr').textContent='保存できませんでした。通信を確かめて、もう一度押してください。'}
+    };
+    drawNavi();drawPick();drawChecks();drawStates();upd();
+    if(form){const el=pick.querySelector(`[data-f="${form}"]`);el&&el.scrollIntoView({block:'nearest'})}
+  });
+}
+
+let toastTimer;
+function toast(html,ms=2600){clearTimeout(toastTimer);$('#toastRoot').innerHTML=`<div class="toast" role="status">${html}</div>`;toastTimer=setTimeout(()=>$('#toastRoot').innerHTML='',ms)}
+
+// ================= 保存 =================
+const LKEY='kozo-zukan-finds-v1';
+function localLoad(){try{return JSON.parse(localStorage.getItem(LKEY)||'[]')}catch(e){return []}}
+function localSave(){try{localStorage.setItem(LKEY,JSON.stringify(finds))}catch(e){toast('<b>この端末に保存できませんでした</b>写真が多すぎる可能性があります。')}}
+async function addFind(rec){
+  if(store&&store.kind==='db'){finds=[...finds.filter(f=>f.id!==rec.id),rec];renderAll();await store.col.doc(rec.id).set(rec)}
+  else{finds=[...finds,rec];localSave();renderAll()}
+}
+async function removeFind(rec){
+  finds=finds.filter(f=>f.id!==rec.id);renderAll();
+  if(store&&store.kind==='db'){try{await store.col.doc(rec.id).delete()}catch(e){}}else localSave();
+  if(rec.assetId&&assets){try{await assets.delete(rec.assetId)}catch(e){}}
+}
+function note(t){const n=$('#syncNote');n.hidden=!t;n.textContent=t||''}
+
+async function boot(){
+  finds=localLoad();renderNavi();renderAll();
+  if(!window.claude||!window.claude.use){return}
+  try{
+    const [db,user,as]=await Promise.all([claude.use('db'),claude.use('user'),claude.use('assets')]);
+    assets=as;
+    const uid=user?await user.id():null;
+    if(!db||!uid){if(!finds.length)note('');return}
+    const col=db.collection('data/users/'+uid+'/finds');
+    store={kind:'db',col};
+    const local=finds;
+    let first=true;const timer=setTimeout(()=>note('記録の読み込みに時間がかかっています。表示が古い可能性があります。'),10000);
+    col.onSnapshot(snap=>{
+      if(!snap.metadata||!snap.metadata.fromCache){clearTimeout(timer);note('')}
+      finds=snap.docs.map(d=>d.data()).filter(Boolean).map(d=>({...d}));
+      renderAll();
+      if(first){first=false;
+        // この端末にだけ残っていた記録をアカウントへ移す
+        const ids=new Set(finds.map(f=>f.id));const move=local.filter(f=>!ids.has(f.id));
+        (async()=>{for(const r of move){try{await col.doc(r.id).set(r)}catch(e){}}try{localStorage.removeItem(LKEY)}catch(e){}})();
+      }
+    },err=>{clearTimeout(timer);note('記録を読み込めませんでした。この端末の中だけに保存します。');store=null;finds=localLoad();renderAll()});
+  }catch(e){}
+}
+boot();
+</script>

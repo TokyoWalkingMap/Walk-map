@@ -1,0 +1,389 @@
+<title>固定法ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* Layout: one-screen lab. Header, structure canvas, a bottom sheet with the step guide and the moment-distribution table. Same risograph palette as the other labs. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#stageName{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#score{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+#wrap{position:relative;flex:1;min-height:150px}
+canvas#cv{position:absolute;inset:0;width:100%;height:100%;display:block}
+#legend{position:absolute;right:max(10px,env(safe-area-inset-right,0px));top:8px;background:var(--sheet);border:2px solid var(--navy);padding:4px 8px;font-size:11px;font-weight:700;pointer-events:none;line-height:1.6}
+#panel{background:var(--sheet);border-top:2px solid var(--navy);padding-block:10px 14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-height:56%;overflow-y:auto}
+#panel h2{font-family:var(--f-disp);font-weight:400;font-size:18px;margin:0 0 4px;color:var(--navy);text-wrap:balance}
+#panel h3{font-size:14px;font-weight:900;margin:0 0 4px}
+#panel p{margin:0 0 8px;font-size:14px;line-height:1.7;max-width:70ch}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:7px 13px;cursor:pointer;min-height:38px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button.b.joint{background:var(--navy);color:var(--paper)}
+button.b:disabled{opacity:.35;cursor:default}
+button:focus-visible,input:focus-visible,.card:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.step{border:2px solid var(--navy);padding:8px 10px;margin:6px 0;background:var(--paper)}
+.step .k{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.06em}
+.step .v{font-size:15px;font-weight:900;margin-top:2px}
+.quiz{border:2px solid var(--red);padding:8px 10px;margin:6px 0}
+.quiz .k{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.06em}
+.ans{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;font-weight:900}
+.ans input{font-family:var(--f-body);font-size:18px;font-weight:700;width:110px;padding:5px 8px;border:2px solid var(--navy);background:var(--paper);color:var(--ink)}
+.fb{font-weight:900;margin-top:6px}.fb.ok{color:var(--red)}.fb.ng{color:var(--muted)}
+.tbl{overflow-x:auto}
+table.t{border-collapse:collapse;font-size:12px;width:100%}
+table.t th,table.t td{padding:3px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t th{color:var(--muted);font-weight:700;border-bottom:2px solid var(--navy)}
+table.t td:first-child,table.t th:first-child{text-align:left;color:var(--muted);font-weight:700}
+table.t tr.fem td{font-weight:900;color:var(--navy)}
+table.t tr.d td{color:var(--blue);font-weight:700}
+table.t tr.c td{color:var(--ink)}
+table.t tr.sum td{border-top:2px solid var(--navy);font-weight:900;color:var(--red);border-bottom:0}
+table.t tr.new td{background:#EAF2F8}
+.verdict{font-family:var(--f-disp);font-size:24px;line-height:1.15;color:var(--red)}
+.lesson{border-left:4px solid var(--blue);padding-left:10px}
+.kw{display:inline-block;font-size:11px;font-weight:900;border:1.5px solid var(--ink);padding:0 6px;margin:0 4px 4px 0}
+/* home */
+#home{position:absolute;inset:0;overflow-y:auto;background:var(--paper);padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{max-width:920px;margin:0 auto 16px}
+.hero h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(32px,6.5vw,60px);line-height:1.08;margin:0;color:var(--navy);text-wrap:balance}
+.hero h1 b{color:var(--red);font-weight:400}
+.hero p{font-size:15px;line-height:1.8;max-width:62ch;margin:10px 0 0}
+.flow{max-width:920px;margin:0 auto 18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.flow div{background:var(--sheet);border:2px solid var(--navy);padding:8px 10px;font-size:13px;line-height:1.6}
+.flow b{display:block;font-size:14px;color:var(--red)}
+.grid{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{background:var(--sheet);border:2px solid var(--navy);padding:0;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column}
+.card canvas{width:100%;height:96px;background:var(--paper);border-bottom:2px solid var(--navy);display:block}
+.card .ct{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}
+.card .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.card .nm{font-weight:900;font-size:16px}
+.card .ds{font-size:12px;color:var(--muted)}
+.card .rs{font-size:12px;font-weight:900;color:var(--blue)}
+.foot{max-width:920px;margin:18px auto 0;font-size:12px;color:var(--muted);line-height:1.7}
+@media (max-width:520px){.logo{font-size:15px}#panel p{font-size:13px}#legend{display:none}}
+</style>
+
+<div id="app">
+  <header>
+    <button class="logo" id="logo" title="ステージ一覧へ">固定法<b>ラボ</b></button>
+    <div id="stageName"></div>
+    <div id="score"></div>
+  </header>
+  <div id="wrap"><canvas id="cv"></canvas>
+    <div id="legend">数字＝部材端モーメント（kN·m、時計回りが＋）<br><span style="color:#C62422">赤＝不釣合いモーメント</span>　<span style="color:#3286BE">青＝今回の分配・到達</span></div>
+  </div>
+  <section id="panel"></section>
+</div>
+
+<div id="home">
+  <div class="hero">
+    <h1>いったん<b>固めて</b>、<br>少しずつ<b>ほどく</b>。</h1>
+    <p>連続梁やラーメンの曲げモーメントを、手計算で求める「固定法」を体験します。まず全部の節点を固定して固定端モーメントを出し、次に節点を1つずつ解放していきます。解放するたびに力は部材に分配され、反対の端へ半分ずつ届きます。これを繰り返すと、本当のモーメントに近づいていきます。</p>
+  </div>
+  <div class="flow">
+    <div><b>1 固定</b>節点を回らないように固定し、荷重による固定端モーメントを求める</div>
+    <div><b>2 不釣合い</b>節点に集まる固定端モーメントの合計。0でなければ節点は回ろうとする</div>
+    <div><b>3 解放</b>節点を放すと、不釣合いを打ち消す「解放モーメント」が生まれる</div>
+    <div><b>4 分配・到達</b>解放モーメントを剛比で分配し、その半分が反対の端へ到達する</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="foot">符号は部材端に働くモーメントが時計回りのとき＋です。節点の移動（横揺れ）がない場合だけを扱います。到達率は1/2（遠い端が固定または節点のとき）です。</p>
+</div>
+
+<script>
+"use strict";
+const fmt=(x,d=2)=>{ const r=Math.round(x*10**d)/10**d; const s=(Object.is(r,-0)?0:r).toString(); return (r>0?'+':'')+s; };
+const fmt0=(x,d=2)=>{ const r=Math.round(x*10**d)/10**d; return (Object.is(r,-0)?0:r).toString(); };
+
+// ---------- stages ----------
+// nodes: fixed (wall / ground), joint (releasable, on a roller or frame corner), pin (end support; a joint with one member).
+const STAGES=[
+{ key:'one', name:'1つの節点を解放', sub:'固定端モーメントと解放モーメント', view:[-1.2,-2.2,11.2,3],
+  nodes:{A:[0,0,'fixed'],B:[6,0,'joint'],C:[10,0,'fixed']},
+  members:[{i:'A',j:'B',k:1,load:{t:'udl',w:10}},{i:'B',j:'C',k:1}],
+  intro:'両端が壁に固定された2スパンの梁です。左のスパンに10 kN/mの等分布荷重。まず節点Bも固定した状態で、固定端モーメントを考えます。',
+  quizzes:[
+    {on:'fem',end:'BA',q:'節点Bを固定したとき、左スパンのB端の固定端モーメント M<sub>BA</sub> は？',hint:'等分布荷重の固定端モーメントは wL²/12。右端は時計回りで＋。'},
+    {on:'release',joint:'B',q:'節点Bの不釣合いモーメントは +30。Bを解放したときの解放モーメントは？',hint:'不釣合いモーメントの符号を変えたもの。'},
+    {on:'dist',joint:'B',end:'BC',q:'剛比は左右とも1。BC端に分配されるモーメントは？',hint:'分配率＝その部材の剛比÷節点に集まる剛比の合計。'},
+    {on:'carry',joint:'B',end:'CB',q:'BC端の分配モーメントのうち、反対の端Cに到達するモーメントは？',hint:'到達率は1/2。'},
+  ],
+  lesson:'荷重がかかっても、節点を固定しておけば各スパンは「両端固定梁」として独立に考えられます。これが固定端モーメントです。でも本当の節点Bは固定されていないので、左右のモーメントがつりあわず（不釣合いモーメント）、Bは回ろうとします。Bを放すと、不釣合いを打ち消す解放モーメントが生まれ、剛比に応じて左右の部材に分配され、その半分が反対の端に伝わります。節点が1つなら、1回の解放で答えが出ます。',
+  kws:['固定端モーメント','不釣合いモーメント','解放モーメント','到達率1/2']
+},
+{ key:'stiff', name:'剛比の違い', sub:'固い部材ほど多く受け持つ', view:[-1.2,-2.4,15.2,3.2],
+  nodes:{A:[0,0,'fixed'],B:[6,0,'joint'],C:[14,0,'fixed']},
+  members:[{i:'A',j:'B',k:2,load:{t:'udl',w:12}},{i:'B',j:'C',k:1,load:{t:'point',P:40}}],
+  intro:'左スパン（剛比2）に12 kN/mの等分布荷重、右スパン（剛比1）の中央に40 kNの集中荷重。左右の固定端モーメントがほぼ同じなので、不釣合いは小さくなります。',
+  quizzes:[
+    {on:'fem',end:'BC',q:'右スパンのB端の固定端モーメント M<sub>BC</sub> は？',hint:'中央集中荷重の固定端モーメントは PL/8。左端は反時計回りで−。'},
+    {on:'release',joint:'B',q:'節点Bの解放モーメントは？',hint:'不釣合い＝M<sub>BA</sub>＋M<sub>BC</sub>。その符号を変える。'},
+    {on:'dist',joint:'B',end:'BA',q:'剛比 2：1 で分けると、BA端への分配モーメントは？',hint:'分配率は 2/(2+1)。'},
+  ],
+  lesson:'解放モーメントは、部材の「固さ」である剛比（断面二次モーメント÷長さ）に比例して分けられます。固い部材ほど節点の回転に強く抵抗するので、多くのモーメントを受け持ちます。左右の固定端モーメントがつりあっている節点ほど、解放しても答えはほとんど変わりません。',
+  kws:['剛比','分配率','集中荷重 PL/8']
+},
+{ key:'two', name:'2つの節点を交互に', sub:'解放するたびに隣へ伝わる', view:[-1.2,-2.4,19.2,3.2],
+  nodes:{A:[0,0,'fixed'],B:[6,0,'joint'],C:[12,0,'joint'],D:[18,0,'fixed']},
+  members:[{i:'A',j:'B',k:1,load:{t:'udl',w:10}},{i:'B',j:'C',k:1,load:{t:'point',P:60}},{i:'C',j:'D',k:1}],
+  intro:'節点がBとCの2つある3スパンの梁です。Bを解放すると、到達モーメントがCに届いてCの不釣合いが変わります。BとCを交互に解放して、不釣合いを0に近づけてください。',
+  quizzes:[
+    {on:'release',joint:'B',q:'まずBを解放します。節点Bの解放モーメントは？',hint:'不釣合い＝M<sub>BA</sub>＋M<sub>BC</sub>＝30−45。'},
+    {on:'carry',joint:'B',end:'CB',q:'Bの解放で、節点Cに届く到達モーメント M<sub>CB</sub> の増分は？',hint:'BC端の分配モーメントの1/2。'},
+    {on:'release',joint:'C',q:'Cの不釣合いには、Bから届いた到達モーメントも加わっています。Cの解放モーメントは？',hint:'表のCB列とCD列の合計の符号を変える。'},
+  ],
+  lesson:'節点が2つ以上あると、1つを解放したときの到達モーメントが隣の節点の不釣合いを生みます。そこで節点を順番に何度も解放し、不釣合いが十分小さくなるまで繰り返します。到達率が1/2、分配率が1以下なので、伝わる量は毎回小さくなり、必ず収束します。コンピュータがない時代、設計者はこの表を手で埋めて高層ビルや橋を設計していました。',
+  kws:['繰り返し計算','収束','到達モーメント']
+},
+{ key:'pin', name:'ピン支点のある梁', sub:'ピンの端は何度でも解放する', view:[-1.2,-2.6,15.2,3.4],
+  nodes:{A:[0,0,'pin'],B:[6,0,'joint'],C:[14,0,'pin']},
+  members:[{i:'A',j:'B',k:1,load:{t:'udl',w:10}},{i:'B',j:'C',k:1,load:{t:'udl',w:10}}],
+  intro:'両端がピン（回転自由）の2スパン連続梁です。ピンの端ではモーメントが0になるはずなので、ピン端も「節点」として解放します。部材が1本しかないので分配率は1です。',
+  quizzes:[
+    {on:'release',joint:'A',q:'ピン支点Aの固定端モーメントは −30。Aを解放したときの解放モーメントは？',hint:'ピンの端はモーメント0にしたいので、全部打ち消す。'},
+    {on:'carry',joint:'A',end:'BA',q:'Aの解放でB端に届く到達モーメントは？',hint:'分配率1、到達率1/2。'},
+  ],
+  lesson:'ピン端は回転が自由なので、最終的にモーメントは0です。固定法では、ピン端も節点として解放し、その半分を隣に到達させます。何度も解放が必要になりますが、ピン端の剛比を3/4倍した「有効剛比」を使うと、ピン端を1回の解放で済ませる工夫もできます。',
+  kws:['ピン支点','分配率1','有効剛比']
+},
+{ key:'frame', name:'門形ラーメン', sub:'柱と梁が集まる節点', view:[-2.5,-1.4,10.5,7.6],
+  nodes:{A:[0,0,'fixed'],B:[0,5,'joint'],C:[8,5,'joint'],D:[8,0,'fixed']},
+  members:[{i:'A',j:'B',k:1},{i:'B',j:'C',k:2,load:{t:'udl',w:12}},{i:'C',j:'D',k:1}],
+  intro:'柱（剛比1）と梁（剛比2）でできた門形ラーメンです。梁に12 kN/mの等分布荷重。左右対称なので骨組みは横に動かず、梁の連続梁と同じように固定法が使えます。',
+  quizzes:[
+    {on:'fem',end:'BC',q:'梁のB端の固定端モーメント M<sub>BC</sub> は？',hint:'wL²/12。左端は−。'},
+    {on:'dist',joint:'B',end:'BA',q:'節点Bの分配率は 柱1：梁2。柱の上端BAに分配されるモーメントは？',hint:'解放モーメント×1/3。'},
+  ],
+  lesson:'ラーメン構造でも、柱と梁が集まる節点を固定・解放する考え方は同じです。梁の固定端モーメントの一部が柱に分配され、柱の根元に半分が届きます。柱が固いほど梁の端のモーメントは大きくなり、梁の真ん中のモーメントは小さくなります。横に揺れる場合（地震など）は、節点の移動も考える必要があります。',
+  kws:['ラーメン','柱と梁','横移動なし']
+},
+];
+
+// ---------- model ----------
+let S=null; // working state
+function setup(st){
+  const N={}; for(const [k,[x,y,t]] of Object.entries(st.nodes)) N[k]={id:k,x,y,t};
+  const M=st.members.map(m=>({...m,L:Math.hypot(N[m.j].x-N[m.i].x,N[m.j].y-N[m.i].y)}));
+  const fem={}, mom={}; const ends=[];
+  for(const m of M){ let a=0; if(m.load){ if(m.load.t==='udl') a=m.load.w*m.L*m.L/12; else a=m.load.P*m.L/8; }
+    fem[m.i+m.j]=-a; fem[m.j+m.i]=+a; ends.push(m.i+m.j,m.j+m.i); }
+  for(const e of ends) mom[e]=fem[e];
+  const joints=Object.values(N).filter(n=>n.t!=='fixed').map(n=>n.id);
+  const df={}; for(const j of joints){ const ms=M.filter(m=>m.i===j||m.j===j); const ks=ms.reduce((s,m)=>s+m.k,0); for(const m of ms){ const e=m.i===j?m.i+m.j:m.j+m.i; df[e]=m.k/ks; } }
+  return {N,M,fem,mom,ends,joints,df,log:[],qdone:new Set(),score:0,qcount:0,phase:'idle',pend:null};
+}
+function endsAt(j){ return S.ends.filter(e=>e[0]===j); }
+function unbal(j){ return endsAt(j).reduce((s,e)=>s+S.mom[e],0); }
+function computeRelease(j){ const U=unbal(j), R=-U; const dist={}, carry={};
+  for(const e of endsAt(j)){ dist[e]=R*S.df[e]; const far=e[1]+e[0]; carry[far]=dist[e]/2; }
+  return {j,U,R,dist,carry}; }
+function commit(p){ for(const e in p.dist) S.mom[e]+=p.dist[e]; for(const e in p.carry) S.mom[e]+=p.carry[e]; S.log.push(p); }
+function converged(){ return S.joints.every(j=>Math.abs(unbal(j))<0.005); }
+function solveExact(st){ const save=S; S=setup(st); for(let it=0;it<2000&&!converged();it++){ for(const j of S.joints) commit(computeRelease(j)); } const r={...S.mom}; S=save; return r; }
+
+// ---------- UI state ----------
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), $=id=>document.getElementById(id);
+let stage=null, mode='home', quiz=null, anim={t:0,kind:null}, view={s:1,ox:0,oy:0,dpr:1}, showBMD=false;
+let best={}; try{ best=JSON.parse(localStorage.getItem('kotei-best')||'{}'); }catch(e){ best={}; }
+const saveBest=()=>{ try{ localStorage.setItem('kotei-best',JSON.stringify(best)); }catch(e){} };
+function updScore(){ const n=STAGES.filter(s=>best[s.key]).length; $('score').textContent=`クリア ${n} / ${STAGES.length}`; }
+
+function loadStage(i){ stage=STAGES[i]; stage.idx=i; S=setup(stage); mode='play'; showBMD=false; quiz=null;
+  $('home').hidden=true; $('stageName').textContent=`${i+1}. ${stage.name}`; nextQuiz('fem'); render(); resize(); }
+function goHome(){ mode='home'; $('home').hidden=false; $('stageName').textContent=''; $('panel').innerHTML=''; drawThumbs(); updScore(); }
+
+function nextQuiz(on,j){
+  // find the first unanswered quiz that matches this moment
+  const idx=stage.quizzes.findIndex((q,k)=>!S.qdone.has(k)&&q.on===on&&(!q.joint||q.joint===j));
+  if(idx<0) return false;
+  const q=stage.quizzes[idx]; let ans;
+  if(on==='fem') ans=S.fem[q.end]; else if(on==='release') ans=S.pend.R; else if(on==='dist') ans=S.pend.dist[q.end]; else ans=S.pend.carry[q.end];
+  quiz={idx,q,ans,state:'ask',val:null}; return true;
+}
+function answerQuiz(v){ const ok=Math.abs(v-quiz.ans)<=Math.max(.06,Math.abs(quiz.ans)*.02); quiz.state=ok?'ok':'ng'; quiz.val=v; S.qcount++; if(ok) S.score++; S.qdone.add(quiz.idx); render(); }
+
+function startRelease(j){ if(S.phase!=='idle'||quiz) return; S.pend=computeRelease(j); S.phase='unbal'; anim={t:performance.now(),kind:'unbal'}; nextQuiz('release',j); render(); }
+function advance(){
+  if(quiz && quiz.state!=='ask'){ quiz=null; }
+  if(quiz) return;
+  const j=S.pend&&S.pend.j;
+  if(S.phase==='unbal'){ S.phase='dist'; anim={t:performance.now(),kind:'dist'}; nextQuiz('dist',j); }
+  else if(S.phase==='dist'){ S.phase='carry'; if(!nextQuiz('carry',j)) anim={t:performance.now(),kind:'carry'}; }
+  else if(S.phase==='carry'){ if(anim.kind!=='carry'){ anim={t:performance.now(),kind:'carry'}; } else { commit(S.pend); S.pend=null; S.phase='idle'; anim={t:performance.now(),kind:'done'}; if(converged()) finish(); } }
+  render();
+}
+function autoRun(){ if(S.phase!=='idle'||quiz) return; let n=0; while(!converged()&&n<400){ const j=S.joints.reduce((a,b)=>Math.abs(unbal(a))>=Math.abs(unbal(b))?a:b); commit(computeRelease(j)); n++; } anim={t:performance.now(),kind:'done'}; if(converged()) finish(); render(); }
+function finish(){ showBMD=true; mode='result'; const total=stage.quizzes.length; best[stage.key]=`${S.score}/${total}`; saveBest(); }
+
+const NAME={fem:'固定端モーメント',release:'解放モーメント',dist:'分配モーメント',carry:'到達モーメント'};
+function quizHTML(){ if(!quiz) return ''; const q=quiz.q;
+  if(quiz.state==='ask') return `<div class="quiz"><div class="k">クイズ：${NAME[q.on]}</div><p style="margin:2px 0 4px">${q.q}</p><p style="font-size:12px;color:var(--muted);margin:0">ヒント：${q.hint}</p>
+    <div class="ans"><input id="qa" type="number" inputmode="decimal" step="any" placeholder="?"><span>kN·m</span><button class="b main" id="qok">答える</button><button class="b" id="qskip">答えを見る</button></div></div>`;
+  return `<div class="quiz"><div class="k">クイズ：${NAME[q.on]}</div><p style="margin:2px 0 4px">${q.q}</p>
+    <div class="fb ${quiz.state}">${quiz.state==='ok'?'正解！':'答えは'} ${fmt(quiz.ans)} kN·m</div><div class="row" style="margin-top:6px"><button class="b main" id="qnext">次へ</button></div></div>`;
+}
+function tableHTML(){
+  const E=S.ends, hd=E.map(e=>`<th>${e}</th>`).join('');
+  let h=`<div class="tbl"><table class="t"><thead><tr><th></th>${hd}</tr></thead><tbody>`;
+  h+=`<tr><td>分配率</td>${E.map(e=>`<td>${S.df[e]!=null?fmt0(S.df[e],3):'—'}</td>`).join('')}</tr>`;
+  h+=`<tr class="fem"><td>固定端 FEM</td>${E.map(e=>`<td>${fmt(S.fem[e])}</td>`).join('')}</tr>`;
+  const L=S.log, start=Math.max(0,L.length-6);
+  if(start>0) h+=`<tr><td colspan="${E.length+1}" style="text-align:left;color:var(--muted)">… ${start}回分を省略</td></tr>`;
+  L.slice(start).forEach((p,i)=>{ const isNew=i===L.length-start-1;
+    h+=`<tr class="d ${isNew?'new':''}"><td>${p.j}を解放：分配</td>${E.map(e=>`<td>${p.dist[e]!=null?fmt(p.dist[e]):''}</td>`).join('')}</tr>`;
+    h+=`<tr class="c ${isNew?'new':''}"><td>到達</td>${E.map(e=>`<td>${p.carry[e]!=null?fmt(p.carry[e]):''}</td>`).join('')}</tr>`; });
+  h+=`<tr class="sum"><td>合計</td>${E.map(e=>`<td>${fmt(S.mom[e])}</td>`).join('')}</tr></tbody></table></div>`;
+  return h;
+}
+function stepHTML(){
+  const p=S.pend; if(!p) return '';
+  const e=Object.keys(p.dist);
+  let h=`<div class="step"><div class="k">節点${p.j}の不釣合いモーメント</div><div class="v">Σ = ${e.map(x=>`M<sub>${x}</sub>`).join(' ＋ ')} = ${fmt(p.U)} kN·m</div></div>`;
+  if(S.phase==='unbal' && quiz && quiz.state==='ask') return h;
+  h+=`<div class="step"><div class="k">解放モーメント（符号を変える）</div><div class="v">${fmt(p.R)} kN·m</div></div>`;
+  if(S.phase==='unbal') return h;
+  if(!(S.phase==='dist' && quiz && quiz.state==='ask')) h+=`<div class="step"><div class="k">分配モーメント（解放モーメント×分配率）</div><div class="v">${e.map(x=>`${x}：${fmt(p.R)}×${fmt0(S.df[x],3)} = ${fmt(p.dist[x])}`).join('<br>')}</div></div>`;
+  if(S.phase==='carry' && !(quiz&&quiz.state==='ask')) h+=`<div class="step"><div class="k">到達モーメント（分配モーメント×1/2 を反対の端へ）</div><div class="v">${Object.keys(p.carry).map(x=>`${x}：${fmt(p.carry[x])}`).join('<br>')}</div></div>`;
+  return h;
+}
+function render(){
+  updScore(); requestAnimationFrame(resize);
+  const P=$('panel'), st=stage;
+  if(mode==='play'){
+    let left=`<h2>${st.sub}</h2>`;
+    if(S.phase==='idle' && !S.log.length && !quiz) left+=`<p>${st.intro}</p>`;
+    if(S.phase==='idle'){
+      left+=quizHTML();
+      if(!quiz){ const any=S.joints.some(j=>Math.abs(unbal(j))>=.005);
+        left+=`<p style="font-weight:700">${S.log.length?'不釣合いが残っている節点を解放しましょう。':'すべての節点が固定されています。どの節点から解放しますか？'}</p>
+        <div class="row">${S.joints.map(j=>`<button class="b joint" data-j="${j}" ${Math.abs(unbal(j))<.005?'disabled':''}>${j}を解放（${fmt(unbal(j),1)}）</button>`).join('')}
+        ${S.log.length>=2?'<button class="b" id="auto">最後まで自動で</button>':''}</div>`; }
+    } else {
+      left+=stepHTML()+quizHTML();
+      if(!quiz || quiz.state!=='ask'){ const lbl= quiz? '次へ' : S.phase==='carry'&&anim.kind==='carry'?'確定して固定し直す':'次へ'; if(!quiz) left+=`<div class="row"><button class="b main" id="adv">${lbl}</button></div>`; }
+    }
+    P.innerHTML=`<div class="cols"><div>${left}</div><div><h3>固定法の表（kN·m）</h3>${tableHTML()}</div></div>`;
+  } else if(mode==='result'){
+    const ex=solveExact(st); const tot=st.quizzes.length;
+    P.innerHTML=`<div class="cols"><div><div class="verdict">収束！ 曲げモーメント図ができた</div>
+      <p>クイズ ${S.score} / ${tot} 正解。解放は ${S.log.length} 回でした。図の赤い面はモーメント図（引っ張られる側に描いています）。</p>
+      <p class="lesson">${st.lesson}</p><div>${st.kws.map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+      <div class="row" style="margin-top:6px"><button class="b main" id="nextB">${st.idx<STAGES.length-1?'次のステージへ':'ステージ一覧へ'}</button><button class="b" id="againB">もう一度</button></div></div>
+      <div><h3>固定法の表（kN·m）</h3>${tableHTML()}</div></div>`;
+    $('nextB').onclick=()=>{ if(st.idx<STAGES.length-1) loadStage(st.idx+1); else goHome(); };
+    $('againB').onclick=()=>loadStage(st.idx);
+  }
+  P.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>startRelease(b.dataset.j));
+  const a=$('auto'); if(a) a.onclick=autoRun;
+  const ad=$('adv'); if(ad) ad.onclick=advance;
+  const qok=$('qok'); if(qok){ const go=()=>{ const v=parseFloat($('qa').value); if(!isFinite(v)){ $('qa').focus(); return; } answerQuiz(v); }; qok.onclick=go; $('qa').onkeydown=e=>{ if(e.key==='Enter') go(); }; $('qskip').onclick=()=>{ quiz.state='ng'; quiz.val=null; S.qcount++; S.qdone.add(quiz.idx); render(); }; }
+  const qn=$('qnext'); if(qn) qn.onclick=()=>{ quiz=null; if(S.phase==='idle'){ render(); } else if(S.phase==='carry'){ anim={t:performance.now(),kind:'carry'}; render(); } else render(); };
+}
+
+// ---------- drawing ----------
+const C={paper:'#F4F3EF',ink:'#1C3A7E',navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',earth:'#D8CFBE',earth2:'#B9AD95',ghost:'#BFC3CE'};
+function resize(){ if(mode==='home'||!stage) return; const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr);
+  const [x0,y0,x1,y1]=stage.view, pad=14, top=r.width<520?10:44; const s=Math.min((r.width-pad*2)/(x1-x0),(r.height-pad-top)/(y1-y0));
+  view={s:s*dpr,dpr,ox:(r.width/2-(x0+x1)/2*s)*dpr,oy:(top+(r.height-pad-top)/2+(y0+y1)/2*s)*dpr}; }
+window.addEventListener('resize',resize);
+const W2S=p=>[view.ox+p[0]*view.s, view.oy-p[1]*view.s];
+
+function bmdAt(m,xi){ // sagging-positive moment along member (tension on the right of i→j)
+  let M0=0; const L=m.L, x=xi*L; if(m.load){ if(m.load.t==='udl') M0=m.load.w*x*(L-x)/2; else M0= x<L/2? m.load.P*x/2 : m.load.P*(L-x)/2; }
+  return M0 + S.mom[m.i+m.j]*(1-xi) - S.mom[m.j+m.i]*xi; }
+
+function drawStage(c,st,opt){
+  const px=view.dpr, lw=Math.max(5*px,.2*view.s), u=.45*view.s, N=S.N;
+  const P=id=>W2S([N[id].x,N[id].y]);
+  const isFrame=st.key==='frame';
+  // ground
+  if(isFrame){ const gy=W2S([0,0])[1]; c.fillStyle=C.earth; c.fillRect(0,gy,c.canvas.width,c.canvas.height-gy); c.fillStyle=C.navy; c.fillRect(0,gy-1.5*px,c.canvas.width,3*px); }
+  // BMD
+  if(opt.bmd){ let mx=0; for(const m of S.M) for(let k=0;k<=40;k++) mx=Math.max(mx,Math.abs(bmdAt(m,k/40))); const sc=(isFrame?1.6:1.5)/Math.max(mx,1);
+    for(const m of S.M){ const a=N[m.i],b=N[m.j], dx=(b.x-a.x)/m.L, dy=(b.y-a.y)/m.L, nx=dy, ny=-dx; // right-hand normal
+      c.fillStyle='rgba(198,36,34,.22)'; c.strokeStyle=C.red; c.lineWidth=2*px; c.beginPath();
+      const pts=[]; for(let k=0;k<=40;k++){ const xi=k/40, M=bmdAt(m,xi); pts.push([a.x+dx*m.L*xi+nx*M*sc, a.y+dy*m.L*xi+ny*M*sc]); }
+      const A=W2S([a.x,a.y]); c.moveTo(A[0],A[1]); for(const p of pts){ const Q=W2S(p); c.lineTo(Q[0],Q[1]); } const B=W2S([b.x,b.y]); c.lineTo(B[0],B[1]); c.closePath(); c.fill(); c.beginPath(); pts.forEach((p,k)=>{ const Q=W2S(p); k?c.lineTo(Q[0],Q[1]):c.moveTo(Q[0],Q[1]); }); c.stroke();
+      // label max inside span
+      let best=0,bk=20; for(let k=4;k<=36;k++){ const M=bmdAt(m,k/40); if(Math.abs(M)>Math.abs(best)){best=M;bk=k;} }
+      if(m.load){ const xi=bk/40, M=bmdAt(m,xi); const Q=W2S([a.x+dx*m.L*xi+nx*M*sc+nx*.45*Math.sign(M), a.y+dy*m.L*xi+ny*M*sc+ny*.45*Math.sign(M)]); txt(c,fmt0(M,1),Q[0],Q[1],C.red,12,px,true); }
+    } }
+  // members
+  c.lineCap='round';
+  for(const m of S.M){ const A=P(m.i),B=P(m.j); c.strokeStyle=C.navy; c.lineWidth=lw*(m.k>1?1.35:1); c.beginPath(); c.moveTo(A[0],A[1]); c.lineTo(B[0],B[1]); c.stroke();
+    // k label
+    const mid=[(A[0]+B[0])/2,(A[1]+B[1])/2]; if(!opt.thumb){ const off=isFrame&&m.i!=='B'?[-26*px,0]:[0,(isFrame?-14:24)*px+lw*.0]; txt(c,`剛比 ${m.k}`,mid[0]+off[0],mid[1]+(isFrame&&m.i==='B'?-22*px:off[1]+ (isFrame?0:12*px)),C.muted||'#5E6B86',11,px); }
+    // loads
+    if(m.load){ const a=N[m.i],b=N[m.j];
+      if(m.load.t==='udl'){ const n=Math.max(4,Math.round(m.L*1.2)); const h=.9; const T1=W2S([a.x,a.y+h+.25]),T2=W2S([b.x,b.y+h+.25]); c.strokeStyle=C.navy; c.lineWidth=2*px; c.beginPath(); c.moveTo(T1[0],T1[1]); c.lineTo(T2[0],T2[1]); c.stroke();
+        for(let k=0;k<=n;k++){ const x=a.x+(b.x-a.x)*k/n; arrowDown(c,[x,a.y+h+.25],[x,a.y+.18],px,C.navy); }
+        if(!opt.thumb) txt(c,`${m.load.w} kN/m`,(T1[0]+T2[0])/2,T1[1]-12*px,C.navy,13,px,true); }
+      else { const x=(a.x+b.x)/2; arrowDown(c,[x,a.y+1.7],[x,a.y+.18],px,C.navy,3); if(!opt.thumb){ const T=W2S([x,a.y+1.7]); txt(c,`${m.load.P} kN`,T[0],T[1]-12*px,C.navy,13,px,true); } } }
+  }
+  // supports
+  for(const n of Object.values(N)){ const A=P(n.id); c.fillStyle=C.navy;
+    if(n.t==='fixed'){ if(isFrame){ c.fillRect(A[0]-u,A[1]-2*px,2*u,5*px); } else { const dir=n.x<1?-1:1; c.fillStyle=C.earth; c.fillRect(dir<0?A[0]-u*1.2:A[0],A[1]-u*2,u*1.2,u*4); c.fillStyle=C.navy; c.fillRect(A[0]-1.5*px,A[1]-u*2,3*px,u*4); hatchV(c,dir<0?A[0]-u*1.2:A[0],A[1]-u*2,u*1.2,u*4,px); } }
+    else if(!isFrame){ c.beginPath(); c.moveTo(A[0],A[1]+lw*.4); c.lineTo(A[0]-u*.75,A[1]+u*1.15); c.lineTo(A[0]+u*.75,A[1]+u*1.15); c.closePath(); c.fill(); if(n.t==='joint'){ for(const d of [-.4,.4]){ c.beginPath(); c.arc(A[0]+d*u,A[1]+u*1.32,u*.16,0,7); c.fill(); } } c.fillRect(A[0]-u,A[1]+u*(n.t==='joint'?1.5:1.15),2*u,3*px); }
+    if(!opt.thumb) txt(c,n.id,A[0]+(isFrame?(n.x<1?-18:18)*px:0),A[1]+(isFrame?(n.y>1?-16:16)*px:u*2.2),C.ink,14,px,true);
+  }
+  if(opt.thumb) return;
+  // locks on joints
+  const now=performance.now();
+  for(const j of S.joints){ const A=P(j); const releasing=S.pend&&S.pend.j===j; const yo=isFrame?-30*px:-34*px, xo=isFrame?(N[j].x<1?-26:26)*px:0;
+    lock(c,A[0]+xo,A[1]+yo,px,!releasing); }
+  // end moments
+  for(const e of S.ends){ const a=N[e[0]], b=N[e[1]], L=Math.hypot(b.x-a.x,b.y-a.y), d=Math.min(1.3,L*.25); const p=[a.x+(b.x-a.x)/L*d, a.y+(b.y-a.y)/L*d];
+    const Q=W2S(p); const hor=Math.abs(b.y-a.y)<.01; const off= hor? [0,-(lw/2+14*px)] : [(a.x<1?-1:1)*(lw/2+26*px)*(isFrame?-1:1),0];
+    txt(c,fmt0(S.mom[e],2),Q[0]+off[0],Q[1]+off[1],C.navy,13,px,true);
+    const p2=S.pend; if(p2 && (S.phase==='dist'||S.phase==='carry') && p2.dist[e]!=null && !(S.phase==='dist'&&quiz&&quiz.state==='ask')) txt(c,fmt(p2.dist[e]),Q[0]+off[0],Q[1]+off[1]+(hor?-16:16)*px,C.blue,12,px,true);
+  }
+  // carry-over animation
+  if(S.pend && S.phase==='carry' && anim.kind==='carry'){ const t=Math.min(1,(now-anim.t)/900);
+    for(const e in S.pend.dist){ const a=N[e[0]], b=N[e[1]]; const x=a.x+(b.x-a.x)*t, y=a.y+(b.y-a.y)*t; const Q=W2S([x,y]); c.fillStyle=C.blue; c.beginPath(); c.arc(Q[0],Q[1],6*px,0,7); c.fill(); txt(c,fmt(S.pend.carry[e[1]+e[0]]),Q[0],Q[1]+18*px,C.blue,12,px,true); } }
+  // unbalanced moment at joints (red curved arrow)
+  for(const j of S.joints){ const U= S.pend&&S.pend.j===j&&S.phase!=='unbal'? 0 : unbal(j); if(Math.abs(U)<.005) continue; const A=P(j);
+    const r=18*px; const cw=U>0; c.strokeStyle=C.red; c.lineWidth=3*px; c.beginPath(); const a0=cw?-2.6:-.55, a1=cw?-.55:-2.6; c.arc(A[0],A[1],r,Math.min(a0,a1),Math.max(a0,a1)); c.stroke();
+    const ae=cw? -.55 : -2.6; const hx=A[0]+r*Math.cos(ae), hy=A[1]+r*Math.sin(ae); const tg=cw? ae+Math.PI/2 : ae-Math.PI/2; c.fillStyle=C.red; c.beginPath(); c.moveTo(hx+Math.cos(tg)*7*px,hy+Math.sin(tg)*7*px); c.lineTo(hx+Math.cos(tg+2.4)*7*px,hy+Math.sin(tg+2.4)*7*px); c.lineTo(hx+Math.cos(tg-2.4)*7*px,hy+Math.sin(tg-2.4)*7*px); c.fill();
+    const pulse= S.pend&&S.pend.j===j? 1+.08*Math.sin(now/120):1;
+    txt(c,'Σ='+fmt(U,1),A[0]+(isFrame&&N[j].x<1?-40:isFrame?40:0)*px,A[1]-(isFrame?0:56)*px*pulse+(isFrame?-52*px:0),C.red,12,px,true); }
+}
+function txt(c,t,x,y,col,size,px,bg){ c.font=`900 ${size*px}px "Zen Kaku Gothic New",sans-serif`; c.textAlign='center'; c.textBaseline='middle'; if(bg){ const w=c.measureText(t).width+6*px; c.fillStyle='rgba(244,243,239,.88)'; c.fillRect(x-w/2,y-size*.62*px,w,size*1.24*px); } c.fillStyle=col; c.fillText(t,x,y); }
+function arrowDown(c,from,to,px,col,w){ const A=W2S(from),B=W2S(to); c.strokeStyle=col; c.fillStyle=col; c.lineWidth=(w||1.6)*px; c.beginPath(); c.moveTo(A[0],A[1]); c.lineTo(B[0],B[1]-5*px); c.stroke(); c.beginPath(); c.moveTo(B[0],B[1]); c.lineTo(B[0]-4*px,B[1]-8*px); c.lineTo(B[0]+4*px,B[1]-8*px); c.fill(); }
+function hatchV(c,x,y,w,h,px){ c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip(); c.strokeStyle=C.earth2; c.lineWidth=1.2*px; for(let i=y-w;i<y+h;i+=8*px){ c.beginPath(); c.moveTo(x,i); c.lineTo(x+w,i+w); c.stroke(); } c.restore(); }
+function lock(c,x,y,px,closed){ c.strokeStyle=closed?C.navy:C.red; c.lineWidth=2.5*px; c.beginPath(); if(closed) c.arc(x,y-4*px,5*px,Math.PI,0); else c.arc(x+5*px,y-7*px,5*px,Math.PI,-.2); c.stroke(); c.fillStyle=closed?C.navy:C.red; c.fillRect(x-7*px,y-4*px,14*px,11*px); }
+
+function frame(now){
+  if(mode!=='home'&&stage){ const c=ctx; c.setTransform(1,0,0,1,0,0); c.fillStyle=C.paper; c.fillRect(0,0,cv.width,cv.height); drawStage(c,stage,{bmd:showBMD});
+    if(S.phase==='carry'&&anim.kind==='carry'&&now-anim.t>950&&!anim.btn){ anim.btn=true; } }
+  requestAnimationFrame(frame);
+}
+$('logo').onclick=goHome;
+
+// ---------- home ----------
+function drawThumbs(){
+  const g=$('grid'); if(!g.children.length){ STAGES.forEach((s,i)=>{ const b=document.createElement('button'); b.className='card';
+    b.innerHTML=`<canvas></canvas><div class="ct"><span class="no">STAGE ${i+1}</span><span class="nm">${s.name}</span><span class="ds">${s.sub}</span><span class="rs"></span></div>`; b.onclick=()=>loadStage(i); g.appendChild(b); }); }
+  [...g.children].forEach((b,i)=>{ const s=STAGES[i]; b.querySelector('.rs').textContent= best[s.key]?`✓ クリア（クイズ ${best[s.key]}）`:'';
+    const cvs=b.querySelector('canvas'), rr=cvs.getBoundingClientRect(), d=Math.min(2,window.devicePixelRatio||1); cvs.width=(rr.width||200)*d; cvs.height=(rr.height||96)*d;
+    const c=cvs.getContext('2d'); const [x0,y0,x1,y1]=s.view; const sc=Math.min(cvs.width/(x1-x0),cvs.height/(y1-y0))*.92; const sv=view, sS=S;
+    view={s:sc,dpr:d*.55,ox:cvs.width/2-(x0+x1)/2*sc,oy:cvs.height/2+(y0+y1)/2*sc}; S=setup(s); const ex=solveExact(s); S.mom=ex;
+    c.fillStyle=C.paper; c.fillRect(0,0,cvs.width,cvs.height); drawStage(c,s,{bmd:true,thumb:true}); view=sv; S=sS; });
+}
+updScore(); drawThumbs(); window.addEventListener('load',drawThumbs);
+requestAnimationFrame(frame);
+window.__kt={STAGES,setup,solveExact,get S(){return S;},set S(v){S=v;}};
+</script>

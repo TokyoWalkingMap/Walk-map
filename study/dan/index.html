@@ -1,0 +1,608 @@
+<title>断面力図ラボ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* Layout: an interactive lab. Left = controls (structure, loads, modes). Right = live structure (drag loads / cut), step-by-step solving panel, N·Q·M diagrams.
+   Second tab = Castigliano: dummy load Q slider, U(Q) parabola whose slope at Q=0 is the displacement. Risograph palette of the lab series. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86; --soft:#EAF2F8;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+body{-webkit-tap-highlight-color:transparent;margin:0}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap}
+.logo b{color:var(--red);font-weight:400}
+.tabs{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.chip{font-family:var(--f-body);font-weight:900;font-size:13px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:5px 11px;cursor:pointer;min-height:34px}
+.chip.on{background:var(--navy);color:var(--paper)}
+.chip.red.on{background:var(--red);border-color:var(--red)}
+a{color:var(--blue);font-weight:700}
+main{max-width:1240px;margin:0 auto;padding-block:14px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(24px,4.4vw,40px);line-height:1.15;margin:0 0 4px;color:var(--navy);text-wrap:balance}
+h1 b{color:var(--red);font-weight:400}
+.lead{font-size:14px;line-height:1.8;max-width:80ch;margin:4px 0 12px}
+.cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}.cols>section{order:-1}}
+@media (max-width:520px){.tabs .chip{font-size:12px;padding:3px 8px;min-height:32px}.lead{font-size:13px}}
+.panel{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px 12px;margin-bottom:12px}
+.panel h3{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 7px}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.row .chip{font-size:12px;padding:3px 9px;min-height:32px}
+.loads{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.loads li{border:1.5px solid var(--line);padding:6px 8px;font-size:13px;font-weight:700;cursor:pointer;background:var(--paper)}
+.loads li.sel{border-color:var(--red);background:#FBEDEC}
+.loads .ctl{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+.loads input[type=range]{flex:1;min-width:120px;accent-color:var(--red)}
+.loads select,.panel select{font-family:var(--f-body);font-weight:700;font-size:13px;border:1.5px solid var(--navy);background:var(--sheet);color:var(--ink);padding:3px}
+.mobonly{display:none}@media (max-width:900px){.mobonly{display:inline}}
+.x{border:0;background:none;color:var(--muted);font-weight:900;cursor:pointer;font-size:15px;margin-left:auto}
+label.ck{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;margin:5px 0;cursor:pointer}
+label.ck input{accent-color:var(--red);width:17px;height:17px}
+.stage{background:var(--sheet);border:2px solid var(--navy);position:relative;padding-top:24px}
+.stage svg{display:block;width:100%;height:auto;max-height:480px;margin:0 auto;touch-action:none;user-select:none}
+.hint{position:absolute;left:10px;top:8px;right:80px;font-size:12px;font-weight:700;color:var(--muted);pointer-events:none}
+.det{position:absolute;right:10px;top:8px;font-size:12px;font-weight:900;padding:2px 8px;border:1.5px solid currentColor;background:var(--sheet)}
+.det.ok{color:var(--navy)} .det.in{color:var(--blue)} .det.ng{color:var(--red)}
+.reac{font-size:13px;font-weight:700;padding:6px 10px;border-top:1.5px solid var(--line);line-height:1.7}
+.diags{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:12px;position:relative}
+.dg.flat svg{max-height:90px}
+.dg.fr svg{max-height:430px;width:auto;max-width:100%;margin:0 auto}
+.dg{background:var(--sheet);border:2px solid var(--navy);padding:6px 8px 4px}
+.dg h4{margin:0;font-size:14px;font-weight:900;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.dg h4 small{font-size:11px;color:var(--muted);font-weight:700}
+.dg svg{display:block;width:100%;height:auto}
+.cg .dg svg{max-height:340px}
+.cover{position:absolute;inset:0;background:rgba(244,243,239,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--navy);font-weight:900;text-align:center;padding:12px;z-index:2}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:7px 14px;cursor:pointer;min-height:38px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,.chip:focus-visible,li:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.cut{background:var(--sheet);border:2px solid var(--navy);margin-top:12px;padding:10px 12px}
+.cut h3{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 6px}
+.cut p{margin:4px 0;font-size:14px;line-height:1.75}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;font-size:13px;min-width:460px;width:100%;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--muted)}
+tr.sum td{font-weight:900;border-top:2px solid var(--navy);color:var(--navy)}
+.life{background:var(--sheet);border:2px solid var(--navy);margin-top:12px;padding:10px 12px}
+.life h3{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:4px 0 6px}
+.life .lw{display:grid;grid-template-columns:minmax(0,280px) minmax(0,1fr);gap:10px;align-items:start;margin-bottom:8px}
+@media (max-width:620px){.life .lw{grid-template-columns:minmax(0,1fr)}}
+.life .lw .ex{grid-template-columns:minmax(0,1fr);margin:0}
+.life .ill{margin:0;background:var(--paper);border:1.5px solid var(--line);max-width:420px}
+.life .ill svg{display:block;width:100%;height:auto}
+.life .ill figcaption{font-size:11px;color:var(--muted);padding:2px 8px 4px}
+.life .ex .pic svg{display:block;width:100%;height:auto;margin-bottom:4px;background:var(--paper)}
+.life .ex{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:8px}
+.life .ex div{background:var(--paper);border-left:4px solid var(--blue);padding:6px 9px;font-size:13px;line-height:1.65}
+.life .ex b{display:block;color:var(--navy);font-size:14px}
+.life ul{margin:0 0 8px;padding-left:18px;font-size:14px;line-height:1.8}
+.life .ins{font-size:13px;line-height:1.7;background:#FBEDEC;border-left:4px solid var(--red);padding:6px 9px}
+.life .ins b{color:var(--red);margin-right:8px}
+.steps{background:var(--sheet);border:2px solid var(--navy);margin-top:12px;padding:10px 12px}
+.steps .bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.steps .bar .chip{font-size:12px;padding:3px 9px;min-height:32px}
+.stxt{font-size:14px;line-height:1.85}
+.stxt .eq{display:block;margin:4px 0;padding:4px 10px;background:var(--paper);border-left:4px solid var(--blue);overflow-x:auto;white-space:nowrap}
+.stxt b{color:var(--navy)}
+.f{font-family:"Times New Roman",Times,serif;font-style:italic;font-weight:700;font-size:1.08em;white-space:nowrap}
+.rules{margin:0;padding-left:18px;font-size:13px;line-height:1.8}
+.rules li.on{color:var(--red);font-weight:900}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:16px}
+.cg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:1000px){.cg{grid-template-columns:minmax(0,1fr)}}
+.big{font-family:var(--f-disp);font-size:22px;color:var(--red)}
+input[type=range].q{width:100%;accent-color:var(--red)}
+@media (max-width:520px){.logo{font-size:15px}}
+</style>
+
+<header>
+  <div class="logo">断面力図<b>ラボ</b></div>
+  <div class="tabs"><button class="chip on" data-tab="nqm">N図・Q図・M図</button><button class="chip" data-tab="cas">カスティリアーノの定理</button></div>
+</header>
+<main id="main"></main>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const PI=Math.PI;
+function nf(x,d){ if(!isFinite(x)) return '—'; if(Math.abs(x)<5e-7) return '0'; const a=Math.abs(x); if(d==null) d=a>=100?1:a>=10?2:2; let s=(Math.round(x*10**d)/10**d).toString(); if(s==='-0') s='0'; return s; }
+const F=s=>`<span class="f">${String(s).replace(/_([A-Za-z0-9]+)/g,'<sub>$1</sub>')}</span>`;
+const COL={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#5E6B86',g:'#B9AD95',e:'#D8CFBE',mid:'#93BCD6'};
+
+// ================= structures (open chains along a path) =================
+// s = distance along the path from the first point. sup t: pin / roller / fixed. hinges: s values.
+const PRE=[
+ {id:'simple',name:'単純梁',pts:[[0,0],[8,0]],sup:[{s:0,t:'pin',lab:'A'},{s:8,t:'roller',lab:'B'}],loads:[{k:'P',s:3,v:20,dir:'down'}],
+  note:'集中荷重の位置でQ図が跳び、M図が折れる。Q＝0 になる点でMが最大。'},
+ {id:'cant',name:'片持ち梁',pts:[[0,0],[5,0]],sup:[{s:0,t:'fixed',lab:'A'}],loads:[{k:'P',s:5,v:10,dir:'down'}],
+  note:'固定端では反力モーメントが生じる。先端から見るとMは「荷重×腕の長さ」で、固定端が最大。'},
+ {id:'udl',name:'単純梁（等分布）',pts:[[0,0],[8,0]],sup:[{s:0,t:'pin',lab:'A'},{s:8,t:'roller',lab:'B'}],loads:[{k:'w',s0:0,s1:8,v:5,dir:'down'}],
+  note:'等分布の区間ではQ図が直線、M図が放物線。全体に載ると中央で wL²/8。'},
+ {id:'over',name:'張出し梁',pts:[[0,0],[8,0]],sup:[{s:0,t:'pin',lab:'A'},{s:6,t:'roller',lab:'B'}],loads:[{k:'w',s0:0,s1:6,v:4,dir:'down'},{k:'P',s:8,v:10,dir:'down'}],
+  note:'張出し部の荷重は支点Bの上で上側引張のMを生む。スパン中のMと打ち消し合う。'},
+ {id:'mload',name:'モーメント荷重',pts:[[0,0],[8,0]],sup:[{s:0,t:'pin',lab:'A'},{s:8,t:'roller',lab:'B'}],loads:[{k:'M',s:3,v:40}],
+  note:'モーメント荷重の位置でM図が荷重の大きさだけ跳ぶ。Q図は一定（反力が偶力になる）。'},
+ {id:'gerber',name:'ゲルバー梁',pts:[[0,0],[9,0]],sup:[{s:0,t:'fixed',lab:'A'},{s:9,t:'roller',lab:'C'}],hinges:[3],loads:[{k:'P',s:6,v:20,dir:'down'}],
+  note:'ヒンジ（○）では必ず M＝0。右側の梁を単純梁として先に解き、ヒンジの力を左の片持ち梁に載せる。'},
+ {id:'ff',name:'両端固定梁',pts:[[0,0],[8,0]],sup:[{s:0,t:'fixed',lab:'A'},{s:8,t:'fixed',lab:'B'}],loads:[{k:'w',s0:0,s1:8,v:6,dir:'down'}],
+  note:'不静定。つりあい式だけでは解けず、変形の条件（端部のたわみ角＝0）を使う。端部 wL²/12、中央 wL²/24。'},
+ {id:'cont',name:'2径間連続梁',pts:[[0,0],[12,0]],sup:[{s:0,t:'pin',lab:'A'},{s:6,t:'roller',lab:'B'},{s:12,t:'roller',lab:'C'}],loads:[{k:'w',s0:0,s1:12,v:4,dir:'down'}],
+  note:'不静定。中間支点の上で上側引張のMが生じる（等スパン等分布で wL²/8）。'},
+ {id:'portal',name:'門形ラーメン',pts:[[0,0],[0,4],[6,4],[6,0]],sup:[{s:0,t:'pin',lab:'A'},{s:14,t:'roller',lab:'D'}],loads:[{k:'P',s:4,v:10,dir:'right'}],
+  note:'M図は引張側に描く。隅角部（剛接）では柱と梁のMが同じ大きさでつながる。'},
+ {id:'3h',name:'3ヒンジラーメン',pts:[[0,0],[0,4],[6,4],[6,0]],sup:[{s:0,t:'pin',lab:'A'},{s:14,t:'pin',lab:'E'}],hinges:[7],loads:[{k:'w',s0:4,s1:10,v:4,dir:'down'}],
+  note:'両支点がピンで反力は4つ。ヒンジ点まわりの M＝0 が4つ目の式になる。水平反力が柱を内側へ押さえる。'},
+ {id:'fixf',name:'柱脚固定ラーメン',pts:[[0,0],[0,4],[6,4],[6,0]],sup:[{s:0,t:'fixed',lab:'A'},{s:14,t:'fixed',lab:'D'}],loads:[{k:'P',s:4,v:20,dir:'right'}],
+  note:'3次の不静定。水平力を受けると柱は上下で逆向きに曲がり、M図が柱の途中で0を横切る（反曲点）。'},
+];
+
+// ================= 実例のイラスト（模式図） =================
+const ILL=(function(){
+ const N='#12286B',R='#C62422',B='#3286BE',M='#93BCD6',G='#B9AD95',E='#D8CFBE',P='#F4F3EF';
+ const w=(s)=>`<svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" role="img">${s}</svg>`;
+ const sky=`<rect width="200" height="110" fill="${P}"/>`;
+ const person=(x,y,c=N)=>`<circle cx="${x}" cy="${y-17}" r="3.2" fill="${c}"/><line x1="${x}" y1="${y-14}" x2="${x}" y2="${y-6}" stroke="${c}" stroke-width="2.4"/><line x1="${x}" y1="${y-6}" x2="${x-3}" y2="${y}" stroke="${c}" stroke-width="2"/><line x1="${x}" y1="${y-6}" x2="${x+3}" y2="${y}" stroke="${c}" stroke-width="2"/>`;
+ const car=(x,y,c=R)=>`<rect x="${x}" y="${y-9}" width="22" height="7" rx="2" fill="${c}"/><rect x="${x+5}" y="${y-14}" width="11" height="6" rx="2" fill="${c}"/><circle cx="${x+5}" cy="${y-1.5}" r="2.4" fill="${N}"/><circle cx="${x+17}" cy="${y-1.5}" r="2.4" fill="${N}"/>`;
+ return {
+  footbridge:w(sky+`<rect x="0" y="92" width="200" height="18" fill="${G}"/><rect x="62" y="80" width="76" height="30" fill="${M}"/><path d="M0,70 L40,70 L40,92 L0,92Z" fill="${E}"/><path d="M200,70 L160,70 L160,92 L200,92Z" fill="${E}"/><rect x="30" y="62" width="140" height="8" fill="${N}"/><line x1="30" y1="56" x2="170" y2="56" stroke="${N}" stroke-width="1.5"/>${[40,60,80,100,120,140,160].map(x=>`<line x1="${x}" y1="56" x2="${x}" y2="62" stroke="${N}" stroke-width="1.2"/>`).join('')}<path d="M36,70 l-5,6 h10z" fill="${N}"/><path d="M164,70 l-5,6 h10z" fill="${N}"/>${person(100,62,R)}<text x="100" y="104" font-size="9" fill="${N}" text-anchor="middle">両端を載せただけの桁</text>`),
+  balcony:w(sky+`<rect x="20" y="6" width="70" height="104" fill="${E}" stroke="${N}" stroke-width="2"/>${[20,50,80].map(y=>`<rect x="34" y="${y}" width="16" height="18" fill="${M}"/>`).join('')}<rect x="90" y="44" width="72" height="6" fill="${N}"/><line x1="160" y1="44" x2="160" y2="28" stroke="${N}" stroke-width="2"/><line x1="90" y1="28" x2="160" y2="28" stroke="${N}" stroke-width="2"/>${[100,110,120,130,140,150].map(x=>`<line x1="${x}" y1="28" x2="${x}" y2="44" stroke="${N}" stroke-width="1"/>`).join('')}${person(132,44,R)}<path d="M90,52 Q110,54 150,60" stroke="${R}" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/><text x="122" y="72" font-size="9" fill="${R}" text-anchor="middle">根元（壁側）が最大のM</text><circle cx="92" cy="47" r="7" fill="none" stroke="${R}" stroke-width="2"/>`),
+  floor:w(sky+`<rect x="10" y="66" width="180" height="8" fill="${N}"/><rect x="10" y="74" width="10" height="36" fill="${E}" stroke="${N}"/><rect x="180" y="74" width="10" height="36" fill="${E}" stroke="${N}"/>${person(50,66)}${person(64,66,R)}${person(138,66)}<rect x="86" y="46" width="30" height="20" fill="${G}"/><rect x="150" y="54" width="22" height="12" fill="${B}"/>${[20,40,60,80,100,120,140,160,180].map(x=>`<line x1="${x}" y1="22" x2="${x}" y2="34" stroke="${R}" stroke-width="1.5"/><path d="M${x},36 l-3,-5 h6z" fill="${R}"/>`).join('')}<line x1="20" y1="22" x2="180" y2="22" stroke="${R}" stroke-width="1.5"/><text x="100" y="15" font-size="9" fill="${R}" text-anchor="middle">人・家具・雪を「等分布荷重」とみなす</text>`),
+  eaves:w(sky+`<rect x="40" y="50" width="100" height="60" fill="${E}" stroke="${N}" stroke-width="2"/><rect x="80" y="74" width="20" height="36" fill="${M}"/><path d="M20,48 L100,18 L180,48" fill="none" stroke="${N}" stroke-width="5"/><path d="M40,50 l-4,6 h8z" fill="${N}"/><path d="M140,50 l-4,6 h8z" fill="${N}"/><circle cx="24" cy="47" r="7" fill="none" stroke="${R}" stroke-width="2"/><text x="22" y="66" font-size="9" fill="${R}">軒先＝張出し</text>`),
+  bracket:w(sky+`<rect x="10" y="40" width="180" height="10" fill="${N}"/><rect x="96" y="50" width="6" height="26" fill="${N}"/><rect x="96" y="70" width="44" height="6" fill="${N}"/><rect x="122" y="76" width="30" height="20" fill="${R}"/><text x="137" y="89" font-size="8" fill="#fff" text-anchor="middle">看板</text><path d="M80,30 A16,16 0 1 1 116,30" fill="none" stroke="${R}" stroke-width="2"/><path d="M116,30 l-7,-3 l3,8z" fill="${R}"/><text x="98" y="18" font-size="9" fill="${R}" text-anchor="middle">梁を回す力（モーメント）</text>`),
+  gerber:w(sky+`<rect x="0" y="94" width="200" height="16" fill="${M}"/><path d="M8,78 L40,40 L72,78 Z M40,40 L40,94 M72,78 L92,72 M8,78 L0,80" fill="none" stroke="${R}" stroke-width="3"/><path d="M192,78 L160,40 L128,78 Z M160,40 L160,94 M128,78 L108,72" fill="none" stroke="${R}" stroke-width="3"/><path d="M92,72 L108,72" stroke="${N}" stroke-width="4"/><circle cx="92" cy="72" r="3" fill="#fff" stroke="${N}" stroke-width="2"/><circle cx="108" cy="72" r="3" fill="#fff" stroke="${N}" stroke-width="2"/><rect x="34" y="78" width="12" height="20" fill="${E}" stroke="${N}"/><rect x="154" y="78" width="12" height="20" fill="${E}" stroke="${N}"/><text x="100" y="62" font-size="8.5" fill="${N}" text-anchor="middle">吊り桁（ヒンジ○）</text><text x="100" y="12" font-size="9" fill="${N}" text-anchor="middle">張り出した腕の間に短い桁を載せる</text>`),
+  rcframe:w(sky+`${[20,90,160].map(x=>`<rect x="${x}" y="20" width="14" height="90" fill="${E}" stroke="${N}" stroke-width="1.5"/>`).join('')}<rect x="20" y="20" width="154" height="14" fill="${E}" stroke="${N}" stroke-width="1.5"/><rect x="20" y="62" width="154" height="12" fill="${E}" stroke="${N}" stroke-width="1.5"/><path d="M34,64 L52,64 M70,72 L90,72 M104,64 L122,64" stroke="${R}" stroke-width="2.5"/><text x="96" y="54" font-size="8.5" fill="${R}" text-anchor="middle">端は上側・中央は下側に鉄筋が要る</text><text x="96" y="100" font-size="8.5" fill="${N}" text-anchor="middle">柱と梁を一体に打つ</text>`),
+  viaduct:w(sky+`<rect x="0" y="100" width="200" height="10" fill="${G}"/><rect x="0" y="44" width="200" height="9" fill="${N}"/>${[20,70,120,170].map(x=>`<rect x="${x}" y="53" width="10" height="47" fill="${E}" stroke="${N}"/>`).join('')}${car(40,44)}${car(130,44,B)}<path d="M25,40 Q50,30 75,40" stroke="${R}" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/><text x="100" y="20" font-size="9" fill="${N}" text-anchor="middle">何本もの橋脚にまたがる連続桁</text>`),
+  warehouse:w(sky+`<rect x="0" y="100" width="200" height="10" fill="${G}"/>${[0,1,2].map(i=>`<path d="M${30+i*14},100 L${30+i*14},${46-i*6} L${170+i*14-14*0},${46-i*6} L${170+i*14-14*0},100" fill="none" stroke="${i===0?N:'#93BCD6'}" stroke-width="${i===0?5:2}"/>`).join('')}<path d="M10,62 l14,0" stroke="${R}" stroke-width="2.5"/><path d="M28,62 l-6,-4 v8z" fill="${R}"/><text x="12" y="54" font-size="8.5" fill="${R}">地震・風</text><text x="100" y="74" font-size="9" fill="${N}" text-anchor="middle">工場・倉庫の門形の骨組み</text>`),
+  gym:w(sky+`<rect x="0" y="100" width="200" height="10" fill="${G}"/><path d="M22,100 L22,56 L100,22 L178,56 L178,100" fill="none" stroke="${N}" stroke-width="5"/>${[[22,100],[100,22],[178,100]].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="#fff" stroke="${R}" stroke-width="2.5"/>`).join('')}<text x="100" y="72" font-size="9" fill="${N}" text-anchor="middle">頂部と両脚の3か所がピン</text><path d="M14,96 l-10,0" stroke="${B}" stroke-width="2.5"/><path d="M186,96 l10,0" stroke="${B}" stroke-width="2.5"/>`),
+  building:w(sky+`<rect x="0" y="100" width="200" height="10" fill="${G}"/>${[0,1,2,3].map(f=>`<rect x="40" y="${100-(f+1)*22}" width="120" height="4" fill="${N}"/>`).join('')}${[40,98,156].map(x=>`<rect x="${x}" y="12" width="4" height="88" fill="${N}"/>`).join('')}<path d="M100,40 L120,60 M104,44 L116,56" stroke="${R}" stroke-width="2"/><text x="100" y="8" font-size="9" fill="${N}" text-anchor="middle">柱と梁を剛につなぐ一般的なビル</text><path d="M10,60 h22" stroke="${R}" stroke-width="2.5"/><path d="M36,60 l-7,-4 v8z" fill="${R}"/>`),
+  sag:w(sky+`<rect x="10" y="40" width="10" height="70" fill="${E}" stroke="${N}"/><rect x="180" y="40" width="10" height="70" fill="${E}" stroke="${N}"/><path d="M20,44 Q100,64 180,44" stroke="${N}" stroke-width="6" fill="none"/><line x1="20" y1="44" x2="180" y2="44" stroke="${B}" stroke-dasharray="4 3"/>${person(80,56,R)}${person(110,57)}<line x1="100" y1="44" x2="100" y2="54" stroke="${R}" stroke-width="1.5"/><text x="100" y="86" font-size="9" fill="${R}" text-anchor="middle">たわみ ≦ スパンの1/250程度</text>`),
+  camber:w(sky+`<rect x="0" y="96" width="200" height="14" fill="${M}"/><path d="M20,60 Q100,40 180,60" stroke="${B}" stroke-width="3" fill="none" stroke-dasharray="5 4"/><path d="M20,60 L180,60" stroke="${N}" stroke-width="6"/><rect x="14" y="60" width="12" height="36" fill="${E}" stroke="${N}"/><rect x="174" y="60" width="12" height="36" fill="${E}" stroke="${N}"/><text x="100" y="36" font-size="9" fill="${B}" text-anchor="middle">作るときの形（上に反らせる）</text><text x="100" y="76" font-size="9" fill="${N}" text-anchor="middle">自重でたわんで、まっすぐに</text>`),
+  loadtest:w(sky+`<rect x="0" y="96" width="200" height="14" fill="${G}"/><rect x="20" y="56" width="160" height="8" fill="${N}"/><rect x="14" y="64" width="12" height="32" fill="${E}" stroke="${N}"/><rect x="174" y="64" width="12" height="32" fill="${E}" stroke="${N}"/>${car(70,56)}${car(96,56)}<line x1="100" y1="64" x2="100" y2="92" stroke="${R}" stroke-width="1.2"/><rect x="94" y="88" width="12" height="8" fill="${R}"/><text x="128" y="86" font-size="8.5" fill="${R}">変位計で測る</text><text x="100" y="40" font-size="9" fill="${N}" text-anchor="middle">重いトラックを載せて、たわみを測定</text>`),
+  indet:w(sky+`<line x1="20" y1="30" x2="20" y2="80" stroke="${N}" stroke-width="4"/><line x1="180" y1="30" x2="180" y2="80" stroke="${N}" stroke-width="4"/>${[30,40,50,60,70].map(y=>`<line x1="20" y1="${y}" x2="12" y2="${y+7}" stroke="${G}"/><line x1="180" y1="${y}" x2="188" y2="${y+7}" stroke="${G}"/>`).join('')}<line x1="20" y1="55" x2="180" y2="55" stroke="${N}" stroke-width="6"/><path d="M20,55 Q100,75 180,55" stroke="${B}" stroke-dasharray="4 3" fill="none" stroke-width="2"/><text x="40" y="96" font-size="9" fill="${R}">端：たわみ角＝0 の条件を足す</text>`),
+ };
+})();
+
+// ================= 実例と使い道 =================
+const LIFE={
+ simple:{ex:[['歩道橋や小さな川の桁橋','両端を橋台に載せただけの「単純桁」が多い。車や人が渡ると、この図と同じ形で曲げられる'],['木造住宅の床梁','柱と柱の間に架けた梁の上に、家具や人の重さが集中荷重として載る'],['工事現場の足場板・仮設の橋','両端を支えた板の上を人が歩く。中央付近に立つと一番たわむ']],
+  use:['M図の山の位置と大きさで、梁の高さや鋼材の大きさを決める（M が大きいほど断面を大きく）','鉄筋コンクリート梁では、M図で引張になる下側に主筋を入れる','荷重を動かしたときの最大値は「影響線」の考え方につながり、車が渡る橋の設計で使う'],
+  ins:'点検で梁の中央付近の下面に縦向きのひび割れがあれば、M が大きい場所の「曲げひび割れ」。支点近くの斜めのひび割れは、Q が大きい場所の「せん断ひび割れ」で、より注意が必要。'},
+ cant:{ex:[['マンションのベランダ・バルコニー','建物の壁から突き出した床。根元（壁側）だけで支えている'],['駅のホームや競技場の屋根','柱から片側に大きく張り出した屋根。客席の視界をさえぎる柱がない'],['道路標識・信号の腕','支柱から道路の上に伸びる腕。風や標識の重さを根元で支える']],
+  use:['M は根元（固定端）で最大。だから根元を太く、先端を細くした形がよく使われる','鉄筋コンクリートの片持ちスラブでは、引張になる上側に鉄筋を入れる。施工で鉄筋が下がると危険なので、現場の検査で必ず確認する','先端のたわみ PL³/3EI は、手すりが下がって見えないか・床が揺れないかの確認に使う'],
+  ins:'ベランダの根元の上面のひび割れ、先端が下がっている、手すりが傾いているなどは要注意のサイン。根元が一番大きな力を受けているから。'},
+ udl:{ex:[['床やスラブ','人・家具・雪の重さは、床全体にほぼ均等に広がる等分布荷重として計算する'],['橋の自重','橋桁自身の重さは長さ方向に一様な等分布荷重'],['屋根の雪','多雪地域では雪の重さが屋根全体にかかる。地域ごとに積雪量が決められている']],
+  use:['wL²/8 は構造設計で最もよく使う式の一つ。スパン L が2倍になると M は4倍になるので、長い梁ほど急に太くなる','中央の M が最大、両端の Q が最大。だから梁の中央は曲げ、端部はせん断に対して補強する（鉄筋コンクリートのあばら筋は端部を密にする）'],
+  ins:'長い梁や床の中央が目で見て下がっていたら、たわみが大きいサイン。中央の下面のひび割れは曲げ、端部の斜めのひび割れはせん断。'},
+ over:{ex:[['軒の出がある屋根','壁から外へ張り出した軒先が、張出し梁になる'],['橋脚の上で張り出した床版','橋脚の左右に床版を張り出すと、中央のスパンの M を減らせる'],['片側に張り出した看板・ひさし','支点を越えて先に荷重がある']],
+  use:['張出し部の荷重が、スパン中央の M を打ち消す。張出しの長さを調整すると M の最大値を小さくでき、材料を節約できる','支点の上では上側が引張になるので、鉄筋コンクリートでは上端筋が必要'],
+  ins:'支点の真上の上面にひび割れがあれば、張出し側の荷重による負の曲げモーメントが原因と考えられる。'},
+ mload:{ex:[['梁に取り付いたブラケット（腕）','腕の先に機械や看板の重さがかかると、梁には回そうとする力（モーメント）が加わる'],['柱と梁の接合部','ラーメン構造では、柱が梁を回そうとする力が梁へモーメントとして伝わる'],['エレベーターや設備の取付け金物','偏心した位置の荷重はモーメントとして扱う']],
+  use:['荷重が部材の中心からずれていると、力だけでなくモーメントも生じる（偏心）。接合部やボルトの設計で必ず考える','M図が跳ぶ場所は接合部の補強が必要になる場所'],
+  ins:'取付け金物のまわりのひび割れ、ボルトのゆるみは、モーメントが集中しているサイン。'},
+ gerber:{ex:[['ゲルバー橋（カンチレバー橋）','張り出した2つの腕の間に、短い桁をヒンジで吊り下げる形式。スコットランドのフォース鉄道橋が有名で、大阪の港大橋もこの形式（ゲルバートラス橋）'],['古い高速道路の桁','ヒンジ（かけ違い部）で桁をつないだ形式が多く使われた']],
+  use:['静定なので、支点が少し沈んでも余計な力が生じない。地盤の悪い場所で有利','ヒンジでは M＝0 なので、そこで桁を切り離して運び、架設できる'],
+  ins:'ゲルバー橋の「かけ違い部」（ヒンジ部分）は、狭くて点検しにくく、水がたまって傷みやすい。点検の重点箇所として知られている。'},
+ ff:{ex:[['鉄筋コンクリート造の建物の梁','柱と一体に打つので、梁の両端は回転しにくく、固定端に近い'],['ボックスカルバート（四角い水路・通路）の頂版','側壁と一体の床版が土の重さを受ける']],
+  use:['端部は上側、中央は下側が引張。設計図で梁の上端筋と下端筋の量が場所によって違うのはこのため','単純梁より M の最大値が小さく（wL²/8 → wL²/12）、たわみも1/5になる。一体にする利点'],
+  ins:'梁の端部の上面（柱との境目付近）にひび割れが出やすい。仕上げ材に隠れて見えにくい場所でもある。'},
+ cont:{ex:[['高速道路や新幹線の高架橋','いくつもの橋脚にまたがって1本の桁を通す「連続桁」が多い'],['ビルの床スラブ','何本もの梁の上に連続して載る']],
+  use:['単純桁を並べるより M が小さく、桁を薄くできる。継ぎ目が減って車の走行も滑らかになる','中間支点の上は上側が引張になるので、上側の鉄筋・鋼材を増やす'],
+  ins:'中間支点の上の路面（舗装）にひび割れが出ることがある。負の曲げモーメントで桁の上面が引っ張られているため。'},
+ portal:{ex:[['工場・倉庫・体育館の骨組み','柱と梁を剛につないだ門形の骨組みが並んでいる'],['門形の橋脚・道路標識の門形柱','道路をまたぐ形の支柱'],['鳥居','形は門形ラーメンそのもの']],
+  use:['地震や風の水平力は、柱の曲げで受け止める。M図から、柱の上端と下端が一番大きな力を受けることがわかる','隅角部（柱と梁の接合部）に M が集まるので、ここの設計・施工が建物の強さを左右する'],
+  ins:'柱と梁の接合部まわりのひび割れ、鉄骨なら接合部のボルトや溶接部が、点検の重点箇所。'},
+ '3h':{ex:[['体育館・倉庫の山形の屋根','木の大きな集成材や鉄骨で、屋根の頂部と両脚の3か所をピンでつなぐ'],['3ヒンジアーチ橋','頂部と両端の3か所がヒンジのアーチ']],
+  use:['静定なので、温度で伸び縮みしたり地盤が少し沈んだりしても余計な力が生じにくい','脚の水平反力（外へ開こうとする力）を基礎で受け止める必要がある。基礎の設計にこの値を使う'],
+  ins:'脚の部分が外側へ開いていないか、基礎のまわりにずれやひび割れがないかを見る。'},
+ fixf:{ex:[['一般的なビル（鉄筋コンクリート造・鉄骨造）','柱を基礎に固定し、柱と梁を剛につなぐ。日本の多くの建物がこの形'],['ラーメン橋脚・高架橋','柱の下を基礎に固定した門形の橋脚']],
+  use:['地震のとき、柱の上と下で M が逆向きになり、途中に M＝0 の点（反曲点）ができる。耐震設計の基本','柱が短いと Q が大きくなり、せん断破壊（斜めのひび割れ）を起こしやすい。阪神・淡路大震災では高架橋の柱のせん断破壊が大きな被害につながり、その後、帯鉄筋を増やす補強が進んだ'],
+  ins:'柱の斜めのひび割れ（せん断）や、柱の上下端のコンクリートのはく落は、地震後の点検で最も重要な確認箇所。'},
+};
+
+// ================= geometry =================
+function mkGeom(pts){ const seg=[]; let S=0; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i],[x1,y1]=pts[i+1]; const L=Math.hypot(x1-x0,y1-y0); seg.push({x0,y0,x1,y1,L,s0:S,tx:(x1-x0)/L,ty:(y1-y0)/L}); S+=L; }
+  function at(s){ s=Math.max(0,Math.min(S,s)); let g=seg[seg.length-1]; for(const q of seg){ if(s<=q.s0+q.L+1e-9){ g=q; break; } } const u=s-g.s0; return {x:g.x0+g.tx*u,y:g.y0+g.ty*u,tx:g.tx,ty:g.ty,seg:g}; }
+  function atR(s){ for(const q of seg){ if(s<q.s0+q.L-1e-9 && s>=q.s0-1e-9){ const u=s-q.s0; return {x:q.x0+q.tx*u,y:q.y0+q.ty*u,tx:q.tx,ty:q.ty,seg:q}; } } return at(s); }
+  const corners=[0]; seg.forEach(q=>corners.push(q.s0+q.L));
+  return {seg,S,at,atR,corners}; }
+
+// ================= FEM solver (2D frame, EA large) =================
+const H=0.25; // mesh step & snap
+function gdir(dir){ return dir==='down'?[0,-1]:dir==='up'?[0,1]:dir==='right'?[1,0]:[-1,0]; }
+function solve(st,EI=1){
+  const G=mkGeom(st.pts), S=G.S, n=Math.round(S/H)+1; const sv=[]; for(let k=0;k<n;k++) sv.push(k*H);
+  const nodes=sv.map(s=>G.at(s)); const hinge=new Set((st.hinges||[]).map(s=>Math.round(s/H)));
+  let nd=3*n; const extra={}; hinge.forEach(k=>{ extra[k]=nd++; });
+  const EA=EI*1e5; const K=Array.from({length:nd},()=>new Float64Array(nd)); const Fv=new Float64Array(nd);
+  const els=[];
+  for(let e=0;e<n-1;e++){ const a=nodes[e],b=nodes[e+1]; const L=Math.hypot(b.x-a.x,b.y-a.y), c=(b.x-a.x)/L, s=(b.y-a.y)/L;
+    const dof=[3*e,3*e+1,(hinge.has(e)&&e>0)?extra[e]:3*e+2, 3*(e+1),3*(e+1)+1,3*(e+1)+2];
+    const k1=EA/L,k2=12*EI/L**3,k3=6*EI/L**2,k4=4*EI/L,k5=2*EI/L;
+    const kl=[[k1,0,0,-k1,0,0],[0,k2,k3,0,-k2,k3],[0,k3,k4,0,-k3,k5],[-k1,0,0,k1,0,0],[0,-k2,-k3,0,k2,-k3],[0,k3,k5,0,-k3,k4]];
+    const T=[[c,s,0,0,0,0],[-s,c,0,0,0,0],[0,0,1,0,0,0],[0,0,0,c,s,0],[0,0,0,-s,c,0],[0,0,0,0,0,1]];
+    // distributed load on this element
+    let qt=0,qn=0; const sm=(sv[e]+sv[e+1])/2;
+    for(const l of st.loads) if(l.k==='w' && sm>Math.min(l.s0,l.s1) && sm<Math.max(l.s0,l.s1)){ const [gx,gy]=gdir(l.dir); qt+=l.v*(gx*c+gy*s); qn+=l.v*(-gx*s+gy*c); }
+    const fe=[qt*L/2,qn*L/2,qn*L*L/12,qt*L/2,qn*L/2,-qn*L*L/12];
+    // global
+    const kg=Array.from({length:6},()=>new Float64Array(6)); for(let i=0;i<6;i++)for(let j=0;j<6;j++){ let v=0; for(let p=0;p<6;p++)for(let q=0;q<6;q++) v+=T[p][i]*kl[p][q]*T[q][j]; kg[i][j]=v; }
+    const fg=new Float64Array(6); for(let i=0;i<6;i++){ let v=0; for(let p=0;p<6;p++) v+=T[p][i]*fe[p]; fg[i]=v; }
+    for(let i=0;i<6;i++){ Fv[dof[i]]+=fg[i]; for(let j=0;j<6;j++) K[dof[i]][dof[j]]+=kg[i][j]; }
+    els.push({e,a,b,L,c,s,dof,kl,T,fe,qt,qn,s0:sv[e],s1:sv[e+1]}); }
+  for(const l of st.loads){ if(l.k==='P'){ const k=Math.round(l.s/H); const [gx,gy]=gdir(l.dir); Fv[3*k]+=l.v*gx; Fv[3*k+1]+=l.v*gy; } else if(l.k==='M'){ const k=Math.round(l.s/H); Fv[3*k+2]+=-l.v; } }
+  // constraints
+  const fix=new Set(); const reac=[];
+  for(const sp of st.sup){ const k=Math.round(sp.s/H); const p=nodes[k];
+    const dofs= sp.t==='fixed'?[3*k,3*k+1,3*k+2]: sp.t==='pin'?[3*k,3*k+1]:[3*k+1]; dofs.forEach(d=>fix.add(d)); reac.push({sp,k,p,dofs}); }
+  const free=[]; for(let i=0;i<nd;i++) if(!fix.has(i)) free.push(i);
+  // solve reduced
+  const m=free.length; const A=free.map(i=>{ const r=new Float64Array(m+1); free.forEach((j,jj)=>r[jj]=K[i][j]); r[m]=Fv[i]; return r; });
+  let maxd=0; for(let i=0;i<m;i++) maxd=Math.max(maxd,Math.abs(A[i][i]));
+  let unstable=false;
+  for(let col=0;col<m;col++){ let piv=col,best=Math.abs(A[col][col]); for(let r=col+1;r<m;r++){ const v=Math.abs(A[r][col]); if(v>best){best=v;piv=r;} }
+    if(best<maxd*1e-11){ unstable=true; break; } if(piv!==col){ const t=A[piv];A[piv]=A[col];A[col]=t; }
+    const d=A[col][col]; for(let r=col+1;r<m;r++){ const f=A[r][col]/d; if(f===0) continue; const Ar=A[r],Ac=A[col]; for(let j=col;j<=m;j++) Ar[j]-=f*Ac[j]; } }
+  const D=new Float64Array(nd);
+  if(!unstable){ const x=new Float64Array(m); for(let i=m-1;i>=0;i--){ let v=A[i][m]; for(let j=i+1;j<m;j++) v-=A[i][j]*x[j]; x[i]=v/A[i][i]; } free.forEach((i,ii)=>D[i]=x[ii]); }
+  // element end forces
+  for(const el of els){ const dg=el.dof.map(i=>D[i]); const dl=el.T.map(r=>r.reduce((a,v,j)=>a+v*dg[j],0)); const f=el.kl.map((r,i)=>r.reduce((a,v,j)=>a+v*dl[j],0)-el.fe[i]);
+    el.Ni=-f[0]; el.Qi=f[1]; el.Mi=-f[2]; el.Nj=f[3]; el.Qj=-f[4]; el.Mj=f[5]; }
+  // reactions: K D - F at fixed dofs
+  for(const r of reac){ r.val=r.dofs.map(d=>{ let v=0; for(let j=0;j<nd;j++) v+=K[d][j]*D[j]; return v-Fv[d]; }); r.Rx=0;r.Ry=0;r.Mz=0; r.dofs.forEach((d,i)=>{ const t=d%3; if(t===0) r.Rx=r.val[i]; else if(t===1) r.Ry=r.val[i]; else r.Mz=r.val[i]; }); }
+  // determinacy (open chain): reactions - 3 - hinges
+  const nr=reac.reduce((a,r)=>a+r.dofs.length,0); const deg=nr-3-hinge.size;
+  const disp=nodes.map((p,k)=>({x:p.x,y:p.y,ux:D[3*k],uy:D[3*k+1],rz:D[3*k+2]}));
+  return {G,S,nodes,els,reac,unstable,deg,disp,D,sv};
+}
+function valAt(el,u,kind){ if(kind==='N') return el.Ni-el.qt*u; if(kind==='Q') return el.Qi+el.qn*u; return el.Mi+el.Qi*u+el.qn*u*u/2; }
+function valS(R,s,kind,side){ // side: -1 just before, +1 just after
+  let el=R.els.find(e=> side<0? (s>e.s0+1e-9 && s<=e.s1+1e-9) : (s>=e.s0-1e-9 && s<e.s1-1e-9)); if(!el) el= side<0? R.els[0]:R.els[R.els.length-1];
+  return valAt(el,Math.max(0,Math.min(el.L,s-el.s0)),kind); }
+
+// ================= SVG helpers =================
+function view(G,pad,W){ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; for(const q of G.seg){ x0=Math.min(x0,q.x0,q.x1); x1=Math.max(x1,q.x0,q.x1); y0=Math.min(y0,q.y0,q.y1); y1=Math.max(y1,q.y0,q.y1); }
+  x0-=pad[3]; x1+=pad[1]; y0-=pad[2]; y1+=pad[0]; const sc=W/(x1-x0); const Hh=(y1-y0)*sc; return {x0,x1,y0,y1,sc,W,H:Hh,X:x=>((x-x0)*sc),Y:y=>((y1-y)*sc),inv:(px,py)=>[px/sc+x0, y1-py/sc]}; }
+const fx=v=>v.toFixed(1);
+function arrowSvg(px,py,ux,uy,len,cl,label,lw=3){ // arrow ends at (px,py) screen, pointing along (ux,uy) screen
+  const tx=px-ux*len,ty=py-uy*len; const a=Math.atan2(uy,ux); let s=`<line x1="${fx(tx)}" y1="${fx(ty)}" x2="${fx(px-ux*8)}" y2="${fx(py-uy*8)}" stroke="${cl}" stroke-width="${lw}"/>`;
+  s+=`<path d="M${fx(px)},${fx(py)} L${fx(px-12*Math.cos(a-.42))},${fx(py-12*Math.sin(a-.42))} L${fx(px-12*Math.cos(a+.42))},${fx(py-12*Math.sin(a+.42))}Z" fill="${cl}"/>`;
+  if(label){ const lx=tx-ux*12,ly=ty-uy*12; s+=txt(lx,ly,label,cl,13,Math.abs(ux)>.5?(ux>0?'end':'start'):'middle'); } return s; }
+function txt(x,y,t,cl='#12286B',size=13,anchor='middle',w=900,halo=true){ return `<text x="${fx(x)}" y="${fx(y)}" fill="${cl}" font-size="${size}" font-weight="${w}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif" ${halo?'paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"':''}>${t}</text>`; }
+function momArc(px,py,cw,cl,label,r=18){ const p=a=>[px+r*Math.cos(a*PI/180),py-r*Math.sin(a*PI/180)]; const [sx,sy]=p(cw?150:30),[ex,ey]=p(cw?30:150);
+  let s=`<path d="M${fx(sx)},${fx(sy)} A${r},${r} 0 1 ${cw?1:0} ${fx(ex)},${fx(ey)}" fill="none" stroke="${cl}" stroke-width="3"/>`;
+  // arrow head at end, tangent direction
+  const ang=(cw?30:150)*PI/180; const tdx=cw? Math.sin(ang):-Math.sin(ang), tdy=cw? Math.cos(ang):Math.cos(ang); // screen tangent approx
+  const hx=ex,hy=ey; const dx=cw?-1:1; s+=`<path d="M${fx(hx+dx*0)},${fx(hy)} l${fx(dx*-1+ (cw?-9:9))},${fx(-4)} l${fx(cw?4:-4)},${fx(10)}Z" fill="${cl}"/>`;
+  if(label) s+=txt(px,py-r-12,label,cl,13); return s; }
+function supSvg(t,px,py,orient){ const u=12; let s='';
+  if(t==='pin'||t==='roller'){ s+=`<path d="M${fx(px)},${fx(py+3)} L${fx(px-u)},${fx(py+u*1.5)} L${fx(px+u)},${fx(py+u*1.5)}Z" fill="#12286B"/>`;
+    if(t==='roller') s+=`<circle cx="${fx(px-u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/><circle cx="${fx(px+u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/>`;
+    const yb=py+u*1.5+(t==='roller'?8:0); s+=`<line x1="${fx(px-u*1.5)}" y1="${fx(yb+1)}" x2="${fx(px+u*1.5)}" y2="${fx(yb+1)}" stroke="#12286B" stroke-width="3"/>`; for(let i=-3;i<=2;i++) s+=`<line x1="${fx(px+i*8)}" y1="${fx(yb+3)}" x2="${fx(px+i*8+6)}" y2="${fx(yb+9)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else if(orient==='L'||orient==='R'){ const d=orient==='L'?-1:1; s+=`<line x1="${fx(px)}" y1="${fx(py-22)}" x2="${fx(px)}" y2="${fx(py+22)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px)}" y1="${fx(py+i)}" x2="${fx(px+d*10)}" y2="${fx(py+i+7)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else { s+=`<line x1="${fx(px-22)}" y1="${fx(py)}" x2="${fx(px+22)}" y2="${fx(py)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px+i)}" y1="${fx(py+2)}" x2="${fx(px+i+7)}" y2="${fx(py+11)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  return s; }
+function fixedOrient(G,s){ const p=G.at(s); const end= s<1e-9?-1:1; if(Math.abs(p.ty)>.5) return 'B'; return (p.tx*end)<0?'L':'R'; }
+function structSvg(G,st,V,opt={}){ let s='';
+  const dim=opt.dimAfter; // dim part after cut
+  for(const q of G.seg){ s+=`<line x1="${fx(V.X(q.x0))}" y1="${fx(V.Y(q.y0))}" x2="${fx(V.X(q.x1))}" y2="${fx(V.Y(q.y1))}" stroke="${opt.thin?'#B9AD95':'#12286B'}" stroke-width="${opt.thin?3:7}" stroke-linecap="round"/>`; }
+  if(!opt.thin){ for(const sp of st.sup){ const p=G.at(sp.s); s+=supSvg(sp.t,V.X(p.x),V.Y(p.y),sp.t==='fixed'?fixedOrient(G,sp.s):null); }
+    for(const h of (st.hinges||[])){ const p=G.at(h); s+=`<circle cx="${fx(V.X(p.x))}" cy="${fx(V.Y(p.y))}" r="6" fill="#fff" stroke="#12286B" stroke-width="2.5"/>`; } }
+  return s; }
+
+// ================= state =================
+let tab='nqm';
+const S={pre:0, st:null, sel:0, cut:null, predict:false, revealed:true, defo:false, step:-1, sweep:null};
+function loadPreset(i){ S.pre=i; const p=PRE[i]; S.st=JSON.parse(JSON.stringify({pts:p.pts,sup:p.sup,hinges:p.hinges||[],loads:p.loads})); S.sel=0; const G=mkGeom(p.pts); S.cut=snapCut(G.S*0.37); S.revealed=!S.predict; S.step=-1; S.sweep=null; }
+function snapCut(s){ return Math.max(H/2, Math.min(Math.round((s-H/2)/H)*H+H/2, 1e9)); }
+const KN={P:'集中荷重',w:'等分布荷重',M:'モーメント荷重'};
+const DIRL={down:'↓',up:'↑',right:'→',left:'←'};
+function loadLabel(l){ return l.k==='P'?`${DIRL[l.dir]} ${nf(l.v)} kN`: l.k==='w'?`${DIRL[l.dir]} ${nf(l.v)} kN/m`:`↻ ${nf(l.v)} kN·m`; }
+
+// ================= NQM tab render =================
+let R=null, V=null;
+function renderNQM(){
+  const p=PRE[S.pre];
+  $('#main').innerHTML=`<h1>荷重を動かして、<b>N図・Q図・M図</b>の変わり方を見る</h1>
+  <p class="lead">荷重（赤）をドラッグすると、反力と断面力図がその場で変わります。構造物の上をタップ・ドラッグすると、その位置で切断（赤い破線）し、手前側の力を足し合わせて N・Q・M が求まる様子を表で確かめられます。「解く過程」で手順を一歩ずつ追えます。</p>
+  <div class="cols">
+   <aside>
+    <div class="panel"><h3>構造物</h3><div class="row">${PRE.map((q,i)=>`<button class="chip ${i===S.pre?'on':''}" data-pre="${i}">${q.name}</button>`).join('')}</div>
+      <p style="font-size:13px;line-height:1.7;margin:8px 0 0">${p.note}</p></div>
+    <div class="panel"><h3>荷重</h3><div class="row"><button class="chip" data-add="P">＋集中荷重</button><button class="chip" data-add="w">＋等分布荷重</button><button class="chip" data-add="M">＋モーメント荷重</button></div><ul class="loads" id="loads"></ul></div>
+    <div class="panel"><h3>見かた</h3>
+      <label class="ck"><input type="checkbox" id="pred" ${S.predict?'checked':''}>図を隠して、先に予想する</label>
+      <label class="ck"><input type="checkbox" id="defo" ${S.defo?'checked':''}>変形のようすを重ねる</label>
+      <h3 style="margin-top:10px">いま見えているルール</h3><ul class="rules" id="rules"></ul></div>
+   </aside>
+   <section>
+    <div class="stage" id="stage"><div class="hint">荷重をドラッグ／構造物をタップで切断</div><div class="det" id="det"></div><div id="sv"></div><div class="reac" id="reac"></div></div>
+    <div class="life" id="life"></div>
+    <div class="steps"><h3 style="font-size:12px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 6px">解く過程</h3><div class="bar" id="stepbar"></div><div class="stxt" id="stxt"></div></div>
+    <div class="diags" id="diags"><div class="dg"><h4>N図（軸方向力）<small>引張＋</small></h4><div id="dN"></div></div><div class="dg"><h4>Q図（せん断力）<small>時計回りにずらす向き＋</small></h4><div id="dQ"></div></div><div class="dg"><h4>M図（曲げモーメント）<small>引張側に描く</small></h4><div id="dM"></div></div>
+      <div class="cover" id="cover" hidden><div>N図・Q図・M図の形を予想してみよう<br><span style="font-weight:700;font-size:13px">紙に描いてから、答えを見る</span></div><button class="b main" id="showd">答えを見る</button></div></div>
+    <div class="cut" id="cutbox"></div>
+    <p class="foot">シリーズ：<a href="../kasen/" target="_blank" rel="noopener">河川工学ラボ</a>・<a href="../sogi/" target="_blank" rel="noopener"><b>そぎ落としミッション（入口・つながりマップ）</b></a>・<a href="../kozo/" target="_blank" rel="noopener">構造力学ラボ</a>・<a href="../jiban/" target="_blank" rel="noopener">地盤力学ラボ</a>・<a href="../suiri/" target="_blank" rel="noopener">水理学ラボ</a></p>
+    <p class="foot">符号：Q は手前側（A側）の力の、部材に直角な成分の合計。M は手前側の力の、切断面まわりのモーメントの合計で、梁の下側（ラーメンでは内側）が引張になる向きを＋とし、M図は引張側に描きます。計算は剛性法で行っているので、不静定構造も同じ画面で見られます。</p>
+   </section>
+  </div>`;
+  document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{ loadPreset(+b.dataset.pre); renderNQM(); });
+  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{ const G=mkGeom(S.st.pts); const k=b.dataset.add; const mid=Math.round(G.S/2/H)*H;
+    const l= k==='P'?{k,s:mid,v:10,dir:'down'}: k==='w'?{k,s0:Math.max(0,mid-2),s1:Math.min(G.S,mid+2),v:3,dir:'down'}:{k,s:mid,v:20}; S.st.loads.push(l); S.sel=S.st.loads.length-1; S.step=-1; update(); });
+  $('#pred').onchange=e=>{ S.predict=e.target.checked; S.revealed=!S.predict; update(); };
+  $('#defo').onchange=e=>{ S.defo=e.target.checked; update(); };
+  $('#showd').onclick=()=>{ S.revealed=true; update(); };
+  drawLife();
+  bindDrag();
+  update();
+}
+const ILLMAP={simple:'footbridge',cant:'balcony',udl:'floor',over:'eaves',mload:'bracket',gerber:'gerber',ff:'rcframe',cont:'viaduct',portal:'warehouse','3h':'gym',fixf:'building'};
+function drawLife(){ const L=LIFE[PRE[S.pre].id]; if(!L) return; const il=ILL[ILLMAP[PRE[S.pre].id]]; $('#life').innerHTML=`<h3>この構造の実例</h3><div class="lw">${il?`<figure class="ill">${il}<figcaption>${L.ex[0][0]}（模式図）</figcaption></figure>`:''}<div class="ex">${L.ex.map(e=>`<div><b>${e[0]}</b><span>${e[1]}</span></div>`).join('')}</div></div>
+   <h3>この勉強がどう生きるか</h3><ul>${L.use.map(u=>`<li>${u}</li>`).join('')}</ul><div class="ins"><b>点検で見るなら</b>${L.ins}</div>`; }
+function loadsPanel(){ const G=mkGeom(S.st.pts); const ul=$('#loads'); if(!ul) return;
+  ul.innerHTML=S.st.loads.map((l,i)=>`<li class="${i===S.sel?'sel':''}" data-l="${i}" tabindex="0"><div style="display:flex;gap:6px;align-items:center">${KN[l.k]} ${loadLabel(l)}<button class="x" data-del="${i}" aria-label="削除">×</button></div>
+   ${i===S.sel?`<div class="ctl"><input type="range" min="${l.k==='w'?1:l.k==='M'?5:2}" max="${l.k==='w'?20:l.k==='M'?100:60}" step="1" value="${l.v}" data-v="${i}" aria-label="大きさ">
+   ${l.k!=='M'?`<select data-dir="${i}">${(l.k==='w'?['down','right']:['down','up','right','left']).map(d=>`<option value="${d}" ${d===l.dir?'selected':''}>${DIRL[d]}</option>`).join('')}</select>`:`<select data-dir="${i}"><option value="cw" ${l.v>0?'selected':''}>時計回り</option></select>`}</div>`:''}</li>`).join('')||'<li style="cursor:default">荷重なし</li>';
+  ul.querySelectorAll('[data-l]').forEach(li=>li.onclick=e=>{ if(e.target.closest('input,select,button')) return; S.sel=+li.dataset.l; update(); });
+  ul.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.st.loads.splice(+b.dataset.del,1); S.sel=Math.min(S.sel,S.st.loads.length-1); S.step=-1; update(); });
+  ul.querySelectorAll('[data-v]').forEach(r=>r.oninput=()=>{ S.st.loads[+r.dataset.v].v=+r.value; update(true); });
+  ul.querySelectorAll('[data-dir]').forEach(r=>r.onchange=()=>{ const l=S.st.loads[+r.dataset.dir]; if(l.k!=='M') l.dir=r.value; update(); });
+}
+function update(keepPanel){
+  R=solve(S.st);
+  if(!keepPanel) loadsPanel(); else { const li=document.querySelector(`[data-l="${S.sel}"] div`); if(li){ const l=S.st.loads[S.sel]; li.firstChild.textContent=`${KN[l.k]} ${loadLabel(l)}`; } }
+  drawStage(); drawDiags(); drawCut(); drawRules(); drawSteps();
+  const det=$('#det'); if(R.unstable||R.deg<0){ det.className='det ng'; det.textContent='不安定'; } else if(R.deg===0){ det.className='det ok'; det.textContent='静定'; } else { det.className='det in'; det.textContent=`${R.deg}次不静定`; }
+  $('#cover').hidden= S.revealed || R.unstable;
+}
+function supName(r){ return r.sp.lab||'支点'; }
+function reacText(){ if(R.unstable) return '不安定なので、つりあいが成り立たない（動いてしまう）'; return R.reac.map(r=>{ const a=[]; if(r.dofs.some(d=>d%3===0)) a.push(`H<sub>${supName(r)}</sub>＝${nf(Math.abs(r.Rx))} kN${Math.abs(r.Rx)>1e-6?(r.Rx>0?'（→）':'（←）'):''}`);
+  if(r.dofs.some(d=>d%3===1)) a.push(`V<sub>${supName(r)}</sub>＝${nf(Math.abs(r.Ry))} kN${Math.abs(r.Ry)>1e-6?(r.Ry>0?'（↑）':'（↓）'):''}`);
+  if(r.dofs.some(d=>d%3===2)) a.push(`M<sub>${supName(r)}</sub>＝${nf(Math.abs(r.Mz))} kN·m${Math.abs(r.Mz)>1e-6?(r.Mz>0?'（反時計回り）':'（時計回り）'):''}`); return a.join('　'); }).join('<br>'); }
+
+function loadSvg(G,V,l,i,sel){ const cl=sel?'#C62422':'#E0716F'; let s='';
+  if(l.k==='P'){ const p=G.at(l.s); const [gx,gy]=gdir(l.dir); const px=V.X(p.x),py=V.Y(p.y); s+=arrowSvg(px,py,gx,-gy,52,cl,`${nf(l.v)}kN`); s+=`<circle cx="${fx(px-gx*30)}" cy="${fx(py+gy*30)}" r="16" fill="transparent" data-h="${i}:m"/>`; }
+  else if(l.k==='M'){ const p=G.at(l.s); const px=V.X(p.x),py=V.Y(p.y); s+=momArc(px,py,true,cl,`${nf(l.v)}kN·m`); s+=`<circle cx="${fx(px)}" cy="${fx(py)}" r="20" fill="transparent" data-h="${i}:m"/>`; }
+  else { const a=Math.min(l.s0,l.s1),b=Math.max(l.s0,l.s1); const [gx,gy]=gdir(l.dir); const hgt=22+l.v*1.2; const top=[]; const n=Math.max(2,Math.round((b-a)/0.5));
+    for(let k=0;k<=n;k++){ const ss=a+(b-a)*k/n; const p=G.at(Math.min(ss,b-1e-6)); const pp= k===n?G.at(b):p; const px=V.X(pp.x),py=V.Y(pp.y); s+=arrowSvg(px,py,gx,-gy,hgt,cl,null,2); top.push([px-gx*hgt,py+gy*hgt]); }
+    s+=`<polyline points="${top.map(q=>fx(q[0])+','+fx(q[1])).join(' ')}" fill="none" stroke="${cl}" stroke-width="2"/>`;
+    const mid=top[Math.floor(top.length/2)]; s+=txt(mid[0]-gx*12,mid[1]+gy*12-(gx?0:4),`${nf(l.v)}kN/m`,cl,13);
+    s+=`<rect x="${fx(Math.min(...top.map(q=>q[0]))-4)}" y="${fx(Math.min(...top.map(q=>q[1]))-4)}" width="${fx(Math.max(8,Math.max(...top.map(q=>q[0]))-Math.min(...top.map(q=>q[0]))+8))}" height="${fx(Math.max(8,Math.max(...top.map(q=>q[1]))-Math.min(...top.map(q=>q[1]))+8))}" fill="transparent" data-h="${i}:m"/>`;
+    [a,b].forEach((ss,j)=>{ const q=top[j?top.length-1:0]; s+=`<rect x="${fx(q[0]-7)}" y="${fx(q[1]-7)}" width="14" height="14" fill="${sel?'#fff':'transparent'}" stroke="${sel?cl:'none'}" stroke-width="2" data-h="${i}:${l.s0<=l.s1?(j?'e1':'e0'):(j?'e0':'e1')}"/>`; }); }
+  return s; }
+function vw(){ const w=(document.querySelector('.cols>section')||document.body).clientWidth||640; return Math.max(340,Math.min(640,w-4)); }
+function sidePad(G){ return G.seg.length>1?2.6:1.4; }
+function drawStage(){ const G=R.G; const sp=sidePad(G); V=view(G,[2.2,sp,2.4,sp],vw()); let s='';
+  // after-cut dim overlay: draw structure, then highlight before part
+  s+=structSvg(G,S.st,V);
+  if(S.cut!=null && !R.unstable){ // tint portion after cut
+    const segs=[]; for(const q of G.seg){ const a=Math.max(q.s0,S.cut), b=q.s0+q.L; if(b>a){ const pa=G.at(a+1e-9),pb=G.at(b); segs.push(`<line x1="${fx(V.X(pa.x))}" y1="${fx(V.Y(pa.y))}" x2="${fx(V.X(pb.x))}" y2="${fx(V.Y(pb.y))}" stroke="#F4F3EF" stroke-opacity=".62" stroke-width="9"/>`); } }
+    s+=segs.join(''); }
+  if(S.defo && !R.unstable){ let mx=0; R.disp.forEach(d=>mx=Math.max(mx,Math.hypot(d.ux,d.uy))); const k= mx>0? 0.9/mx:0; s+=`<polyline points="${R.disp.map(d=>fx(V.X(d.x+d.ux*k))+','+fx(V.Y(d.y+d.uy*k))).join(' ')}" fill="none" stroke="#3286BE" stroke-width="2.5" stroke-dasharray="7 5"/>`; }
+  // reactions
+  if(!R.unstable && S.step!==0) for(const r of R.reac){ const px=V.X(r.p.x),py=V.Y(r.p.y); const vert=r.sp.t!=='fixed'||fixedOrient(G,r.sp.s)==='B';
+    if(Math.abs(r.Ry)>1e-6){ const up=r.Ry>0; s+=arrowSvg(px+(r.dofs.length>1?14:0),py+(up?14:48),0,up?-1:1,34,'#3286BE',null); s+=txt(px+(r.dofs.length>1?14:0),py+(up?60:56),`${nf(Math.abs(r.Ry))}`,'#3286BE',13,'middle'); }
+    if(Math.abs(r.Rx)>1e-6){ const rt=r.Rx>0; s+=arrowSvg(px+(rt?-14:14),py+30,rt?1:-1,0,34,'#3286BE',null); s+=txt(px+(rt?-52:52),py+30,`${nf(Math.abs(r.Rx))}`,'#3286BE',13,rt?'end':'start'); }
+    if(Math.abs(r.Mz)>1e-6){ s+=momArc(px+(fixedOrient(G,r.sp.s)==='L'?-34:fixedOrient(G,r.sp.s)==='R'?34:0),py+(fixedOrient(G,r.sp.s)==='B'?-30:-26),r.Mz<0,'#3286BE',`${nf(Math.abs(r.Mz))}`,14); } }
+  if(S.step===0) for(const r of R.reac){ const px=V.X(r.p.x),py=V.Y(r.p.y); const lab=supName(r); const parts=[]; if(r.dofs.some(d=>d%3===0)) parts.push(`H${lab}`); if(r.dofs.some(d=>d%3===1)) parts.push(`V${lab}`); if(r.dofs.some(d=>d%3===2)) parts.push(`M${lab}`); s+=txt(px,py+66,parts.join('・')+'＝？','#3286BE',13); }
+  S.st.loads.forEach((l,i)=>s+=loadSvg(G,V,l,i,i===S.sel));
+  for(const sp of S.st.sup){ if(!sp.lab) continue; const p=G.at(sp.s); const vert=Math.abs(p.ty)>.5; s+=txt(V.X(p.x)+(vert?(sp.s<1e-9?-26:26):0),V.Y(p.y)+(vert?-14:-22)+(sp.t==='fixed'&&!vert?-6:0),sp.lab,'#12286B',14); }
+  // cut marker
+  if(S.cut!=null){ const p=G.at(S.cut); const px=V.X(p.x),py=V.Y(p.y); const nx=-p.ty,ny=-p.tx; s+=`<line x1="${fx(px+nx*34)}" y1="${fx(py+ny*34)}" x2="${fx(px-nx*34)}" y2="${fx(py-ny*34)}" stroke="#C62422" stroke-width="2.5" stroke-dasharray="5 4"/>`; s+=txt(px-nx*46,py-ny*46,'切断','#C62422',12); }
+  if(S.sweep!=null){ const p=G.at(S.sweep); s+=`<circle cx="${fx(V.X(p.x))}" cy="${fx(V.Y(p.y))}" r="7" fill="#C62422"/>`; }
+  $('#sv').innerHTML=`<svg viewBox="0 0 ${fx(V.W)} ${fx(V.H)}" id="stsvg">${s}</svg>`;
+  $('#reac').innerHTML=`<b style="color:#3286BE">反力</b>　${S.step===0?'（つりあい式で求める）':reacText()}`;
+}
+// --- diagrams
+function diagSvg(kind,opt={}){ const G=R.G; const sp=sidePad(G); const flat=!R.unstable&&R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,kind))<1e-6)); let vt=flat?1.1:2.3, vb=flat?0.4:vt; if(!flat&&G.seg.length===1&&!R.unstable){ const sg2= kind==='M'?-1:1; let up=0,dn=0; for(const e of R.els) for(const u of [0,e.L/2,e.L]){ const v=valAt(e,u,kind)*sg2; if(v>1e-6) up=1; if(v<-1e-6) dn=1; } vt=up?2.3:0.6; vb=dn?2.3:0.6; }
+  const Vd=view(G,[vt,sp,vb,sp],vw()); let s=structSvg(G,S.st,Vd,{thin:true});
+  if(R.unstable){ return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}${txt(Vd.W/2,Vd.H/2,'不安定','#C62422',16)}</svg>`; }
+  let mx=0; for(const el of R.els){ for(const u of [0,el.L/2,el.L]) mx=Math.max(mx,Math.abs(valAt(el,u,kind))); }
+  const span=Math.max(Vd.x1-Vd.x0,Vd.y1-Vd.y0); const k= mx>1e-6? (G.seg.length>1?1.3:1.5)/mx:0;
+  const sideSign= kind==='M'?-1:1; const fill= kind==='M'?'rgba(198,36,34,.22)':kind==='Q'?'rgba(50,134,190,.24)':'rgba(18,40,107,.18)'; const st= kind==='M'?'#C62422':kind==='Q'?'#3286BE':'#12286B';
+  const lim= opt.upto!=null? opt.upto : 1e9;
+  let path='';
+  for(const el of R.els){ if(el.s0>=lim-1e-9) break; const L=Math.min(el.L,lim-el.s0); const nx=-el.s,ny=el.c; const us=[0,L/4,L/2,3*L/4,L]; const base=us.map(u=>[el.a.x+el.c*u,el.a.y+el.s*u]); const off=us.map((u,i)=>{ const v=valAt(el,u,kind)*k*sideSign; return [base[i][0]+nx*v,base[i][1]+ny*v]; });
+    const poly=[...base,...off.slice().reverse()]; s+=`<polygon points="${poly.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="${fill}" stroke="none"/>`;
+    path+=`<polyline points="${off.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="none" stroke="${st}" stroke-width="2.2"/>`;
+    // vertical connectors at ends
+    path+=`<line x1="${fx(Vd.X(base[0][0]))}" y1="${fx(Vd.Y(base[0][1]))}" x2="${fx(Vd.X(off[0][0]))}" y2="${fx(Vd.Y(off[0][1]))}" stroke="${st}" stroke-width="0.8" stroke-opacity=".7"/>`; }
+  s+=path;
+  // labels
+  if(mx>1e-6 && opt.upto==null){ const keys=new Set([0,R.S]); R.G.corners.forEach(c=>keys.add(c)); S.st.sup.forEach(p=>keys.add(p.s)); (S.st.hinges||[]).forEach(h=>keys.add(h)); S.st.loads.forEach(l=>{ if(l.k==='w'){ keys.add(l.s0); keys.add(l.s1);} else keys.add(l.s); });
+    const cand=[]; [...keys].sort((a,b)=>a-b).forEach(sk=>{ for(const side of [-1,1]){ if((side<0&&sk<1e-9)||(side>0&&sk>R.S-1e-9)) continue; const v=valS(R,sk,kind,side); cand.push({s:sk,v,side}); } });
+    // local extrema inside elements (Q=0 for M)
+    if(kind==='M') for(const el of R.els){ if(Math.abs(el.qn)>1e-9){ const u=-el.Qi/el.qn; if(u>1e-6&&u<el.L-1e-6) cand.push({s:el.s0+u,v:valAt(el,u,'M'),side:0,ext:true}); } }
+    const placed=[]; cand.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+    for(const c of cand){ if(Math.abs(c.v)<mx*0.03) continue; const g= c.side<0? G.at(c.s): G.atR(c.s); const nx=-g.ty,ny=g.tx; const vv=c.v*k*sideSign; const sh=c.side*0.0; const ux=g.x+g.tx*(c.side*0.28)+nx*(vv+Math.sign(vv||1)*0.42), uy=g.y+g.ty*(c.side*0.28)+ny*(vv+Math.sign(vv||1)*0.42); const px=Vd.X(ux),py=Vd.Y(uy);
+      if(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<30 || (Math.abs(q[2]-c.v)<1e-6 && Math.hypot(q[0]-px,q[1]-py)<70))) continue; placed.push([px,py,c.v]);
+      s+=txt(px,py,(kind==='M'?nf(Math.abs(c.v)):(c.v>0?'+':'−')+nf(Math.abs(c.v))),st,G.seg.length>1?22:14); }
+  }
+  if(mx<=1e-6) s+=txt(Vd.W/2,Vd.Y(R.G.seg[0].y0)-16,`${kind}＝0（どこでも）`,st,14);
+  if(S.cut!=null && opt.upto==null){ const g=G.at(S.cut); const v=valS(R,S.cut,kind,1)*k*sideSign; const nx=-g.ty,ny=g.tx; s+=`<line x1="${fx(Vd.X(g.x))}" y1="${fx(Vd.Y(g.y))}" x2="${fx(Vd.X(g.x+nx*v))}" y2="${fx(Vd.Y(g.y+ny*v))}" stroke="#C62422" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="${fx(Vd.X(g.x+nx*v))}" cy="${fx(Vd.Y(g.y+ny*v))}" r="4.5" fill="#C62422"/>`; }
+  if(opt.upto!=null){ const g=G.at(Math.min(lim,R.S)); s+=`<circle cx="${fx(Vd.X(g.x))}" cy="${fx(Vd.Y(g.y))}" r="6" fill="#C62422"/>`; }
+  return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}</svg>`; }
+function drawDiags(){ const up=S.sweep; const map={N:'dN',Q:'dQ',M:'dM'}; const sk=S.sweepKind;
+  for(const k of ['N','Q','M']){ const el=$('#'+map[k]); el.innerHTML=diagSvg(k, (up!=null && k===sk)?{upto:up}:{}); el.parentNode.classList.toggle('fr',R.G.seg.length>1); $('#diags').classList.toggle('fr',R.G.seg.length>1); el.parentNode.classList.toggle('flat', !R.unstable&&R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,k))<1e-6))); } }
+
+// --- cut explorer: forces on the part before the cut
+function beforeForces(sc){ const G=R.G; const list=[];
+  for(const r of R.reac){ if(r.sp.s<sc){ const lab=supName(r); if(r.dofs.some(d=>d%3===0)) list.push({name:`H<sub>${lab}</sub>（反力）`,x:r.p.x,y:r.p.y,Fx:r.Rx,Fy:0,M:0,re:1}); if(r.dofs.some(d=>d%3===1)) list.push({name:`V<sub>${lab}</sub>（反力）`,x:r.p.x,y:r.p.y,Fx:0,Fy:r.Ry,M:0,re:1}); if(r.dofs.some(d=>d%3===2)) list.push({name:`M<sub>${lab}</sub>（反力モーメント）`,x:r.p.x,y:r.p.y,Fx:0,Fy:0,M:r.Mz,re:1}); } }
+  S.st.loads.forEach((l,i)=>{ if(l.k==='P'&&l.s<sc){ const p=G.at(l.s); const [gx,gy]=gdir(l.dir); list.push({name:`集中荷重 ${nf(l.v)} kN`,x:p.x,y:p.y,Fx:l.v*gx,Fy:l.v*gy,M:0}); }
+    else if(l.k==='M'&&l.s<sc){ const p=G.at(l.s); list.push({name:`モーメント荷重 ${nf(l.v)} kN·m`,x:p.x,y:p.y,Fx:0,Fy:0,M:-l.v}); }
+    else if(l.k==='w'){ const a=Math.min(l.s0,l.s1),b=Math.min(Math.max(l.s0,l.s1),sc); if(b>a+1e-9){ const [gx,gy]=gdir(l.dir); for(const q of G.seg){ const aa=Math.max(a,q.s0),bb=Math.min(b,q.s0+q.L); if(bb>aa+1e-9){ const mpt=G.at((aa+bb)/2); const W=l.v*(bb-aa); list.push({name:`等分布荷重のうち手前の ${nf(bb-aa)} m 分（合力 ${nf(W)} kN、その中央に作用）`,x:mpt.x,y:mpt.y,Fx:W*gx,Fy:W*gy,M:0}); } } } } });
+  return list; }
+function drawCut(){ const box=$('#cutbox'); if(R.unstable||S.cut==null){ box.innerHTML='<h3>切断して考える</h3><p>構造物の上をタップすると、そこで切って考えられます。</p>'; return; }
+  const G=R.G, sc=S.cut; const g=G.at(sc); const tx=g.tx,ty=g.ty,nx=-ty,ny=tx; const list=beforeForces(sc);
+  const rows=list.map(f=>{ const dN=-(f.Fx*tx+f.Fy*ty), dQ=(f.Fx*nx+f.Fy*ny), dM=-((f.x-g.x)*f.Fy-(f.y-g.y)*f.Fx)-f.M; return {f,dN,dQ,dM}; });
+  const sum=rows.reduce((a,r)=>({N:a.N+r.dN,Q:a.Q+r.dQ,M:a.M+r.dM}),{N:0,Q:0,M:0});
+  const vN=valS(R,sc,'N',1),vQ=valS(R,sc,'Q',1),vM=valS(R,sc,'M',1);
+  const where= Math.abs(ty)>.5? '柱' : '梁';
+  const arm=f=>{ const dx=g.x-f.x, dy=g.y-f.y; return Math.abs(f.Fy)>1e-9&&Math.abs(f.Fx)<1e-9? `腕 ${nf(Math.abs(dx))} m`: Math.abs(f.Fx)>1e-9&&Math.abs(f.Fy)<1e-9? `腕 ${nf(Math.abs(dy))} m`: f.M?'そのまま':''; };
+  box.innerHTML=`<h3>切断して考える（${where}、始点から ${nf(sc)} m）</h3>
+   <p>切断面より手前（${S.st.sup[0]&&S.st.sup[0].s===0?S.st.sup[0].lab+'側':'始点側'}）にある力だけを集める。どの力も、断面力への寄与は下の表のとおり。合計が、その位置の N・Q・M になります。</p>
+   <div class="tw"><table><tr><th>手前にある力</th><th>N への寄与</th><th>Q への寄与</th><th>M への寄与</th></tr>
+   ${rows.filter(r=>Math.abs(r.dN)+Math.abs(r.dQ)+Math.abs(r.dM)>1e-9).length?rows.filter(r=>Math.abs(r.dN)+Math.abs(r.dQ)+Math.abs(r.dM)>1e-9).map(r=>`<tr><td>${r.f.name}${arm(r.f)?`<br><small style="color:#5E6B86">${arm(r.f)}</small>`:''}</td><td>${nf(r.dN)}</td><td>${nf(r.dQ)}</td><td>${nf(r.dM)}</td></tr>`).join(''):'<tr><td colspan="4">手前に力がない</td></tr>'}
+   <tr class="sum"><td>合計</td><td>N＝${nf(sum.N)}</td><td>Q＝${nf(sum.Q)}</td><td>M＝${nf(sum.M)}</td></tr></table></div>
+   <p style="font-size:12px;color:#5E6B86">図から読んだ値：N＝${nf(vN)} kN、Q＝${nf(vQ)} kN、M＝${nf(vM)} kN·m（${Math.abs(sum.M-vM)<1e-3*Math.max(1,Math.abs(vM))&&Math.abs(sum.Q-vQ)<1e-3*Math.max(1,Math.abs(vQ))?'表の合計と一致':'—'}）。M が＋なら${where==='柱'?'内側':'下側'}が引張。</p>`; }
+
+// --- rules that apply now
+function drawRules(){ const L=S.st.loads; const has=k=>L.some(l=>l.k===k); const frame=R.G.seg.length>1; const hin=(S.st.hinges||[]).length>0; const ends=S.st.sup.some(s=>s.t!=='fixed'&&(s.s<1e-9||s.s>R.S-1e-9));
+  const rs=[[has('P'),'集中荷重の位置で Q図が荷重の大きさだけ跳び、M図が折れ曲がる'],[has('w'),'等分布荷重の区間では Q図が直線、M図が放物線になる'],[true,'M図の傾き＝Q（Q＝0 の位置で M が山や谷になる）'],[has('M'),'モーメント荷重の位置で M図が跳ぶ（Q図は変わらない）'],[hin,'ヒンジでは M＝0'],[ends,'ピン・ローラーの端では M＝0'],[S.st.sup.some(s=>s.t==='fixed'),'固定端では M が0にならない（反力モーメント）'],[frame,'剛接の隅角部では、柱と梁の M が同じ大きさでつながる'],[R.deg>0,'不静定：つりあい式だけでは反力が決まらない。剛性の比で力の流れ方が変わる']];
+  $('#rules').innerHTML=rs.filter(r=>r[0]).map(r=>`<li class="on">${r[1]}</li>`).join(''); }
+
+// --- step-by-step solving
+const STEPS=['① 支点を反力に置きかえる','② つりあい式で反力','③ 切断して断面力','④ Q図','⑤ M図','⑥ N図'];
+function eqTerms(){ // moment about first support, ΣX, ΣY with all forces including reactions (values known)
+  const G=R.G; const forces=[]; for(const r of R.reac){ const lab=supName(r); if(r.dofs.some(d=>d%3===0)) forces.push({n:`H${lab}`,x:r.p.x,y:r.p.y,Fx:r.Rx,Fy:0,M:0,re:1}); if(r.dofs.some(d=>d%3===1)) forces.push({n:`V${lab}`,x:r.p.x,y:r.p.y,Fx:0,Fy:r.Ry,M:0,re:1}); if(r.dofs.some(d=>d%3===2)) forces.push({n:`M${lab}`,x:r.p.x,y:r.p.y,Fx:0,Fy:0,M:r.Mz,re:1}); }
+  S.st.loads.forEach(l=>{ if(l.k==='P'){ const p=G.at(l.s); const [gx,gy]=gdir(l.dir); forces.push({n:`${nf(l.v)}`,x:p.x,y:p.y,Fx:l.v*gx,Fy:l.v*gy,M:0}); } else if(l.k==='M'){ const p=G.at(l.s); forces.push({n:`${nf(l.v)}`,x:p.x,y:p.y,Fx:0,Fy:0,M:-l.v,mo:1}); } else { const a=Math.min(l.s0,l.s1),b=Math.max(l.s0,l.s1); const [gx,gy]=gdir(l.dir); const br=[...new Set([...G.corners,...(S.st.hinges||[])])].sort((x,y)=>x-y); for(let bi=0;bi<br.length-1;bi++){ const aa=Math.max(a,br[bi]),bb=Math.min(b,br[bi+1]); if(bb>aa+1e-9){ const m=G.at((aa+bb)/2); forces.push({n:`(${nf(l.v)}×${nf(bb-aa)})`,x:m.x,y:m.y,Fx:l.v*(bb-aa)*gx,Fy:l.v*(bb-aa)*gy,M:0}); } } } });
+  return forces; }
+function drawSteps(){ const bar=$('#stepbar'); bar.innerHTML=STEPS.map((t,i)=>`<button class="chip ${i===S.step?'on':''}" data-st="${i}">${t}</button>`).join('')+(S.step>=0?`<button class="chip" data-st="-1">閉じる</button>`:'');
+  bar.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ S.step=+b.dataset.st; stopSweep(); if(S.step>=3) startSweep(['Q','M','N'][S.step-3]); else update(); });
+  const T=$('#stxt'); if(S.step<0){ T.innerHTML='<span style="color:#5E6B86;font-size:13px">番号を押すと、この構造物を手で解く手順を一つずつ表示します。</span>'; return; }
+  if(R.unstable){ T.innerHTML='この支え方では構造物が動いてしまい（不安定）、つりあいが成り立ちません。支点や荷重の組み合わせを変えてみましょう。'; return; }
+  const G=R.G; const s0=R.reac[0]; const fs=eqTerms();
+  if(S.step===0){ const cnt=R.reac.reduce((a,r)=>a+r.dofs.length,0); T.innerHTML=`支点を外して、支点が出す力（反力）を未知数に置きかえます。${R.reac.map(r=>`${supName(r)}：${r.sp.t==='fixed'?'固定端 → 水平・鉛直・モーメントの3つ':r.sp.t==='pin'?'ピン → 水平・鉛直の2つ':'ローラー → 支持面に垂直な1つ'}`).join('、')}。未知数は全部で <b>${cnt}個</b>。<br>使える式はつりあいの3式（${F('ΣX=0, ΣY=0, ΣM=0')}）${(S.st.hinges||[]).length?`と、ヒンジで M＝0 の式が ${(S.st.hinges||[]).length}個`:''}。${R.deg===0?'未知数と式の数が同じなので<b>静定</b>：つりあいだけで解ける。':R.deg>0?`未知数が ${R.deg}個多いので <b>${R.deg}次不静定</b>：つりあいに加えて変形の条件が必要。`:''}`; return; }
+  if(S.step===1){ const ox=s0.p.x, oy=s0.p.y; const term=f=>{ // ccw moment about A
+      const m=(f.x-ox)*f.Fy-(f.y-oy)*f.Fx+f.M; return {f,m}; };
+    const unitM=f=>{ const dx=f.x-ox, dy=f.y-oy; if(f.n.startsWith('H')) return -dy; if(f.n.startsWith('V')) return dx; return 1; };
+    const sg=v=>v>=0?'+':'−';
+    const mterms=fs.map(f=>{ if(f.re){ const a=unitM(f); return Math.abs(a)>1e-9?`${sg(a)}${f.n}${f.n.startsWith('M')?'':'×'+nf(Math.abs(a))}`:null; } const m=(f.x-ox)*f.Fy-(f.y-oy)*f.Fx+f.M; if(Math.abs(m)<1e-9) return null; if(f.M) return `${sg(m)}${f.n}`; const arm=Math.abs(f.Fy)>1e-9? Math.abs(f.x-ox):Math.abs(f.y-oy); return `${sg(m)}${f.n.startsWith('(')?f.n:nf(Math.hypot(f.Fx,f.Fy))}×${nf(arm)}`; }).filter(Boolean);
+    const xs=fs.filter(f=>f.re? f.n.startsWith('H') : Math.abs(f.Fx)>1e-9), ys=fs.filter(f=>f.re? f.n.startsWith('V') : Math.abs(f.Fy)>1e-9);
+    const term1=(f,c)=>f.re?`+${f.n}`:`${sg(c)}${f.n.startsWith('(')?f.n:nf(Math.abs(c))}`;
+    let h=`反力は 右向き・上向き・反時計回りを正と仮定して未知数のまま書く（荷重も同じ符号のルール）。答えが負なら、仮定と逆向き。`;
+    h+=`<span class="eq">${F('ΣX = 0')}：${xs.map(f=>term1(f,f.Fx)).join(' ')||'（水平の力なし）'} ＝ 0</span>`;
+    h+=`<span class="eq">${F('ΣY = 0')}：${ys.map(f=>term1(f,f.Fy)).join(' ')} ＝ 0</span>`;
+    h+=`<span class="eq">${F('ΣM_'+supName(s0)+' = 0')}（${supName(s0)}点まわり）：${mterms.join(' ')} ＝ 0</span>`;
+    if((S.st.hinges||[]).length){ const hs=S.st.hinges[0]; const hp=G.at(hs); const left=fs.filter(f=>pathS(f.x,f.y)<hs); const tm=left.map(f=>{ if(f.re){ const a= f.n.startsWith('H')? -(f.y-hp.y) : f.n.startsWith('V')? (f.x-hp.x) : 1; return Math.abs(a)>1e-9?`${sg(a)}${f.n}${f.n.startsWith('M')?'':'×'+nf(Math.abs(a))}`:null; } const m=(f.x-hp.x)*f.Fy-(f.y-hp.y)*f.Fx+f.M; if(Math.abs(m)<1e-9) return null; if(f.M) return `${sg(m)}${f.n}`; return `${sg(m)}${f.n.startsWith('(')?f.n:nf(Math.hypot(f.Fx,f.Fy))}×${nf(Math.abs(f.Fy)>1e-9?Math.abs(f.x-hp.x):Math.abs(f.y-hp.y))}`; }).filter(Boolean);
+      h+=`<span class="eq">ヒンジで ${F('M = 0')}（ヒンジより手前の力だけ、ヒンジ点まわり）：${tm.join(' ')} ＝ 0</span>`; }
+    h+= R.deg>0? `<b>不静定</b>なので、この式だけでは反力が決まりません。変形の条件を足して解いた結果：<br>${reacText()}` : `解くと：<br>${reacText()}`;
+    h+=`<br><span style="font-size:12px;color:#5E6B86">反力の値を式に入れると、どの式も 0 になります（${checkEq(fs,ox,oy)}）。</span>`;
+    T.innerHTML=h; return; }
+  if(S.step===2){ T.innerHTML=`構造物を好きな位置で切り、手前側だけを取り出します。手前側のつりあいから、切断面に働く N（軸方向）・Q（部材に直角）・M（曲げ）が決まります。<br>下の「切断して考える」の表が、いまの切断位置（赤い破線）での計算です。<b>構造物の上をタップして切断位置を動かし</b>、値がどう変わるか確かめてください。荷重点や支点の前後、Q＝0 の位置を切ると要点がわかります。`; return; }
+  const kind=['Q','M','N'][S.step-3];
+  const msg={Q:`切断位置を始点から終点まで動かしながら、各位置の Q をつないだのが Q図です（赤い点が動いています）。集中荷重・反力のところで跳び、等分布の区間では傾く。傾きは分布荷重の大きさに等しい（${F('dQ/dx = −w')}）。`,
+   M:`同じように M をつないだのが M図。M図の傾きは Q（${F('dM/dx = Q')}）なので、Q図が＋の区間で M は増え、Q＝0 で最大（最小）。集中荷重で折れ、等分布で放物線。引張側に描きます。`,
+   N:`N は部材の軸方向の力。梁に鉛直荷重だけなら N＝0。ラーメンでは柱が梁の端の Q を軸力として受け、梁は柱の Q（水平反力）を軸力として受けます。`}[kind];
+  T.innerHTML=msg+`<div class="btns" style="margin-top:6px"><button class="b" id="replay">もう一度なぞる</button></div>`; $('#replay').onclick=()=>startSweep(kind); }
+function pathS(x,y){ const G=R.G; let best=0,bd=1e9; for(let s=0;s<=G.S+1e-9;s+=H/2){ const p=G.at(s); const d=Math.hypot(p.x-x,p.y-y); if(d<bd){bd=d;best=s;} } return best; }
+function checkEq(fs,ox,oy){ let X=0,Y=0,M=0; fs.forEach(f=>{ X+=f.Fx; Y+=f.Fy; M+=(f.x-ox)*f.Fy-(f.y-oy)*f.Fx+f.M; }); return `ΣX＝${nf(X)}、ΣY＝${nf(Y)}、ΣM＝${nf(M)}`; }
+let sweepT=null;
+function stopSweep(){ if(sweepT){ cancelAnimationFrame(sweepT); sweepT=null; } S.sweep=null; }
+function startSweep(kind){ stopSweep(); S.revealed=true; S.sweepKind=kind; const t0=performance.now(); const dur=2600; const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ S.sweep=null; update(); return; }
+  const tick=t=>{ const f=Math.min(1,(t-t0)/dur); S.sweep=R.S*f; S.cut=snapCut(Math.max(H/2,R.S*f)); drawStage(); drawDiags(); drawCut(); if(f<1) sweepT=requestAnimationFrame(tick); else { S.sweep=null; sweepT=null; drawStage(); drawDiags(); } };
+  update(); sweepT=requestAnimationFrame(tick); }
+
+// --- dragging on stage
+function bindDrag(){ const host=$('#sv'); let drag=null;
+  const toWorld=e=>{ const svg=$('#stsvg'); const r=svg.getBoundingClientRect(); const k=Math.min(r.width/V.W, r.height/V.H); const ox=(r.width-V.W*k)/2, oy=(r.height-V.H*k)/2; const px=(e.clientX-r.left-ox)/k, py=(e.clientY-r.top-oy)/k; return {px,py,w:V.inv(px,py)}; };
+  const nearestS=(w)=>{ let best=0,bd=1e9; const G=R.G; for(const q of G.seg){ const u=Math.max(0,Math.min(q.L,(w[0]-q.x0)*q.tx+(w[1]-q.y0)*q.ty)); const x=q.x0+q.tx*u,y=q.y0+q.ty*u; const d=Math.hypot(x-w[0],y-w[1]); if(d<bd){bd=d;best=q.s0+u;} } return {s:best,d:bd}; };
+  host.onpointerdown=e=>{ const t=e.target.closest('[data-h]'); const P=toWorld(e); stopSweep();
+    if(t){ const [i,part]=t.dataset.h.split(':'); S.sel=+i; const l=S.st.loads[+i]; const ns=nearestS(P.w).s; drag={i:+i,part,off: l.k==='w'? ns-Math.min(l.s0,l.s1):0}; loadsPanel(); host.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+    const ns=nearestS(P.w); if(ns.d*V.sc<40){ drag={cut:true}; S.cut=snapCut(ns.s); update(true); host.setPointerCapture(e.pointerId); e.preventDefault(); } };
+  host.onpointermove=e=>{ if(!drag) return; const P=toWorld(e); const G=R.G; let s=nearestS(P.w).s; s=Math.round(s/H)*H;
+    if(drag.cut){ S.cut=snapCut(nearestS(P.w).s); drawStage(); drawDiags(); drawCut(); return; }
+    const l=S.st.loads[drag.i]; if(l.k==='w'){ if(drag.part==='m'){ const len=Math.abs(l.s1-l.s0); let a=Math.round((nearestS(P.w).s-drag.off)/H)*H; a=Math.max(0,Math.min(G.S-len,a)); l.s0=a; l.s1=a+len; } else { const key=drag.part==='e0'?'s0':'s1'; l[key]=s; if(Math.abs(l.s1-l.s0)<H){ l[key]= key==='s0'? l.s1-H : l.s0+H; } } }
+    else { if((S.st.hinges||[]).some(h=>Math.abs(h-s)<1e-9) && l.k==='M') return; l.s=s; }
+    update(true); };
+  host.onpointerup=host.onpointercancel=()=>{ if(drag&&!drag.cut) loadsPanel(); drag=null; };
+}
+
+// ================= Castigliano tab =================
+const CPRE=[
+ {name:'片持ち梁の先端',pi:1,tgt:{s:5,dir:'v'},desc:'先端に荷重Pがある片持ち梁。先端のたわみを求める。'},
+ {name:'片持ち梁の途中',pi:1,tgt:{s:2.5,dir:'v'},desc:'荷重のない点のたわみ。仮の荷重（ダミー荷重）Qを置いて考える。'},
+ {name:'単純梁（等分布）の中央',pi:2,tgt:{s:4,dir:'v'},desc:'等分布荷重を受ける単純梁の中央のたわみ。'},
+ {name:'単純梁の支点のたわみ角',pi:0,tgt:{s:0,dir:'r'},desc:'たわみ角も、仮のモーメント荷重を置けば同じように求まる。'},
+ {name:'門形ラーメンの水平変位',pi:8,tgt:{s:4,dir:'h'},desc:'梁の高さの水平変位。柱と梁の M をすべて積分する。'},
+];
+const CS={i:0,Q:0,I:2};
+function castRender(){ const c=CPRE[CS.i];
+  $('#main').innerHTML=`<h1>カスティリアーノの定理：<b>エネルギーの傾き</b>がたわみになる</h1>
+  <p class="lead">構造物に蓄えられるひずみエネルギー ${F('U = ∫ M²/(2EI) dx')} を、求めたい点に置いた荷重 Q の関数として見ると、${F('δ = ∂U/∂Q')}（グラフの傾き）がその点の変位になります。Q をスライダーで動かして、放物線の傾きと実際の変位を見比べてください。最後に Q＝0 に戻したときの傾きが、本来の荷重だけのときの変位です。</p>
+  <div class="cols"><aside>
+   <div class="panel"><h3>問題</h3><div class="row">${CPRE.map((q,i)=>`<button class="chip ${i===CS.i?'on':''}" data-c="${i}">${q.name}</button>`).join('')}</div><p style="font-size:13px;line-height:1.7;margin:8px 0 0">${c.desc}</p></div>
+   <div class="panel"><h3>仮の荷重 ${c.tgt.dir==='r'?'（モーメント）':''}Q</h3><input class="q" type="range" id="qs" min="-30" max="30" step="0.5" value="${CS.Q}"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span>−30</span><b id="qv"></b><span>＋30</span></div>
+     <div class="btns"><button class="b" id="q0">Q＝0 に戻す</button></div>
+     <h3 style="margin-top:12px">断面二次モーメント I</h3><input class="q" type="range" id="is" min="1" max="8" step="1" value="${CS.I}"><div style="font-size:12px;font-weight:700" id="iv"></div></div>
+   <div class="panel"><h3>手順</h3><ol class="rules" style="padding-left:20px"><li>変位を求めたい点・向きに仮の荷重 Q を置く</li><li>M を「本来の荷重による M」＋「Q×（Q＝1 のときの m）」で表す</li><li>${F('U(Q) = ∫ (M + Qm)²/(2EI) dx')}</li><li>${F('∂U/∂Q = ∫ (M + Qm) m /EI dx')}</li><li>Q＝0 とおくと ${F('δ = ∫ M m / EI dx')}（単位荷重法と同じ式）</li></ol></div>
+  </aside><section>
+   <div class="stage"><div class="hint" id="chint"></div><div id="csv"></div><div class="reac" id="cres"></div></div>
+   <div class="cg"><div class="dg"><h4>M図（本来の荷重＋Q）<small>引張側</small></h4><div id="cMt"></div></div><div class="dg"><h4>m図（Q＝1 だけのとき）<small>引張側</small></h4><div id="cmu"></div></div></div>
+   <div class="cg"><div class="dg"><h4>U と Q の関係<small>傾き＝変位</small></h4><div id="cU"></div></div><div class="dg" style="padding:10px 12px"><h4>計算</h4><div class="stxt" id="ccalc"></div></div></div>
+   <div class="life"><h3>この勉強がどう生きるか</h3><div class="ex">
+    <div class="pic">${ILL.sag}<b>床が揺れない・下がらない建物</b><span>強さが足りていても、たわみが大きいと床が揺れたり、扉が閉まらなくなったりする。建築では梁のたわみをスパンの1/250程度以下に抑えるよう確かめる。</span></div>
+    <div class="pic">${ILL.camber}<b>橋の「そり」（キャンバー）</b><span>橋桁は、自分の重さでたわむ分だけ、あらかじめ上に反らせて作る。完成したときに路面がまっすぐになるよう、たわみを計算して決める。</span></div>
+    <div class="pic">${ILL.loadtest}<b>載荷試験と点検</b><span>完成した橋に重いトラックを載せて、実際のたわみが計算と合うか確かめる。年月がたってたわみが増えていれば、劣化や損傷のサイン。</span></div>
+    <div class="pic">${ILL.indet}<b>不静定構造を解く道具</b><span>両端固定梁や連続梁など、つりあいだけでは解けない構造は「変位が0」という条件を足して解く。その変位を求めるのにエネルギー法を使う。コンピュータの構造解析もこの考え方の延長にある。</span></div></div></div>
+   <p class="foot">E＝2.05×10⁵ N/mm²（鋼）。曲げによるエネルギーだけを考えています（軸方向・せん断の変形は小さいので省略）。「コンピュータで直接計算した変位」は剛性法の結果で、∂U/∂Q と一致することを確かめられます。</p>
+  </section></div>`;
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{ CS.i=+b.dataset.c; CS.Q=0; castRender(); });
+  $('#qs').oninput=e=>{ CS.Q=+e.target.value; castUpdate(); };
+  $('#q0').onclick=()=>{ CS.Q=0; $('#qs').value=0; castUpdate(); };
+  $('#is').oninput=e=>{ CS.I=+e.target.value; castUpdate(); };
+  castUpdate(); }
+function withTarget(st,tgt,val){ const s=JSON.parse(JSON.stringify(st)); if(!val) return s; if(tgt.dir==='v') s.loads.push({k:'P',s:tgt.s,v:val,dir:'down'}); else if(tgt.dir==='h') s.loads.push({k:'P',s:tgt.s,v:val,dir:'right'}); else s.loads.push({k:'M',s:tgt.s,v:val}); return s; }
+function integ(Ra,Rb){ // ∫ Ma Mb ds (Simpson per element) — same mesh
+  let v=0; for(let i=0;i<Ra.els.length;i++){ const a=Ra.els[i],b=Rb.els[i]; const L=a.L; const f=u=>valAt(a,u,'M')*valAt(b,u,'M'); v+=L/6*(f(0)+4*f(L/2)+f(L)); } return v; }
+function castUpdate(){ const c=CPRE[CS.i]; const p=PRE[c.pi]; const base={pts:p.pts,sup:p.sup,hinges:p.hinges||[],loads:JSON.parse(JSON.stringify(p.loads))};
+  const EI=20500*CS.I; // kN·m² (I ×10⁸ mm⁴)
+  const R0=solve(base,EI), Ru=solve(withTarget({...base,loads:[]},c.tgt,1),EI);
+  // note: unit load with sign: v (down) => positive displacement = downward; h => rightward; r => clockwise
+  const A=integ(R0,R0)/(2*EI), B=integ(R0,Ru)/EI, C=integ(Ru,Ru)/(2*EI); // U(Q)=A+BQ+CQ²
+  const U=q=>A+B*q+C*q*q, dU=q=>B+2*C*q;
+  const Rq=solve(withTarget(base,c.tgt,CS.Q),EI);
+  const k=Math.round(c.tgt.s/H); const unit=c.tgt.dir==='r'?'×10⁻³ rad':'mm';
+  const dirDisp=RR=>{ const D=RR.disp[k]; return c.tgt.dir==='v'? -D.uy : c.tgt.dir==='h'? D.ux : -D.rz; };
+  const sc=c.tgt.dir==='r'?1e3:1e3;
+  $('#qv').textContent=`Q＝${nf(CS.Q)} ${c.tgt.dir==='r'?'kN·m':'kN'}`; $('#iv').textContent=`I＝${CS.I}×10⁸ mm⁴　→　EI＝${nf(EI,0)} kN·m²`;
+  // stage
+  const G=Rq.G; const Vv=view(G,[2.2,sidePad(G),1.6,sidePad(G)],vw()); let s=structSvg(G,base,Vv);
+  let mx=0; Rq.disp.forEach(d=>mx=Math.max(mx,Math.hypot(d.ux,d.uy))); const kk= mx>0?0.8/mx:0; const kd= kk; // exaggerated
+  s+=`<polyline points="${Rq.disp.map(d=>fx(Vv.X(d.x+d.ux*kd))+','+fx(Vv.Y(d.y+d.uy*kd))).join(' ')}" fill="none" stroke="#3286BE" stroke-width="2.5" stroke-dasharray="7 5"/>`;
+  base.loads.forEach((l,i)=>s+=loadSvg(G,Vv,l,i,true));
+  const tp=G.at(c.tgt.s); const px=Vv.X(tp.x),py=Vv.Y(tp.y);
+  const qcol='#12286B';
+  if(c.tgt.dir==='v') s+=arrowSvg(px+18,py,0,1,44,qcol,`Q`); else if(c.tgt.dir==='h') s+=arrowSvg(px,py-16,1,0,46,qcol,'Q'); else s+=momArc(px+22,py-6,true,qcol,'Q',16);
+  s+=`<circle cx="${fx(px)}" cy="${fx(py)}" r="6" fill="#fff" stroke="#12286B" stroke-width="3"/>`;
+  $('#csv').innerHTML=`<svg viewBox="0 0 ${fx(Vv.W)} ${fx(Vv.H)}">${s}</svg>`;
+  $('#chint').textContent='青い破線＝変形（誇張）。◎＝変位を求める点';
+  const fem=dirDisp(Rq)*sc, slope=dU(CS.Q)*sc;
+  $('#cres').innerHTML=`Q＝${nf(CS.Q)} のとき　グラフの傾き ${F('∂U/∂Q')}＝<b>${nf(slope)} ${unit}</b>　／　コンピュータで直接計算した変位＝<b>${nf(fem)} ${unit}</b>`;
+  // diagrams
+  const old=R, oldS=S.st, oldc=S.cut; R=Rq; S.st=withTarget(base,c.tgt,CS.Q); S.cut=null; $('#cMt').innerHTML=diagSvg('M'); R=Ru; S.st=withTarget({...base,loads:[]},c.tgt,1); $('#cmu').innerHTML=diagSvg('M'); R=old; S.st=oldS; S.cut=oldc;
+  // U graph
+  const W=460,Hh=260,qr=30; const us=[]; for(let q=-qr;q<=qr+1e-9;q+=1) us.push([q,U(q)]); const umax=Math.max(...us.map(u=>u[1])), umin=Math.min(0,...us.map(u=>u[1]));
+  const X=q=>40+(q+qr)/(2*qr)*(W-60), Y=u=>Hh-30-(u-umin)/(umax-umin||1)*(Hh-60);
+  let g=`<line x1="40" y1="${Hh-30}" x2="${W-20}" y2="${Hh-30}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${fx(X(0))}" y1="20" x2="${fx(X(0))}" y2="${Hh-30}" stroke="#5E6B86" stroke-width="1.2"/>`;
+  g+=txt(W-20,Hh-14,'Q','#5E6B86',13,'end',700,false)+txt(X(0)+6,16,'U（J）','#5E6B86',12,'start',700,false);
+  g+=`<polyline points="${us.map(u=>fx(X(u[0]))+','+fx(Y(u[1]))).join(' ')}" fill="none" stroke="#12286B" stroke-width="2.5"/>`;
+  // tangent at Q
+  const q=CS.Q, u0=U(q), m=dU(q); const qa=q-12,qb=q+12; g+=`<line x1="${fx(X(qa))}" y1="${fx(Y(u0+m*(qa-q)))}" x2="${fx(X(qb))}" y2="${fx(Y(u0+m*(qb-q)))}" stroke="#C62422" stroke-width="2.5"/>`;
+  g+=`<circle cx="${fx(X(q))}" cy="${fx(Y(u0))}" r="6" fill="#C62422"/>`;
+  g+=txt(X(q),Y(u0)-18,`傾き＝${nf(m*sc)} ${unit}`,'#C62422',13);
+  if(Math.abs(q)>1e-9){ g+=`<circle cx="${fx(X(0))}" cy="${fx(Y(U(0)))}" r="5" fill="#fff" stroke="#C62422" stroke-width="2"/>`; g+=txt(X(0)+8,Y(U(0))+16,`Q＝0：傾き ${nf(B*sc)}`,'#C62422',12,'start'); }
+  $('#cU').innerHTML=`<svg viewBox="0 0 ${W} ${Hh}">${g}</svg>`;
+  const Ju=x=>nf(x*1e3);
+  $('#ccalc').innerHTML=`U を Q の2次式で書くと<span class="eq">${F('U(Q)')} ＝ ${Ju(A)} ${B>=0?'+':'−'} ${nf(Math.abs(B)*1e3,3)}·Q ＋ ${nf(C*1e3,4)}·Q²　（J）</span>
+   第1項 ${F('∫M²/2EI')}：本来の荷重だけのエネルギー。第2項の係数 ${F('∫Mm/EI')} が、Q＝0 での傾き。
+   <span class="eq">${F('δ')} ＝ （Q＝0 での ${F('∂U/∂Q')}）＝ ${F('∫ M m / EI dx')} ＝ <b>${nf(B*sc)} ${unit}</b></span>
+   ${c.tgt.dir==='r'?'時計回りを＋':'荷重 Q の向きを＋'}。${c.pi===1&&c.tgt.s===5?'先端の荷重 P がちょうど求めたい点にあるので、P そのもので微分しても同じ答え（'+F('δ = PL³/3EI')+'＝'+nf(10*125/(3*EI)*1e3)+' mm）。':''}
+   ${Math.abs(CS.Q)>1e-9?`<br>いま Q＝${nf(CS.Q)} なので、傾き ${nf(slope)} は「本来の荷重＋Q」が同時にかかったときの変位。`:''}`; }
+
+// ================= tabs / boot =================
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ tab=b.dataset.tab; document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b)); location.hash=tab; stopSweep(); tab==='nqm'?renderNQM():castRender(); });
+loadPreset(0);
+(function(){ const h=location.hash.replace('#',''); const m=h.match(/^nqm-(\d+)$/); if(m&&PRE[+m[1]]) loadPreset(+m[1]); if(h==='cas'){ tab='cas'; document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab==='cas')); castRender(); } else renderNQM(); })();
+let rzT=null; let lastW=innerWidth; addEventListener('resize',()=>{ if(Math.abs(innerWidth-lastW)<30) return; lastW=innerWidth; clearTimeout(rzT); rzT=setTimeout(()=>{ if(tab==='nqm'){ if(R){ drawStage(); drawDiags(); } } else castUpdate(); },150); });
+window.__dl={PRE,solve,valS,S,beforeForces,get R(){return R}};
+</script>
