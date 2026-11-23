@@ -774,6 +774,7 @@ function route(){ const m=location.hash.match(/^#u(\d+)$/); if(m&&U[+m[1]-1]) op
 window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#u(\d+)$/); if(m){ if(cur!==+m[1]-1) openUnit(+m[1]-1); } else if(cur!=null) home(); });
 // ==NAZO==
 const THEORY_URL='../suiri-riron/';
+const JISSEN_URL='../suiri-jissen/';
 const NAZO={
  hydrostatic:{q:'水深10 m のダムの底と、水深10 m の細い井戸の底。水圧が大きいのは？',o:['ダムの底','井戸の底','同じ'],a:2,w:'水圧は p＝ρgh で、深さだけで決まります。水の広さや量には関係しません。10 m で約98 kPa（大気圧と同じくらい）です。'},
  force:{q:'浸水した家のドア。外の水深50 cm で、大人の力で開けられる？',o:['簡単に開く','ほとんど開けられない','水があっても同じ'],a:1,w:'ドアにかかる全水圧は P＝½ρgh²B。幅0.9 m なら約1.1 kN、100 kg 以上の物を押すのと同じです。水深は2乗で効くので、少しの浸水でも開かなくなります。'},
@@ -936,6 +937,7 @@ function taikei(byP){
    <div class="tka">▼ 原理を組み合わせると ▼</div>
    <div class="tkg">${(DPR.groups||[]).map(([gn,gd,ids,uses])=>`<div class="tkgb"><h3>${gn}</h3><p>${gd}</p><div class="tku">${ids.filter(id=>DER[id]).map(id=>`<a href="#d-${id}" class="tkuc" data-ps="${DER[id].p.join(' ')}">${uname(id)}<span>${DER[id].p.map(k=>`<i style="background:${col(k)}"></i>`).join('')}</span></a>`).join('')}</div>
      <div class="tka2">▼ 使う場面</div><ul class="tkuse">${uses.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}</div>
+   ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
 function deriveView(){
@@ -967,7 +969,7 @@ function deriveView(){
       $main.querySelectorAll('.pf details .pfb').forEach(b=>b.insertAdjacentHTML('beforeend',`<a class="pfdi" href="${TU}#d-${u.id}"${tg}>理論ラボで、図つきの導出を見る →</a>`)); } };
   window.addEventListener('hashchange',()=>{ if((TH||/^#d(-|$)/.test(location.hash)) && cur==null) deriveView(); });
   const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>{ if(location.hash) history.replaceState(null,'',location.pathname+location.search); home(); };
-  const _hm=home; home=function(){ _hm.apply(this,arguments); if(/^#d/.test(location.hash)) return; const f=$main.querySelector('.nzintro')||$main.querySelector('.filters'); if(f&&typeof DER!=='undefined'&&!TH){ const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; f.insertAdjacentHTML('beforebegin',`<a class="pfd" href="${TU}#taikei"${TU?' target="_blank" rel="noopener"':''} style="margin:0 0 12px">理論ラボ：${document.title.replace(/ラボ$/,'')}の体系図と、基本原理からの導出（図つき）→</a>`); } };
+  const _hm=home; home=function(){ _hm.apply(this,arguments); if(/^#d/.test(location.hash)) return; const f=$main.querySelector('.nzintro')||$main.querySelector('.filters'); if(f&&typeof DER!=='undefined'&&!TH){ const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; f.insertAdjacentHTML('beforebegin',`<a class="pfd" href="${TU}#taikei"${TU?' target="_blank" rel="noopener"':''} style="margin:0 0 12px">理論ラボ：${document.title.replace(/ラボ$/,'')}の体系図と、基本原理からの導出（図つき）→</a>`+(typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:0 0 12px">実践ラボ：本物の案件を、依頼から図面・コストまで設計してみる →</a>`:'')); } };
 }
 
 const DPR={title:'6つの基本原理',lead:'水理学の式は、水の小さなかたまりに「つりあい・保存則」を当てはめて作ります。止まった水のつりあい、量の保存、エネルギーの保存、勢い（運動量）の保存。これに、実験からわかった摩擦の法則を足せば、管路も川も津波も全部説明できます。「次の一歩」で1行ずつ進み、次の行を読む前に自分で考えてみてください。',
