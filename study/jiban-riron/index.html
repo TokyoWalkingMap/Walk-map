@@ -1256,6 +1256,106 @@ nliq:{p:['eff','mc'],it:[
 ]},
 }; })();
 
+// 用語集：[用語, 読み・別名, 意味, 飛び先]
+const GLOSS=[
+['三相図','さんそうず、土粒子・水・空気','土を、土粒子・水・空気の3つに分けて体積と重さを描いた図。','d-phase-0'],
+['間隙比','かんげきひ、e','すき間の体積 ÷ 土粒子の体積。大きいほどスカスカ。','d-phase-0'],
+['間隙率','かんげきりつ、n','すき間の体積 ÷ 全体の体積。n＝e/(1＋e)。','d-phase-0'],
+['含水比','がんすいひ、w','水の重さ ÷ 土粒子の重さ。','d-phase-2'],
+['飽和度','ほうわど、Sr','すき間のうち、水で満たされている割合。Sr·e＝Gs·w。','d-phase-2'],
+['乾燥密度','かんそうみつど、ρd','土粒子の重さ ÷ 全体の体積。締固めの良し悪しを表す。','d-phase-1'],
+['水中単位体積重量','すいちゅうたんいたいせきじゅうりょう、γ′','地下水の中の土の、浮力を引いた重さ。γ′＝γsat − γw。','d-phase-3'],
+['粒径加積曲線','りゅうけいかせききょくせん、均等係数','粒の大きさの分布を表す曲線。均等係数 Uc が大きいほど粒がそろっていない。','d-class-0'],
+['コンシステンシー限界','液性限界、塑性限界、塑性指数','含水比によって、土が液体・塑性体・固体と変わる境目。','d-class-1'],
+['締固め曲線','しめかためきょくせん、最適含水比','含水比と乾燥密度の関係。いちばん密になる含水比が最適含水比。','d-compact-0'],
+['ダルシーの法則','だるしー、透水係数','土の中の水の流速は、動水勾配に比例する。v＝ki。','d-perm-0'],
+['透水係数','とうすいけいすう、k','水の通しやすさ。砂は大きく、粘土は小さい。','d-perm-0'],
+['有効応力','ゆうこうおうりょく、σ′','土の粒どうしが押し合う力。全応力 − 間隙水圧。土の強さを決める。','d-eff-0'],
+['間隙水圧','かんげきすいあつ、u','すき間の水の圧力。','d-eff-0'],
+['ボイリング','ぼいりんぐ、クイックサンド','上向きの水の流れで有効応力が0になり、砂が沸き立つように崩れる現象。','d-eff-1'],
+['ブーシネスクの式','ぶーしねすく、地中応力','地表の点荷重が、地中にどう広がるかを表す式。','d-stressdist-1'],
+['2：1分布法','にたいいちぶんぷほう','荷重が、深さ2に対して横1の割合で広がると考える簡単な方法。','d-stressdist-0'],
+['圧密','あつみつ','粘土から水がゆっくり抜けて、何年もかけて沈む現象。','d-consol-0'],
+['圧縮指数','あっしゅくしすう、Cc','圧密で、有効応力が10倍になったとき間隙比がどれだけ減るか。','d-consol-0'],
+['圧密係数','あつみつけいすう、cv、時間係数','圧密の進む速さ。時間は排水距離の2乗に比例する。','d-consol-1'],
+['バーチカルドレーン','ばーちかるどれーん、サンドドレーン','粘土に排水の柱を打って、圧密を早く終わらせる工法。','d-consol-1'],
+['モール・クーロンの破壊規準','もーるくーろん、粘着力、内部摩擦角','土のせん断強さ τ＝c＋σ′tanφ。','d-shear-0'],
+['一軸圧縮強さ','いちじくあっしゅくつよさ、qu','横から支えずに押したときの強さ。粘土なら c＝qu/2。','d-shear-1'],
+['主働土圧・受働土圧','しゅどうどあつ、じゅどうどあつ、ランキン','壁が土から離れるときの小さい土圧（主働）と、土に押し込むときの大きい土圧（受働）。','d-earthp-0'],
+['土圧係数','どあつけいすう、Ka','鉛直の応力に対する横向きの土圧の比。Ka＝tan²(45°−φ/2)。','d-earthp-0'],
+['支持力','しじりょく、テルツァギ','地盤が基礎を支えられる限界の圧力。','d-bearing-0'],
+['斜面安定','しゃめんあんてい、安全率','斜面がすべらないかどうか。すべらせない力 ÷ すべらせる力。','d-slope-0'],
+['円弧すべり','えんこすべり、分割法、フェレニウス','すべり面を円弧と仮定し、土を薄く切って安全率を計算する方法。','d-slope-2'],
+['液状化','えきじょうか','地震の揺れで砂の間隙水圧が上がり、地盤が液体のようになる現象。','d-nliq-0'],
+['FL値','えふえるち、液状化の判定','液状化に抵抗する強さ ÷ 地震で生じる力。1より小さいと液状化する。','d-nliq-1'],
+];
+
+// ---- 用語検索：用語集（GLOSS）＋単元名＋導出の本文から探す ----
+(function(){
+  if(typeof U==='undefined') return;
+  const strip=h=>String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+  const norm=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const TH_=typeof TH!=='undefined'&&TH;
+  // 本文の索引
+  const IDX=[];
+  U.forEach((u,i)=>IDX.push({kind:'単元',t:`${String(i+1).padStart(2,'0')} ${u.name}`,x:strip(u.ds),to:'u'+(i+1)}));
+  if(typeof DER!=='undefined') U.forEach(u=>{ const d=DER[u.id]; if(!d) return; d.it.forEach((it,j)=>{
+    const body=[it.goal,it.cap,...(it.s||[]).map(z=>typeof z==='string'?z:z.q),it.key].map(strip).join(' ');
+    IDX.push({kind:'導出',t:`${u.name}：${strip(it.t)}`,x:body,to:`d-${u.id}-${j}`}); }); });
+  const G=(typeof GLOSS!=='undefined'?GLOSS:[]).map(([t,y,d,to])=>({t,y,d,to,k:norm(t+' '+y),kd:norm(d)}));
+  IDX.forEach(o=>{ o.kt=norm(o.t); o.kx=norm(o.x); });
+  const css=document.createElement('style'); css.textContent=`
+#srbtn{font:inherit;font-weight:900;font-size:13px;border:2px solid #12286B;background:#fff;color:#12286B;padding:4px 10px;cursor:pointer;white-space:nowrap}
+#srbox{position:fixed;inset:0;z-index:50;background:rgba(18,40,107,.35);display:none}
+#srbox.on{display:block}
+#srp{position:absolute;left:50%;top:0;transform:translateX(-50%);width:min(760px,100%);max-height:100%;overflow:auto;background:#F4F3EF;border:3px solid #12286B;border-top:0;padding:12px 16px 18px;box-sizing:border-box}
+#srp .row{display:flex;gap:8px;align-items:center}
+#srq{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid #12286B;background:#fff;color:#1C3A7E}
+#srx{font:inherit;font-weight:900;border:2px solid #12286B;background:#12286B;color:#fff;padding:7px 12px;cursor:pointer}
+#srp h4{margin:14px 0 6px;font-size:13px;color:#C62422;letter-spacing:.06em}
+.srg{background:#fff;border:2px solid #12286B;padding:8px 10px;margin-bottom:8px;cursor:pointer;text-align:left;width:100%;font:inherit;color:#1C3A7E;display:block}
+.srg:hover,.srh:hover{background:#EAF2F8}
+.srg b{font-size:16px;color:#12286B}.srg small{color:#5E6B86;margin-left:6px}.srg span{display:block;font-size:14px;line-height:1.7;margin-top:2px}.srg em{font-style:normal;font-size:12px;font-weight:700;color:#3286BE}
+.srh{display:block;width:100%;text-align:left;font:inherit;background:#fff;border:1.5px solid #D9D6CC;padding:6px 10px;margin-bottom:6px;cursor:pointer;color:#1C3A7E}
+.srh b{font-size:14px}.srh i{font-style:normal;font-size:11px;font-weight:900;color:#fff;background:#3286BE;padding:1px 6px;margin-right:6px}.srh span{display:block;font-size:12px;color:#5E6B86;line-height:1.6}
+mark{background:#f6d36b;color:inherit;padding:0 1px}
+.srchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.srchips button{font:inherit;font-size:12px;font-weight:700;border:1.5px solid #93BCD6;background:#fff;color:#12286B;padding:3px 8px;cursor:pointer}`;
+  document.head.appendChild(css);
+  const hdr=document.querySelector('header'); const prog=document.getElementById('prog');
+  const btn=document.createElement('button'); btn.id='srbtn'; btn.textContent='用語検索'; btn.title='用語・式・導出を探す';
+  if(prog) prog.before(btn); else if(hdr) hdr.appendChild(btn);
+  const box=document.createElement('div'); box.id='srbox';
+  box.innerHTML=`<div id="srp" role="dialog" aria-label="用語検索"><div class="row"><input id="srq" type="search" placeholder="例：節点方程式、層方程式、有効応力、フルード数" autocomplete="off"><button id="srx">閉じる</button></div><div id="srr"></div></div>`;
+  document.body.appendChild(box);
+  const q=box.querySelector('#srq'), out=box.querySelector('#srr');
+  const hl=(s,w)=>{ const e=esc(s); if(!w) return e; const ns=norm(s); const i=ns.indexOf(w); if(i<0) return e; return esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+w.length))+'</mark>'+esc(s.slice(i+w.length)); };
+  const snip=(s,w)=>{ const ns=norm(s); const i=ns.indexOf(w); if(i<0) return esc(s.slice(0,70)); const a=Math.max(0,i-30), b=Math.min(s.length,i+w.length+40); return (a>0?'…':'')+hl(s.slice(a,b),w)+(b<s.length?'…':''); };
+  function go(to){
+    close();
+    if(/^u\d+$/.test(to)){ if(TH_){ window.open(TH_.main+'#'+to,'_blank','noopener'); return; } location.hash='#'+to; return; }
+    if(location.hash==='#'+to){ const el=document.getElementById(to); if(el) el.scrollIntoView({block:'start'}); return; }
+    location.hash='#'+to;
+    setTimeout(()=>{ const el=document.getElementById(to); if(el){ el.scrollIntoView({block:'start'}); el.style.outline='3px solid #C62422'; setTimeout(()=>el.style.outline='',1800); } },120);
+  }
+  function render(){
+    const w=norm(q.value.trim());
+    if(!w){ out.innerHTML=`<h4>よく探される用語</h4><div class="srchips">${G.slice(0,60).map(g=>`<button data-w="${esc(g.t)}">${esc(g.t)}</button>`).join('')}</div>`;
+      out.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ q.value=b.dataset.w; render(); }); return; }
+    const gs=G.map(g=>({g,sc:g.k.startsWith(w)?3:g.k.includes(w)?2:g.kd.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,20);
+    const hs=IDX.map(o=>({o,sc:o.kt.includes(w)?2:o.kx.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,30);
+    out.innerHTML=(gs.length?`<h4>用語の意味（${gs.length}）</h4>`+gs.map(({g})=>`<button class="srg" data-to="${g.to}"><b>${hl(g.t,w)}</b><small>${hl(g.y,w)}</small><span>${hl(g.d,w)}</span><em>${/^d-/.test(g.to)?'導出を見る →':'単元を開く →'}</em></button>`).join(''):'')
+      +(hs.length?`<h4>出てくる場所（${hs.length}${hs.length>=30?'＋':''}）</h4>`+hs.map(({o})=>`<button class="srh" data-to="${o.to}"><b><i>${o.kind}</i>${hl(o.t,w)}</b><span>${snip(o.x,w)}</span></button>`).join(''):'')
+      ||`<p>「${esc(q.value)}」は見つかりませんでした。短い言葉（例：「たわみ」「土圧」）で探してみてください。</p>`;
+    out.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>go(b.dataset.to));
+  }
+  function open(){ box.classList.add('on'); render(); setTimeout(()=>q.focus(),30); }
+  function close(){ box.classList.remove('on'); }
+  btn.onclick=open; box.querySelector('#srx').onclick=close; box.onclick=e=>{ if(e.target===box) close(); };
+  q.oninput=render; document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); open(); } });
+  window.SEARCH={open,go};
+})();
+
 // ==/NAZO==
 route();
 window.__kz={U,XW};
