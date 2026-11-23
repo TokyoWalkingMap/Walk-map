@@ -82,6 +82,13 @@ section h3 span{background:var(--red);color:#fff;width:22px;height:22px;display:
 .nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
 .b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 14px;cursor:pointer}
 .b.main{background:var(--red);border-color:var(--red);color:#fff}
+
+.pctl{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start;margin-bottom:8px}.pctl>b{font-size:13px;padding-top:8px}
+.pctl .opts{margin-top:0}.pctl .opts button{font-size:12px;min-height:30px;padding:3px 8px}
+#plot svg{display:block;width:100%;max-width:640px;height:auto;border:1px solid var(--line)}
+.pleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;margin-top:6px}.pleg i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle}
+.pnote{font-size:14px;margin:8px 0 0}
+@media (max-width:560px){.pctl{grid-template-columns:1fr}.pctl>b{padding-top:2px}}
 </style></head><body>
 <header><button class="logo" id="logo" title="案件の一覧へ">構造力学<b>実践ラボ</b></button><div id="crumb"></div><div id="prog"></div></header>
 <main id="main"></main>
@@ -115,6 +122,24 @@ const LAB={key:'kozo-jissen',h1:'構造力学を、<b>本物の設計</b>で使�
  note:'数値は学習用に簡略化しています（許容応力度・荷重は代表値）。実際の設計は、道路橋示方書・建築基準法などの基準に従います。',
  links:[['構造力学ラボ（謎と問題）',URLS.kozo],['構造力学 理論ラボ（体系図と導出）',URLS.kozoR]]};
 const H_SEC=[['H-400×200',400,200,1190,23700,66.0],['H-500×200',500,200,1910,47800,89.6],['H-600×200',600,200,2590,77600,106],['H-700×300',700,300,5640,197000,185],['H-800×300',800,300,7160,286000,210],['H-900×300',900,300,8990,404000,243]];
+
+// 対称行列の固有値（ヤコビ法）
+const jacobiEig=(A0)=>{ const n=A0.length; const A=A0.map(r=>r.slice()); const V=A.map((r,i)=>r.map((_,j)=>i===j?1:0));
+  for(let sw=0;sw<60;sw++){ let off=0; for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) off+=A[i][j]**2; if(off<1e-18) break;
+   for(let p=0;p<n;p++) for(let q=p+1;q<n;q++){ if(Math.abs(A[p][q])<1e-14) continue; const th=(A[q][q]-A[p][p])/(2*A[p][q]); const t=Math.sign(th||1)/(Math.abs(th)+Math.sqrt(th*th+1)); const c=1/Math.sqrt(t*t+1), sn=t*c;
+    for(let k=0;k<n;k++){ const akp=A[k][p], akq=A[k][q]; A[k][p]=c*akp-sn*akq; A[k][q]=sn*akp+c*akq; }
+    for(let k=0;k<n;k++){ const apk=A[p][k], aqk=A[q][k]; A[p][k]=c*apk-sn*aqk; A[q][k]=sn*apk+c*aqk; }
+    for(let k=0;k<n;k++){ const vkp=V[k][p], vkq=V[k][q]; V[k][p]=c*vkp-sn*vkq; V[k][q]=sn*vkp+c*vkq; } } }
+  return A.map((r,i)=>({w2:A[i][i],v:V.map(row=>row[i])})).sort((a,b)=>a.w2-b.w2); };
+const BLD_CACHE={};
+function bldModes(N,kf,iso){ const key=N+'/'+kf+'/'+iso; if(BLD_CACHE[key]) return BLD_CACHE[key];
+  const m=1.0e6, h=3.5; // 1階あたり 1000 t、階高 3.5 m
+  // 基準の剛性：一様なせん断型で T1≈0.025·(全高) となる値
+  const n0=N; const Kunit=[]; for(let i=0;i<n0;i++){ Kunit.push(new Array(n0).fill(0)); } for(let i=0;i<n0;i++){ const kb=1, ka=i<n0-1?1:0; Kunit[i][i]=kb+ka; if(i<n0-1){ Kunit[i][i+1]=-1; Kunit[i+1][i]=-1; } }
+  const w2u=jacobiEig(Kunit)[0].w2; const T1t=0.025*h*N; const kbase=m*(2*Math.PI/T1t)**2/w2u; const k=kbase*kf;
+  const nn=N+(iso?1:0); const ks=[]; if(iso){ const Tiso=3.5; ks.push((N+1)*m*(2*Math.PI/Tiso)**2); } for(let i=0;i<N;i++) ks.push(k);
+  const K=[]; for(let i=0;i<nn;i++) K.push(new Array(nn).fill(0)); for(let i=0;i<nn;i++){ K[i][i]+=ks[i]; if(i+1<nn){ K[i][i]+=ks[i+1]; K[i][i+1]-=ks[i+1]; K[i+1][i]-=ks[i+1]; } }
+  const E=jacobiEig(K.map(r=>r.map(x=>x/m))); return BLD_CACHE[key]={E,m,h,nn,ks,iso}; }
 const CASES=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim}=dg; const n=DC.n,r=DC.r,b=DC.b;
 const ratioTxt=(v,lim,u)=>`${nf(v)} ${u} ／ 上限 ${nf(lim)} ${u}`;
 return [
@@ -122,7 +147,7 @@ return [
  thumb:S(160,70,L(10,60,150,60,DC.g,1),B(30,130,30,n,5),P('M30,30 l-18,28 M130,30 l18,28','none',b,3),...[50,65,80,95,110].map(x=>C(x,22,3,r,r))),
  story:'駅前の商店街に、道路をまたぐ歩道橋をかけたい。お祭りの日は人でぎっしりになる。2本の鋼の桁（H形鋼）で床を支える計画です。どの太さの桁にすればいい？',
  req:['群集荷重 5 kN/m²、床版などの重さ 2 kN/m²（どちらも床の面積あたり）','桁は2本。それぞれが床の半分を受け持つ','曲げ応力度は 140 N/mm² 以下（鋼材 SS400 の許容値）','人が歩いたときのたわみは スパンの 1/600 以下（揺れて怖くないように）'],
- inputs:[{k:'L',label:'スパン（道路の幅）',opts:[[15,'15 m'],[20,'20 m'],[25,'25 m']],def:20},{k:'B',label:'歩道の幅',opts:[[2,'2 m'],[3,'3 m'],[4,'4 m']],def:3},{d:1,k:'h',label:'桁の断面（H形鋼）',help:'高さ×幅 mm。大きいほど強いが、重くて高い。',opts:H_SEC.map((x,i)=>[i,x[0]]),def:1}],
+ inputs:[{k:'L',label:'スパン（道路の幅）',opts:[[15,'15 m'],[20,'20 m'],[25,'25 m']],def:20},{k:'B',label:'歩道の幅',opts:[[2,'2 m'],[3,'3 m'],[4,'4 m']],def:3},{d:1,cont:false,k:'h',label:'桁の断面（H形鋼）',help:'高さ×幅 mm。大きいほど強いが、重くて高い。',opts:H_SEC.map((x,i)=>[i,x[0]]),def:1}],
  calc(s){ const [nm,H,Bf,Z,I,kg]=H_SEC[s.h]; const g=kg*9.81/1000; const wl=5*s.B/2, wd=2*s.B/2+g, w=wl+wd; const Lm=s.L;
    const Mx=w*Lm*Lm/8, sig=Mx*1e6/(Z*1e3); const d=5*wl*(Lm*1000)**4/(384*2.05e5*I*1e4), dl=Lm*1000/600;
    const cost=kg*Lm*2*0.35; // 千円（加工・架設込み 350円/kg の目安）
@@ -160,7 +185,7 @@ return [
  thumb:S(160,70,L(10,64,150,64,DC.g,1),L(50,10,50,64,n,4),L(110,10,110,64,n,4),L(40,10,120,10,n,5)),
  story:'広い倉庫の屋根を、細い鋼管の柱で支える。屋根が重いと、柱は押しつぶされる前に、ぐにゃっと曲がって（座屈して）しまう。柱の太さを決めよう。',
  req:['1本の柱が支える屋根の重さ（雪を含む）を P とする','両端ピンとみなし、座屈長さ＝柱の高さ','オイラーの座屈荷重 P<sub>cr</sub> に対して、安全率 2.5 以上','押しつぶし（圧縮応力度）は 140 N/mm² 以下'],
- inputs:[{k:'P',label:'柱1本の荷重',opts:[[150,'150 kN'],[250,'250 kN'],[400,'400 kN']],def:250},{k:'h',label:'柱の高さ',opts:[[4,'4 m'],[6,'6 m'],[8,'8 m']],def:6},{d:1,k:'d',label:'鋼管（外径×厚さ）',opts:[[0,'φ114×4.5'],[1,'φ139×4.5'],[2,'φ165×5.0'],[3,'φ216×6.0'],[4,'φ267×6.0']],def:1}],
+ inputs:[{k:'P',label:'柱1本の荷重',opts:[[150,'150 kN'],[250,'250 kN'],[400,'400 kN']],def:250},{k:'h',label:'柱の高さ',opts:[[4,'4 m'],[6,'6 m'],[8,'8 m']],def:6},{d:1,cont:false,k:'d',label:'鋼管（外径×厚さ）',opts:[[0,'φ114×4.5'],[1,'φ139×4.5'],[2,'φ165×5.0'],[3,'φ216×6.0'],[4,'φ267×6.0']],def:1}],
  calc(s){ const T_=[[114.3,4.5],[139.8,4.5],[165.2,5.0],[216.3,6.0],[267.4,6.0]][s.d]; const D=T_[0],t=T_[1]; const A=Math.PI*(D*D-(D-2*t)**2)/4, I=Math.PI*(D**4-(D-2*t)**4)/64; const i=Math.sqrt(I/A), lam=s.h*1000/i;
    const Pcr=Math.PI**2*2.05e5*I/(s.h*1000)**2/1000; const sf=Pcr/s.P; const sig=s.P*1000/A; const kg=A*7.85e-3; const cost=kg*s.h*0.4;
    return {rows:[['断面積',mm('A＝π(D²−d²)/4'),nf(A),'mm²'],['断面二次モーメント',mm('I＝π(D⁴−d⁴)/64'),nf(I/1e4),'cm⁴'],['細長比',mm('λ＝l<sub>k</sub>/i'),nf(lam),''],['座屈荷重',mm('P<sub>cr</sub>＝π²EI/l<sub>k</sub>²'),nf(Pcr),'kN'],['座屈の安全率',mm('P<sub>cr</sub>/P'),nf(sf),''],['圧縮応力度',mm('σ＝P/A'),nf(sig),'N/mm²']],
@@ -196,8 +221,65 @@ return [
    return S(340,250,L(0,yb+50,340,yb+50,DC.g,1),g,T(170,22,c?'1本につながった連続桁（継ぎ目は両端だけ）':'径間ごとに切れた単純桁（赤＝継ぎ目）',n,12),
      L(x0,180,x0+3*sp,180,n,1),md,T(170,142,'M図（引張側に描く）',r,11),T(170,246,`最大 ${nf(q.M,0)} kN·m`,ok?b:r,13));
  },
- links:[['三連モーメント式（連続梁）',URLS.kozoR+'#d-indet-4'],['応力法（余分な支点を外す）',URLS.kozoR+'#d-indet-1'],['重ね合わせの原理',URLS.kozoR+'#d-indet-0'],['影響線',URLS.kozoR+'#d-il'],['構造力学ラボ「不静定構造」',URLS.kozo+'#u12']],
+ links:[['三連モーメント式（連続梁）',URLS.kozoR+'#d-indet-7'],['応力法（余分な支点を外す）',URLS.kozoR+'#d-indet-1'],['重ね合わせの原理',URLS.kozoR+'#d-indet-0'],['影響線',URLS.kozoR+'#d-il'],['構造力学ラボ「不静定構造」',URLS.kozo+'#u12']],
  real:'高速道路の高架橋の多くは連続桁です。継ぎ目（伸縮装置）は車が通るたびにたたかれて傷みやすく、取り替えの工事で通行止めも必要になります。連続にすると継ぎ目が減り、地震で桁が落ちにくくもなります。一方で、不静定なので、支点が沈むと桁に余計な力が生まれます。地盤の良い場所を選ぶのはそのためです。'},
+{id:'yure',title:'揺れない歩道橋（振動の設計）',client:'○○区 公園課',
+ thumb:S(160,70,B(10,150,36,n,5),Pin(10,40),Rol(150,40),...[40,70,100,130].map(x=>C(x,24,3,r,r)),P('M10,36 Q80,48 150,36','none',b,1.5,'4 3')),
+ story:'公園の池をまたぐ細身の歩道橋。強さは足りていても、人が歩くと「ゆさゆさ」揺れて怖い、という苦情が出ることがある。人の歩く振動数と、橋の固有振動数が近いと共振するからだ。揺れない歩道橋を設計しよう。',
+ req:['床と手すりの重さ 1,500 kg/m、主桁は2本（鋼、E＝2.05×10⁵ N/mm²）','1人が歩くと、上下に約 280 N（体重 700 N の 4 割）の力を、歩く振動数 1.6〜2.4 Hz でくり返す','大勢が歩くときの力は、人数の平方根に比例して大きくなるとする','揺れ（加速度）は 0.7 m/s² 以下（怖く感じない目安）。たわみは 群集荷重 3.5 kN/m² で スパンの 1/600 以下'],
+ inputs:[{k:'L',label:'スパン',opts:[[20,'20 m'],[30,'30 m'],[40,'40 m']],def:30},{k:'N',label:'渡る人の数（同時に）',opts:[[10,'10 人'],[50,'50 人'],[150,'150 人（花火大会）']],def:50},
+  {d:1,cont:false,k:'gs',label:'主桁の断面（1本）',opts:[[0,'H-600×200'],[1,'H-800×300'],[2,'H-900×300'],[3,'溶接I桁 1200'],[4,'箱桁 1500']],def:3},
+  {d:1,k:'tmd',label:'制振装置（TMD）',help:'橋の固有振動数に合わせたおもりとばね。逆向きに揺れて揺れを打ち消す。',opts:[[0,'なし（減衰比 0.5%）'],[1,'あり（減衰比 4%）']],def:0}],
+ calc(s){ const GS=[[7.76e-4,106],[2.86e-3,210],[4.04e-3,243],[8.4e-3,300],[1.8e-2,450]]; const [I,kg]=GS[s.gs]; const L_=s.L; const EI=2*2.05e11*I, mm_=1500+2*kg;
+   const f1=Math.PI/(2*L_*L_)*Math.sqrt(EI/mm_); const fw=Math.min(2.4,Math.max(1.6,f1)); const rr=fw/f1; const z=s.tmd?0.04:0.005;
+   const amp=rr*rr/Math.sqrt((1-rr*rr)**2+(2*z*rr)**2); const F=280*Math.sqrt(s.N); const Meff=mm_*L_/2; const a=F/Meff*amp;
+   const w=3.5*2.5*1000, d=5*w*L_**4/(384*EI)*1000, dl=L_*1000/600; const cost=2*kg*L_*0.6/1000+(s.tmd?4:0)+L_*0.5;
+   return {rows:[['橋の 1 m あたりの質量',mm('m＝床＋主桁2本'),nf(mm_,0),'kg/m'],['曲げ剛性（2本）',mm('EI'),nf(EI/1e6,0),'MN·m²'],['1次の固有振動数',mm('f₁＝(π/2L²)√(EI/m)'),nf(f1),'Hz'],['いちばん近い歩く振動数',mm('1.6〜2.4 Hz から'),nf(fw),'Hz'],['振動数比',mm('β＝f<sub>w</sub>/f₁'),nf(rr,3),''],['減衰比',mm('ζ'),nf(z*100,1),'%'],['揺れの倍率',mm('β²/√((1−β²)²＋(2ζβ)²)'),nf(amp,1),'倍'],['人が加える力',mm('280 N × √人数'),nf(F,0),'N'],['揺れの加速度',mm('a＝F/(mL/2) × 倍率'),nf(a,2),'m/s²'],['群集でのたわみ',mm('δ＝5wL⁴/(384EI)'),nf(d,1),'mm']],
+     checks:[['揺れ（怖くないか）',a/0.7,0.7,a<=0.7,`${nf(a,2)} ／ 上限 0.70 m/s²`],['たわみ',d/dl,dl,d<=dl,`${nf(d,1)} ／ 上限 ${nf(dl,1)} mm`]],
+     cost, costTxt:`鋼材 ${nf(2*kg*L_/1000,1)} t${s.tmd?'＋TMD':''} ／ 約 ${nf(cost,1)} 百万円`, f1, a, rr};
+ },
+ fig(s,q){ const ok=q.a<=0.7; const W=340; const l=40,tp=110,bt=30,H=250; const fx=f=>l+(W-10-l)*f/5; const zz=s.tmd?0.04:0.005;
+   let c=''; const pts=[]; for(let i=0;i<=250;i++){ const f=0.2+4.8*i/250; const rr=f/q.f1; const am=rr*rr/Math.sqrt((1-rr*rr)**2+(2*zz*rr)**2); pts.push(`${fx(f).toFixed(1)},${(H-bt-Math.min(1,am/40)*(H-bt-tp)).toFixed(1)}`); }
+   const sw=Math.min(14,q.a*8);
+   return S(W,H,B(40,300,60,n,5),Pin(40,64),Rol(300,64),P(`M40,60 Q170,${60+sw*2} 300,60`,'none',ok?b:r,2,'5 3'),...[80,120,160,200,240].map(x=>C(x,48,3.5,r,r)),s.tmd?R(162,66,16,10,'#C8A02A',n,1.5):'',T(170,24,ok?`揺れ ${nf(q.a,2)} m/s²：怖くない`:`揺れ ${nf(q.a,2)} m/s²：ゆさゆさ揺れる！`,ok?b:r,13),
+     `<rect x="${fx(1.6)}" y="${tp}" width="${fx(2.4)-fx(1.6)}" height="${H-bt-tp}" fill="#fbe3e2"/>`,`<polyline points="${pts.join(' ')}" fill="none" stroke="${b}" stroke-width="2"/>`,
+     L(l,H-bt,W-10,H-bt,n,1),L(fx(q.f1),tp,fx(q.f1),H-bt,n,1.5,'3 3'),T(fx(q.f1),tp-4,`橋 ${nf(q.f1)} Hz`,n,10),T(fx(2),H-bt-6,'歩く振動数',r,10),...[0,1,2,3,4,5].map(v=>T(fx(v),H-bt+13,String(v),DC.g,9,'middle',400)),T(190,H-4,'振動数（Hz）と、揺れの倍率（青）',n,10,'middle',400));
+ },
+ links:[['強制振動と共振',URLS.kozoR+'#d-shindo-2'],['1自由度の運動方程式',URLS.kozoR+'#d-shindo-0'],['免震と制振（TMD）',URLS.kozoR+'#d-shindo-6'],['固有周期',URLS.kozoR+'#d-vib-0']],
+ real:'2000年に開通したロンドンのミレニアム橋は、大勢が渡ると横に大きく揺れ、2日で閉鎖されました。揺れに合わせて人が歩調をそろえてしまう現象（同期化）が原因で、ダンパーを約90台付けて再開しました。日本の歩道橋の設計でも、固有振動数が 1.5〜2.3 Hz を避けるように目安が決められています。'},
+{id:'biru',title:'ビルの固有振動数と揺れ方',client:'△△不動産 開発部',
+ thumb:S(160,70,G(30,130,66),R(60,6,40,60,DC.m,n,1.5),...[16,26,36,46,56].map(y=>L(60,y,100,y,n,1)),P('M120,66 Q126,36 134,6','none',b,2)),
+ story:'駅前に、オフィスビルを建てる。地震のとき、ビルはどんな形で、何秒で揺れる？ 揺れが大きすぎると、柱や壁が壊れたり、家具が倒れたりする。柱の硬さ、免震、ダンパーを選んで、揺れを抑えよう。',
+ req:['1階ごとの質量 1000 t、階高 3.5 m。各階を「おもり」、柱と壁を「ばね」とみなす（せん断型の質点モデル）','固有値問題 |K − ω²M|＝0 を解いて、各モードの固有周期と揺れ方を出す','地震の揺れは設計用の応答スペクトル（地盤の種類で形が変わる）。減衰で Fh＝1.5/(1＋10ζ) 倍に小さくなる','各モードの揺れを2乗和の平方根（SRSS）で重ね合わせる','層間変形角（上下の床のずれ ÷ 階高）は 1/100 以下、最上階の加速度は 6 m/s² 以下（家具が倒れにくい）'],
+ inputs:[{k:'N',label:'階数',opts:[[5,'5 階'],[10,'10 階'],[20,'20 階'],[30,'30 階']],def:10},{k:'Tc',label:'地盤',opts:[[0.4,'かたい'],[0.6,'ふつう'],[0.8,'やわらかい（埋立地）']],def:0.6},
+  {d:1,k:'kf',label:'柱と壁の硬さ',help:'基準を 1 とした倍率。硬いほど揺れは小さいが、周期が短くなって地震力は大きくなる。',opts:[[0.5,'0.5 倍'],[1,'1 倍'],[2,'2 倍']],def:1},
+  {d:1,k:'iso',label:'免震',opts:[[0,'なし'],[1,'あり（免震層 3.5 秒）']],def:0},
+  {d:1,k:'z',label:'ダンパーで足す減衰',opts:[[0.02,'なし（2%）'],[0.05,'少し（5%）'],[0.1,'多く（10%）']],def:0.02}],
+ calc(s){ const D=bldModes(s.N,s.kf,s.iso); const {E,m,h,nn,iso}=D; const g=9.8; const z=iso?Math.max(s.z,0.15):s.z; const Fh=1.5/(1+10*z);
+   const sa=T=>{ const Tc=s.Tc; const f=T<Tc?1:T<2*Tc?1-0.2*(T/Tc-1)**2:1.6*Tc/T; return 0.8*g*f*Fh; };
+   const nm=Math.min(nn,5); const modes=[]; let drift2=new Array(nn).fill(0), acc2=0;
+   for(let j=0;j<nm;j++){ const {w2,v}=E[j]; const w=Math.sqrt(w2), T=2*Math.PI/w; const L_=v.reduce((a,x)=>a+x,0), Mj=v.reduce((a,x)=>a+x*x,0); const G_=L_/Mj; const A_=sa(T);
+     const u=v.map(x=>G_*x*A_/w2); for(let i=0;i<nn;i++){ const dd=u[i]-(i?u[i-1]:0); drift2[i]+=dd*dd; } acc2+=(G_*v[nn-1]*A_)**2; modes.push({T,v,G:G_}); }
+   const drift=drift2.map(Math.sqrt); const st0=iso?1:0; const dmax=Math.max(...drift.slice(st0)), ang=dmax/h, accTop=Math.sqrt(acc2); const isoDisp=iso?drift[0]:0;
+   const cost=s.N*(10+6*s.kf)+(iso?s.N*6+80:0)+(s.z===0.05?s.N*2:s.z===0.1?s.N*5:0); // 百万円
+   return {rows:[['1次の固有周期',mm('T₁＝2π/ω₁'),nf(modes[0].T,2),'秒'],['2次の固有周期',mm('T₂'),nf(modes[1]?modes[1].T:NaN,2),'秒'],['3次の固有周期',mm('T₃'),nf(modes[2]?modes[2].T:NaN,2),'秒'],['1次の固有振動数',mm('f₁＝1/T₁'),nf(1/modes[0].T,2),'Hz'],['1次の刺激係数',mm('Γ₁＝Σφ/Σφ²'),nf(Math.abs(modes[0].G),2),''],['減衰比',mm('ζ'),nf(z*100,0),'%'],['1次の応答加速度',mm('Sa(T₁)'),nf(sa(modes[0].T),2),'m/s²'],['最大の層間変形',mm('SRSS で重ね合わせ'),nf(dmax*1000,0),'mm'],['最大の層間変形角',mm('δ/h'),'1/'+nf(1/ang,0),''],['最上階の加速度',mm('SRSS'),nf(accTop,2),'m/s²'],...(iso?[['免震層の変形',mm('免震層'),nf(isoDisp*100,0),'cm']]:[])],
+     checks:[['層間変形角（柱・壁が壊れないか）',ang*100,0.01,ang<=0.01,`1/${nf(1/ang,0)} ／ 上限 1/100`],['最上階の加速度（家具が倒れないか）',accTop/6,6,accTop<=6,`${nf(accTop,2)} ／ 上限 6 m/s²`]],
+     cost, costTxt:`約 ${nf(cost,0)} 百万円（構造部分の目安）`, modes, nn, iso, ang, accTop};
+ },
+ fig(s,q){ const W=340,H=270, base=250, top=24; const nn=q.nn; const fh=(base-top)/nn; const cols=[DC.r,DC.b,'#C8A02A']; const xs=[70,170,270];
+   let g=G(10,330,base+2);
+   q.modes.slice(0,3).forEach((md,j)=>{ const x0=xs[j]; const mx=Math.max(...md.v.map(Math.abs)); const amp=30;
+     const pts=sgn=>[`${x0},${base}`,...md.v.map((v,i)=>`${(x0+sgn*amp*v/mx).toFixed(1)},${(base-(i+1)*fh).toFixed(1)}`)].join(' ');
+     const ptsR=[`${x0},${base}`,...md.v.map((v,i)=>`${x0},${(base-(i+1)*fh).toFixed(1)}`)].join(' ');
+     g+=`<polyline points="${ptsR}" fill="none" stroke="#D9D6CC" stroke-width="6"/>`;
+     g+=`<polyline points="${pts(1)}" fill="none" stroke="${cols[j]}" stroke-width="3"><animate attributeName="points" dur="${Math.max(0.6,Math.min(2.4,md.T*0.6)).toFixed(2)}s" repeatCount="indefinite" values="${pts(1)};${pts(-1)};${pts(1)}"/></polyline>`;
+     md.v.forEach((v,i)=>{ const y=base-(i+1)*fh; if(nn<=12||i%Math.ceil(nn/12)===nn%Math.ceil(nn/12)) g+=`<circle cx="${x0+30*v/mx}" cy="${y}" r="3" fill="${cols[j]}"><animate attributeName="cx" dur="${Math.max(0.6,Math.min(2.4,md.T*0.6)).toFixed(2)}s" repeatCount="indefinite" values="${x0+30*v/mx};${x0-30*v/mx};${x0+30*v/mx}"/></circle>`; });
+     g+=T(x0,top-8,`${j+1}次 ${nf(md.T,2)} 秒`,cols[j],12); });
+   if(q.iso) g+=R(20,base-fh,300,fh,'none','#C8A02A',1.5)+T(170,base-fh/2+4,'免震層',DC.g,10,'middle',400);
+   return S(W,H,g,T(170,H-2,(q.ang<=0.01&&q.accTop<=6)?'揺れ方（モード）：アニメーションで表示':'揺れが大きすぎる！',(q.ang<=0.01&&q.accTop<=6)?n:r,11));
+ },
+ links:[['2層の建物とモード',URLS.kozoR+'#d-shindo-5'],['応答スペクトル',URLS.kozoR+'#d-shindo-4'],['免震と制振',URLS.kozoR+'#d-shindo-6'],['剛性マトリクス',URLS.kozoR+'#d-indet-9'],['重ね合わせの原理',URLS.kozoR+'#d-indet-0']],
+ real:'実際の超高層ビル（高さ 60 m 超）は、国の認定を受けるため、本物の地震記録を何本も入れて、時間を追って揺れを計算します（時刻歴応答解析）。2011年の東日本大震災では、震源から遠い東京や大阪の超高層ビルが、周期の長い揺れ（長周期地震動）と共振して、10分以上ゆっくり大きく揺れました。それ以来、長周期地震動への対策（ダンパーの追加など）が進んでいます。'},
 ]; })();
 
 // ---- 実践ラボ：本物を設計する流れ（依頼 → 条件 → 計算 → 照査 → 図面 → コスト） ----
@@ -210,6 +292,46 @@ function combos(c,base){ let out=[Object.assign({},base)]; c.inputs.filter(x=>x.
 // 条件（d なし）は固定したまま、設計で決める項目（d:1）だけを総当たりして、最も安い安全な案を探す
 function best(c,s){ const base={}; c.inputs.filter(x=>!x.d).forEach(x=>base[x.k]=s[x.k]); const key=JSON.stringify(base); c._best=c._best||{}; if(key in c._best) return c._best[key]; let bc=null; combos(c,base).forEach(t=>{ const r=c.calc(t); if(r.checks.every(x=>x[3])&&(!bc||r.cost<bc.cost)) bc={s:t,cost:r.cost}; }); return c._best[key]=bc; }
 function stars(c){ return (JS[c.id]||{}).st||0; }
+// ---- 諸量の変化のグラフ ----
+const PCOLS=['#C62422','#3286BE','#12286B','#C8A02A','#4E9A5B','#8E5BB5'];
+const numv=x=>{ const v=+String(x).replace(/,/g,''); return isFinite(v)?v:NaN; };
+const PS={};
+function niceTicks(lo,hi,n=5){ if(!(hi>lo)){ hi=lo+1; } const st=Math.pow(10,Math.floor(Math.log10((hi-lo)/n))); const err=(hi-lo)/n/st; const step=st*(err>=7.5?10:err>=3.5?5:err>=1.5?2:1); const out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) out.push(+v.toPrecision(12)); return out; }
+function drawPlot(c,s,r){
+  const xs=c.inputs.filter(x=>x.opts.every(o=>typeof o[0]==='number')); if(!xs.length){ $('.plot').style.display='none'; return; }
+  const st=PS[c.id]=PS[c.id]||{x:(xs.find(x=>x.d&&x.cont!==false)||xs[0]).k,y:'ck'};
+  const ys=[['ck','照査の使用率'],...r.rows.map((row,i)=>[i,row[0]]).filter(([i])=>isFinite(numv(r.rows[i][2]))),['cost','コスト']];
+  if(!ys.find(y=>String(y[0])===String(st.y))) st.y='ck';
+  $('#px').innerHTML=xs.map(x=>`<button data-px="${x.k}" class="${x.k===st.x?'on':''}">${x.label}</button>`).join('');
+  $('#py').innerHTML=ys.map(([k,l])=>`<button data-py="${k}" class="${String(k)===String(st.y)?'on':''}">${l}</button>`).join('');
+  $('#px').querySelectorAll('button').forEach(b=>b.onclick=()=>{ st.x=b.dataset.px; drawPlot(c,s,c.calc(s)); });
+  $('#py').querySelectorAll('button').forEach(b=>b.onclick=()=>{ st.y=b.dataset.py; drawPlot(c,s,c.calc(s)); });
+  const inp=c.inputs.find(x=>x.k===st.x); const vals=inp.opts.map(o=>o[0]); const disc=inp.cont===false;
+  const lo=Math.min(...vals), hi=Math.max(...vals); const X=disc?vals:[...Array(61)].map((_,i)=>lo+(hi-lo)*i/60);
+  const pts=X.map(x=>{ const t=Object.assign({},s,{[st.x]:x}); const rr=c.calc(t); return {x,rr,ok:rr.checks.every(z=>z[3])}; });
+  let series;
+  if(st.y==='ck') series=r.checks.map((ck,j)=>({name:ck[0],ys:pts.map(p=>p.rr.checks[j][1])}));
+  else if(st.y==='cost') series=[{name:'コスト',ys:pts.map(p=>p.rr.cost)}];
+  else { const i=+st.y; series=[{name:r.rows[i][0]+(r.rows[i][3]?`（${r.rows[i][3]}）`:''),ys:pts.map(p=>numv(p.rr.rows[i][2]))}]; }
+  const W=340,H=230,l=46,rt=12,tp=14,bt=40; const all=series.flatMap(z=>z.ys).filter(isFinite); let y0=Math.min(0,...all), y1=Math.max(...all); if(st.y==='ck'){ y0=0; y1=Math.max(1.3,Math.min(5,y1)); }
+  if(!(y1>y0)) y1=y0+1; y1+= (y1-y0)*0.05;
+  const xi=disc?(v=>l+(W-l-rt)*(vals.indexOf(v)+0.5)/vals.length):(v=>l+(W-l-rt)*(v-lo)/((hi-lo)||1)); const yi=v=>tp+(H-tp-bt)*(1-(Math.min(y1,Math.max(y0,v))-y0)/(y1-y0));
+  let g='';
+  // OK band
+  if(disc) pts.forEach(p=>{ if(p.ok){ const w=(W-l-rt)/vals.length; g+=`<rect x="${xi(p.x)-w/2}" y="${tp}" width="${w}" height="${H-tp-bt}" fill="#d7e6f1"/>`; } });
+  else { let a=null; pts.forEach((p,i)=>{ if(p.ok&&a==null) a=p.x; if((!p.ok||i===pts.length-1)&&a!=null){ const e=p.ok?p.x:pts[i-1].x; g+=`<rect x="${xi(a)}" y="${tp}" width="${Math.max(2,xi(e)-xi(a))}" height="${H-tp-bt}" fill="#d7e6f1"/>`; a=null; } }); }
+  niceTicks(y0,y1).forEach(v=>{ g+=`<line x1="${l}" x2="${W-rt}" y1="${yi(v)}" y2="${yi(v)}" stroke="#D9D6CC"/><text x="${l-5}" y="${yi(v)+4}" font-size="10" text-anchor="end" fill="#5E6B86">${nf(v)}</text>`; });
+  if(st.y==='ck') g+=`<line x1="${l}" x2="${W-rt}" y1="${yi(1)}" y2="${yi(1)}" stroke="#C62422" stroke-width="1.5" stroke-dasharray="6 4"/><text x="${W-rt}" y="${yi(1)-4}" font-size="10" text-anchor="end" fill="#C62422" font-weight="700">1.0（ここを超えると NG）</text>`;
+  (disc?vals:niceTicks(lo,hi,4)).forEach(v=>{ const lab=disc?(inp.opts.find(o=>o[0]===v)[1]):nf(v); g+=`<text x="${xi(v)}" y="${H-bt+14}" font-size="10" text-anchor="middle" fill="#5E6B86">${lab}</text>`; });
+  g+=`<line x1="${l}" x2="${W-rt}" y1="${H-bt}" y2="${H-bt}" stroke="#12286B"/><line x1="${l}" x2="${l}" y1="${tp}" y2="${H-bt}" stroke="#12286B"/><text x="${(l+W-rt)/2}" y="${H-6}" font-size="11" text-anchor="middle" fill="#12286B" font-weight="700">${inp.label}</text>`;
+  series.forEach((z,j)=>{ const col=PCOLS[j%PCOLS.length]; const pp=pts.map((p,i)=>[xi(p.x),yi(z.ys[i])]).filter((q,i)=>isFinite(z.ys[i]));
+    g+=disc?pp.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="4" fill="${col}"/>`).join('')+`<polyline points="${pp.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="3 3"/>`:`<polyline points="${pp.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+    const cy=st.y==='ck'?r.checks[j][1]:st.y==='cost'?r.cost:numv(r.rows[+st.y][2]); if(isFinite(cy)) g+=`<circle cx="${xi(s[st.x])}" cy="${yi(cy)}" r="5.5" fill="#fff" stroke="${col}" stroke-width="3"/>`; });
+  g+=`<line x1="${xi(s[st.x])}" x2="${xi(s[st.x])}" y1="${tp}" y2="${H-bt}" stroke="#12286B" stroke-dasharray="2 3"/>`;
+  $('#plot').innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="pfig" role="img"><rect width="${W}" height="${H}" fill="#fff"/>${g}</svg><div class="pleg">${series.map((z,j)=>`<span><i style="background:${PCOLS[j%PCOLS.length]}"></i>${z.name}</span>`).join('')}</div>`;
+  const okx=pts.filter(p=>p.ok).map(p=>p.x);
+  $('#pnote').innerHTML=okx.length?`${inp.label}は、ほかが今のままなら <b>${disc?okx.map(v=>inp.opts.find(o=>o[0]===v)[1]).join('・'):nf(Math.min(...okx))+' 〜 '+nf(Math.max(...okx))}</b> で全部 OK。`:`${inp.label}だけを変えても、全部 OK にはなりません。ほかの条件も変えてみよう。`;
+}
 function home(){
   location.hash=''; const tot=CASES.reduce((a,c)=>a+stars(c),0);
   $('#crumb').textContent=''; $('#prog').textContent=`★ ${tot} / ${CASES.length*3}`;
@@ -231,6 +353,8 @@ function openCase(i){
    <section class="calc"><h3><span>3</span>計算する</h3><div id="rows"></div></section>
    <section class="chk"><h3><span>4</span>照査する（安全か）</h3><div id="checks"></div></section>
    <section class="cost"><h3><span>6</span>コストを比べる</h3><div id="cost"></div></section>
+   <section class="plot"><h3><span>7</span>変えるとどうなる？（グラフ）</h3><p class="hint">横軸に条件を1つ選ぶと、ほかを今の値のままにして、その条件を少しずつ変えたときの変化を描きます。● が今の設計、青い帯が「全部 OK」になる範囲です。</p>
+    <div class="pctl"><b>横軸</b><div class="opts" id="px"></div><b>縦軸</b><div class="opts" id="py"></div></div><div id="plot"></div><p class="pnote" id="pnote"></p></section>
    <section class="why"><h3>この設計で使った勉強</h3><div class="ulinks">${c.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>${c.real?`<p class="real"><b>本物では：</b>${c.real}</p>`:''}</section>
    <div class="nav">${i>0?`<button class="b" id="pv">← 前の案件</button>`:''}<button class="b" id="hm">案件の一覧</button>${i<CASES.length-1?`<button class="b main" id="nx">次の案件 →</button>`:''}</div>`;
   const upd=()=>{ const r=c.calc(s); const ok=r.checks.every(x=>x[3]); const bc=best(c,s);
@@ -240,9 +364,10 @@ function openCase(i){
     let st=0; if(ok){ st=2; if(bc&&r.cost<=bc.cost*1.0001) st=3; }
     else st=1;
     const prev=stars(c); JS[c.id]={s:Object.assign({},s),st:Math.max(prev,st)}; jsave(); $('#prog').textContent=`★ ${CASES.reduce((a,x)=>a+stars(x),0)} / ${CASES.length*3}`;
+    drawPlot(c,s,r);
     $('#cost').innerHTML=`<div class="cbox"><div><small>この設計</small><b>${r.costTxt}</b></div><div><small>評価</small><b class="stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</b></div></div><p>${ok?(st===3?'<b>最も安い安全な設計です。</b>実務でも、安全を満たす中でいちばん経済的な案を選びます。':'安全ですが、もっと安くできる組み合わせがあります（★3は最安の安全な設計）。'):(bc?'まずは全部の照査を OK にしよう（★2）。':'<b>この条件では、どの部材を選んでも安全になりません。</b>実務なら、構造の形式そのものを見直します。条件を変えてみよう。')}</p>${bc&&!(ok&&st===3)?`<details class="ans"><summary>降参：最も安い安全な案を見る</summary><p>${c.inputs.filter(x=>x.d).map(x=>`${x.label}：<b>${(x.opts.find(o=>o[0]==bc.s[x.k])||[])[1]}</b>`).join('　')}</p></details>`:''}`;
   };
-  document.querySelectorAll('.opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
+  document.querySelectorAll('.inp .opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
   upd();
   $('#hm').onclick=home; const pv=$('#pv'); if(pv) pv.onclick=()=>openCase(i-1); const nx=$('#nx'); if(nx) nx.onclick=()=>openCase(i+1);
   window.scrollTo(0,0);

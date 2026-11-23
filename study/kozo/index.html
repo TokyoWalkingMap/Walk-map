@@ -857,10 +857,14 @@ const NAZO={
  arch:{q:'吊り橋のケーブル。たるみを少なくピンと張るほど、ケーブルの力は？',o:['小さくなる','大きくなる','変わらない'],a:1,w:'ケーブルの水平張力 H＝wL²/(8f)。たるみ f が小さいほど大きくなります。洗濯ロープをピンと張るほど切れやすいのと同じです。'},
 };
 const NAZO2={
+ vib:[
+  {q:'ブランコに乗った友達を、軽い力で大きく揺らしたい。押すタイミングは？',o:['できるだけ速く何度も押す','揺れが戻ってきたときに合わせて押す','ゆっくり2往復に1回押す'],a:1,w:'揺れの固有の周期に合わせて押すと、1回ごとの小さな力が積み重なって、揺れがどんどん大きくなります（共振）。地震の揺れの周期と建物の固有周期が近いと大きく揺れるのも、歩道橋が人の歩調で揺れるのも同じしくみです。',link:['導出：強制振動と共振','#d-shindo-2']},
+  {q:'建物を「わざと柔らかい台」の上に載せる（免震）。地震の揺れはどうなる？',o:['柔らかいので大きく揺れる','建物が受ける揺れが小さくなる','変わらない'],a:1,w:'柔らかい層の上に載せると、建物全体の固有周期が3〜4秒にのびます。地震の揺れの多くはもっと短い周期なので、建物は速い揺れについていけず、受ける加速度は数分の1になります。代わりに、建物は地面に対してゆっくり大きく動くので、まわりにすき間を設けます。',link:['導出：免震と制振','#d-shindo-6']},
+ ],
  indet:[
   {q:'梁の真ん中に 10 kN をのせたら、たわみは 2 mm。そこに、もう 10 kN を同じ場所にのせる。たわみは？',o:['2 mm のまま','4 mm','8 mm（重いほど急に増える）'],a:1,w:'鋼やコンクリートは、壊れるずっと手前では、力とたわみが比例します（フックの法則）。だから荷重が2倍ならたわみも2倍。荷重を別々にのせた答えを足してよい、というのが「重ね合わせの原理」です。ただし、降伏した後や、座屈しかけているときは比例しないので、足せません。',link:['導出：重ね合わせの原理','#d-indet-0']},
   {q:'橋の支点が1つ、地震で壊れた。ただ乗せただけの橋（静定）と、3つ以上の支点でつながった橋（不静定）。落ちにくいのは？',o:['静定の橋','不静定の橋','どちらも同じ'],a:1,w:'静定の構造は、支えが「ちょうど足りている」状態なので、1つ失うと形を保てません。不静定の構造は支えに「余り」があるので、1つ壊れても、力が別の道を通って流れます（冗長性）。その代わり、温度の変化や地盤の沈下でも力が生まれるので、設計は難しくなります。',link:['導出：応力法（余分な支点を外す）','#d-indet-1']},
-  {q:'同じ長さの単純梁を2本並べる橋と、2径間を1本につないだ連続梁の橋。径間の真ん中の曲げモーメントが小さいのは？',o:['単純梁2本','連続梁','同じ'],a:1,w:'つなぐと、中間支点の上で梁が山なりに曲がり、その分だけ径間の真ん中の曲げが減ります（wL²/8 → 約 0.07wL²）。そのため、高速道路の高架橋の多くは連続桁です。継ぎ目が減って、車の走りも静かになります。',link:['導出：三連モーメント式','#d-indet-4']},
+  {q:'同じ長さの単純梁を2本並べる橋と、2径間を1本につないだ連続梁の橋。径間の真ん中の曲げモーメントが小さいのは？',o:['単純梁2本','連続梁','同じ'],a:1,w:'つなぐと、中間支点の上で梁が山なりに曲がり、その分だけ径間の真ん中の曲げが減ります（wL²/8 → 約 0.07wL²）。そのため、高速道路の高架橋の多くは連続桁です。継ぎ目が減って、車の走りも静かになります。',link:['導出：三連モーメント式','#d-indet-7']},
  ],
 };
 
@@ -991,6 +995,8 @@ const m=s=>`<span class="mm">${s}</span>`;
 .dst li.hide{display:none}
 .dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
 .mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.dit h3 em{display:inline-block}
+.dd{position:relative;display:inline-block}.dd::before{content:"";position:absolute;left:58%;top:.12em;height:.15em;transform:translateX(-50%);background:radial-gradient(circle closest-side,currentColor 85%,transparent 100%) 0 0/.17em .15em repeat-x}.dd.d1::before{width:.17em}.dd.d2::before{width:.38em;background-size:.19em .15em}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
 .dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
 .dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
@@ -1018,7 +1024,7 @@ const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
 const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
 function taikei(byP){
   const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
-  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  const uname=id=>{ const u=U.find(x=>x.id===id)||XU().find(x=>x.id===id); return u?u.name:id; };
   return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
    <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
    <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
@@ -1028,6 +1034,12 @@ function taikei(byP){
    ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
+
+// ẋ・ẍ はフォントによって点がずれるので、点を自前で描く
+function dotFix(root){ if(!root) return; const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>/[ẋẍ]/.test(n.nodeValue)&&!n.parentNode.closest('svg')?1:3}); const ns=[]; while(w.nextNode()) ns.push(w.currentNode);
+  ns.forEach(n=>{ const fr=document.createDocumentFragment(); n.nodeValue.split(/([ẋẍ])/).forEach(p=>{ if(p==='ẋ'||p==='ẍ'){ const sp=document.createElement('span'); sp.className='dd '+(p==='ẋ'?'d1':'d2'); sp.textContent='x'; fr.appendChild(sp); } else if(p) fr.appendChild(document.createTextNode(p)); }); n.parentNode.replaceChild(fr,n); }); }
+(()=>{ if(typeof MutationObserver==='undefined') return; let pend=false; const mo=new MutationObserver(()=>{ if(pend) return; pend=true; setTimeout(()=>{ pend=false; mo.disconnect(); try{ dotFix(document.body); } finally { mo.observe(document.body,{childList:true,subtree:true}); } },0); }); const st=()=>{ dotFix(document.body); mo.observe(document.body,{childList:true,subtree:true}); }; if(document.body) st(); else document.addEventListener('DOMContentLoaded',st); })();
+const XU=()=>typeof DXU!=='undefined'?DXU:[];
 function deriveView(){
   if(typeof DER==='undefined') return;
   cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
@@ -1036,13 +1048,13 @@ function deriveView(){
   $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
    <p class="lead">${DPR.lead}</p>
    ${taikei(byP)}
-   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
-   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}${XU().map(u=>`<a href="#d-${u.id}">${u.no} ${u.name}</a>`).join('')}</div>
+   ${[...U,...XU()].map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; const ex=i>=U.length; return `<section class="dch" id="d-${u.id}"><h2>${ex?u.no:String(i+1).padStart(2,'0')} ${u.name}</h2>${ex&&u.lead?`<p class="lead">${u.lead}</p>`:''}
      <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
      ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
        <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
        <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
-     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+     <div class="dnav">${ex?'':`<a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a>`}<a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
   const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
   $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
   $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
@@ -1309,7 +1321,42 @@ indet:{p:['sup','eq','comp','hooke'],it:[
    {q:'逆に、θ から M を出すには？'},
    `この2本の連立方程式を M について解く：${m('M_AB＝(2EI/L)(2θ_A＋θ_B)')}。`,
    `さらに、端が Δ だけずれると部材が ${m('R＝Δ/L')} だけ傾くので、その分を引く。荷重による固定端モーメント C も重ね合わせると<span class="eq">${m('M_AB＝2EK(2θ_A＋θ_B−3R)＋C_AB')}</span>（${m('K＝I/L')}：剛比のもと）。`,
-   '各節点で「集まるモーメントの合計＝0」（節点方程式）を立てると、θ が求まり、全部の M が出る。'],key:'たわみ角法＝未知数を「回転角」にした重ね合わせ。'},
+   `<b>教科書の書き方</b>：基準の剛度 ${m('K₀')} を決めて、${m('k＝K/K₀')}（剛比）、${m('φ＝2EK₀θ')}、${m('ψ＝−6EK₀R')} とおくと<span class="eq">${m('M_AB＝k(2φ_A＋φ_B＋ψ)＋C_AB')}</span>数字が小さくなり、手計算しやすい。符号は「材端モーメントは時計回りが正」。`,
+   '固定端は ${m("φ＝0")}、ピン端は「M＝0」になるように φ が決まる。未知数は、各節点の φ と、各層の ψ だけ。'.replace('${m("φ＝0")}',m('φ＝0')),
+   '未知数の数だけ式が要る。φ の数だけ「節点方程式」、ψ の数だけ「層方程式」を立てる（次の2項目）。'],key:'たわみ角法＝未知数を「回転角」にした重ね合わせ。M＝k(2φ_A＋φ_B＋ψ)＋C。'},
+ {t:'節点方程式',goal:'ΣM＝0（節点のまわり）',fig:S(320,200,L(160,100,40,100,n,5),L(160,100,280,100,n,5),L(160,100,160,190,n,5),L(160,100,160,20,n,5),C(160,100,7,r,r),
+   Mo(160,100,30,'',false,b),M(60,88,'M<tspan font-size="10" dy="3">BA</tspan>',b,13),M(240,88,'M<tspan font-size="10" dy="3">BC</tspan>',b,13),M(178,170,'M<tspan font-size="10" dy="3">BE</tspan>',b,13,'start'),M(178,36,'M<tspan font-size="10" dy="3">BD</tspan>',b,13,'start'),
+   T(160,140,'',n),T(250,190,'節点 B を切り出す',n,12)),
+  cap:'剛な節点では、つながる部材がみんな同じ角度だけ回る。切り出した節点そのものも、回ってはいけない。',
+  s:['ラーメンの節点（柱と梁の接合部）を、小さく切り出して考える。',
+   {q:'切り出した節点に働く力のモーメントは？'},
+   '節点には、つながる各部材から、材端モーメントの「反作用」が働く。節点は小さくて回らないので、モーメントのつりあい（①）より',
+   `<span class="eq">${m('M_BA＋M_BC＋M_BD＋M_BE＝0')}</span>（節点に外からモーメント荷重 ${m('M₀')} がかかるときは、右辺を ${m('M₀')} にする）`,
+   'これが節点方程式。各 M に基本式を入れると、φ の1次式になる。回る節点が n 個あれば、節点方程式も n 本。',
+   '固定端の節点は回らない（φ＝0 と決まっている）ので、節点方程式は立てない。'],key:'節点方程式＝「節点に集まる材端モーメントの合計＝0」。未知数 φ の数だけ立てる。'},
+ {t:'層方程式',goal:'Σ(M_柱頭＋M_柱脚)＝−Ph',fig:S(320,220,G(24,56,190),G(264,296,190),L(40,190,40,70,n,5),L(280,190,280,70,n,5),L(40,70,280,70,n,5),A(-10+10,70,36,70,r),M(12,60,'P',r,15),
+   L(20,130,300,130,r,1.5,'6 4'),T(160,124,'柱を水平に切る',r,12),A(70,140,46,140,b,2),A(310,140,286,140,b,2),M(76,156,'Q'+'<tspan font-size="10" dy="3">1</tspan>',b,14,'start'),M(296,160,'Q<tspan font-size="10" dy="3">2</tspan>',b,14,'end'),
+   T(160,210,'柱の高さ h',n,12)),
+  cap:'横から P を受けると、梁が横にずれる（部材角 ψ が生まれる）。ずれを決めるのが層方程式。',
+  s:['地震や風で横から力 P を受けると、ラーメンは横にずれる。このずれ（部材角 R、つまり ψ）が新しい未知数になる。節点方程式だけでは式が足りない。',
+   {q:'足りない式は、どこから？'},
+   '柱を水平に切って、上の部分の横向きのつりあい（①）を書く。外力 P を、切った柱のせん断力 Q が受け持つ：',
+   `${m('ΣQ＋P＝0')}。各柱のせん断力は、柱の材端モーメントから出る：柱を1本取り出し、柱脚まわりのモーメントのつりあいから ${m('Q＝−(M_柱頭＋M_柱脚)/h')}。`,
+   `代入すると<span class="eq">${m('Σ(M_柱頭＋M_柱脚)＝−P h')}</span>（柱の高さが同じとき。符号は時計回り正）`,
+   'これが層方程式。層（階）が n 層あれば、ψ も n 個、層方程式も n 本。2階建てなら、上の層は「2階の柱を切る」、下の層は「1階の柱を切る」で、それより上の横力の合計を右辺に入れる。'],key:'層方程式＝「その層の柱のせん断力の合計が、上にかかる横力とつりあう」。'},
+ {t:'例題：横から押される門形ラーメン',goal:'柱脚 2Ph/7、柱頭 3Ph/14',fig:S(320,230,G(44,76,180),G(244,276,180),L(60,180,60,60,n,4),L(260,180,260,60,n,4),L(60,60,260,60,n,4),A(4,60,56,60,r),M(12,50,'P',r,15),
+   P('M60,180 L20,180 L60,111Z','#fbe3e2',r,1.2),P('M60,111 L60,60 L90,60Z','#fbe3e2',r,1.2),P('M260,180 L220,180 L260,111Z','#fbe3e2',r,1.2),P('M260,111 L260,60 L290,60Z','#fbe3e2',r,1.2),
+   P('M60,60 L60,90 L160,60Z','#fbe3e2',r,1.2),P('M160,60 L260,30 L260,60Z','#fbe3e2',r,1.2),
+   T(22,198,'2Ph/7',r,12),T(222,198,'2Ph/7',r,12),T(104,104,'3Ph/14',r,12),T(296,84,'3Ph/14',r,12),T(150,128,'剛比はすべて 1、柱脚は固定',n,12),T(150,146,'M図（赤）は引張側に描く',r,11)),
+  cap:'柱の高さ h、梁と柱の剛比はすべて 1。梁の高さで横から P。M図（赤）は引張側に描いている。',
+  s:['未知数：柱頭の節点 B、C の回転 φ_B、φ_C と、柱の部材角 ψ。柱脚は固定なので φ_A＝φ_D＝0。左右対称な骨組を横に押すと、変形は逆対称になるので φ_B＝φ_C＝φ。',
+   `<b>基本式</b>（荷重は節点だけなので C＝0）：柱 ${m('M_AB＝φ＋ψ')}、${m('M_BA＝2φ＋ψ')}、梁 ${m('M_BC＝2φ＋φ＝3φ')}。`,
+   `<b>節点方程式</b>（節点 B）：${m('M_BA＋M_BC＝0')} → ${m('(2φ＋ψ)＋3φ＝0')} → ${m('ψ＝−5φ')}。`,
+   `<b>層方程式</b>：柱は2本で同じなので ${m('2(M_AB＋M_BA)＝−Ph')} → ${m('2(3φ＋2ψ)＝−Ph')}。`,
+   {q:'ψ＝−5φ を代入すると？'},
+   `${m('2(3φ−10φ)＝−14φ＝−Ph')} → ${m('φ＝Ph/14')}、${m('ψ＝−5Ph/14')}。`,
+   `<span class="eq">${m('M_AB＝−4Ph/14＝−2Ph/7')}　${m('M_BA＝−3Ph/14')}　${m('M_BC＝3Ph/14')}</span>柱脚の曲げ（約0.29Ph）は、柱頭（約0.21Ph）より大きい。`,
+   `<b>確かめ</b>：1本の柱のせん断力は ${m('(2Ph/7＋3Ph/14)/h＝P/2')}。2本で P。横力のつりあいが取れている。梁を硬くするほど柱頭が回りにくくなり、柱脚と柱頭の曲げは同じ大きさ（Ph/4ずつ）に近づく。`],key:'手順：未知数（φ と ψ）を決める → 基本式 → 節点方程式 → 層方程式 → 連立して解く → M を戻す。'},
  {t:'三連モーメント式（連続梁）',goal:'M_B＝−wL²/8',fig:S(320,200,B(20,300,70,n,5),Pin(20,74),Pin(160,74),Rol(300,74),W(20,300,68,r,14,'w'),Dim(20,160,112,'L'),Dim(160,300,112,'L'),
    P('M20,160 Q55,190 90,186 Q130,180 160,134 Q190,180 230,186 Q265,190 300,160','#fbe3e2',r,2),L(20,160,300,160,n,1),T(160,128,'M_B＝wL²/8（上が引張）',r,11),T(80,200,'径間：下が引張',b,11),T(245,200,'径間：下が引張',b,11)),
   cap:'2径間の連続梁と M図（引張側に描く）。中間支点の上で、梁は山なりに曲がる。',
@@ -1384,6 +1431,215 @@ arch:{p:['eq'],it:[
    `<span class="eq">${m('H＝M₀ / f')}</span>アーチの形を M₀ の形（放物線）にすると、どこでも M＝0 になり、圧縮だけで支えられる。`]},
 ]},
 }; })();
+// ---- 追加の章：振動工学 ----
+const DXU=[{id:'shindo',no:'振動',name:'振動工学',lead:'地震・風・人の歩行で、構造物は揺れます。揺れは「重さ（慣性）」「ばね（剛性）」「ブレーキ（減衰）」の3つで決まります。単元15「振動」の続きとして、1自由度の運動方程式から、共振、地震応答、モード、免震・制振まで導きます。'}];
+DPR.groups.push(['振動工学','揺れを予測して、抑える',['shindo'],['耐震・免震・制振の設計','歩道橋・床の揺れの対策','超高層ビルの風揺れ']]);
+DER.shindo=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Fix}=dg; const n=DC.n,r=DC.r,b=DC.b;
+const ax=(W,H,l,tp,bt,xl,yl)=>`<line x1="${l}" x2="${W-8}" y1="${H-bt}" y2="${H-bt}" stroke="${n}"/><line x1="${l}" x2="${l}" y1="${tp}" y2="${H-bt}" stroke="${n}"/><text x="${(l+W)/2}" y="${H-8}" font-size="11" text-anchor="middle" fill="${n}" font-weight="700">${xl}</text><text x="12" y="${(tp+H-bt)/2}" font-size="11" text-anchor="middle" fill="${n}" font-weight="700" transform="rotate(-90 12 ${(tp+H-bt)/2})">${yl}</text>`;
+const svg=(W,H,s)=>`<svg viewBox="0 0 ${W} ${H}" class="dfig" role="img"><rect width="${W}" height="${H}" fill="#fff"/>${s}</svg>`;
+const COL=['#C62422','#C8A02A','#3286BE','#12286B'];
+// 自由振動の減衰波形
+const decay=()=>{ const W=320,H=200,l=34,tp=14,bt=34; let s=ax(W,H,l,tp,bt,'時間 t','変位 x'); const y0=(tp+H-bt)/2; s+=`<line x1="${l}" x2="${W-8}" y1="${y0}" y2="${y0}" stroke="#D9D6CC"/>`;
+  [[0.02,COL[2]],[0.1,COL[0]]].forEach(([z,c],k)=>{ const pts=[]; for(let i=0;i<=200;i++){ const t=i/200*6; const x=Math.exp(-z*2*Math.PI*t)*Math.cos(2*Math.PI*t*Math.sqrt(1-z*z)); pts.push(`${(l+(W-8-l)*i/200).toFixed(1)},${(y0-x*(y0-tp-4)).toFixed(1)}`); }
+   s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2"/><rect x="${W-120}" y="${tp+2+k*14}" width="12" height="4" fill="${c}"/><text x="${W-104}" y="${tp+8+k*14}" font-size="10" fill="${n}">減衰比 ${z*100}%</text>`; });
+  return svg(W,H,s); };
+// 共振曲線
+const reso=()=>{ const W=320,H=220,l=36,tp=12,bt=36, rmax=3, ymax=10; const X=x=>l+(W-8-l)*x/rmax, Y=y=>tp+(H-tp-bt)*(1-Math.min(y,ymax)/ymax); let s=ax(W,H,l,tp,bt,'振動数比 ω/ωn','応答倍率');
+  [0,1,2,3].forEach(v=>s+=`<text x="${X(v)}" y="${H-bt+13}" font-size="9" text-anchor="middle" fill="#5E6B86">${v}</text>`); [0,2,4,6,8,10].forEach(v=>s+=`<line x1="${l}" x2="${W-8}" y1="${Y(v)}" y2="${Y(v)}" stroke="#EEE"/><text x="${l-4}" y="${Y(v)+3}" font-size="9" text-anchor="end" fill="#5E6B86">${v}</text>`);
+  s+=`<line x1="${X(1)}" x2="${X(1)}" y1="${tp}" y2="${H-bt}" stroke="${r}" stroke-dasharray="4 3"/><text x="${X(1)+4}" y="${tp+10}" font-size="10" fill="${r}">共振</text><line x1="${X(Math.SQRT2)}" x2="${X(Math.SQRT2)}" y1="${tp}" y2="${H-bt}" stroke="#93BCD6" stroke-dasharray="2 3"/><text x="${X(Math.SQRT2)+4}" y="${tp+24}" font-size="9" fill="${b}">√2</text>`;
+  [0.05,0.1,0.2,0.5].forEach((z,k)=>{ const pts=[]; for(let i=0;i<=240;i++){ const x=rmax*i/240; const y=1/Math.sqrt((1-x*x)**2+(2*z*x)**2); pts.push(`${X(x).toFixed(1)},${Y(y).toFixed(1)}`); } s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${COL[k]}" stroke-width="2"/><rect x="${W-104}" y="${tp+30+k*14}" width="12" height="4" fill="${COL[k]}"/><text x="${W-88}" y="${tp+36+k*14}" font-size="10" fill="${n}">ζ＝${z}</text>`; });
+  return svg(W,H,s); };
+// 加速度応答スペクトル（設計用の形：建築の告示の考え方を簡略化）
+const spec=()=>{ const W=320,H=220,l=36,tp=12,bt=36, tmax=5; const X=t=>l+(W-8-l)*t/tmax, Y=y=>tp+(H-tp-bt)*(1-y/1.1); let s=ax(W,H,l,tp,bt,'固有周期 T（秒）','応答加速度（倍率）');
+  [0,1,2,3,4,5].forEach(v=>s+=`<text x="${X(v)}" y="${H-bt+13}" font-size="9" text-anchor="middle" fill="#5E6B86">${v}</text>`);
+  [[0.4,'かたい地盤',COL[2]],[0.6,'ふつう',COL[1]],[0.8,'やわらかい地盤',COL[0]]].forEach(([Tc,lab,c],k)=>{ const f=t=>t<Tc?1:t<2*Tc?1-0.2*(t/Tc-1)**2:1.6*Tc/t; const pts=[]; for(let i=0;i<=200;i++){ const t=tmax*i/200; pts.push(`${X(t).toFixed(1)},${Y(f(t)).toFixed(1)}`); }
+   s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.2"/><rect x="${W-120}" y="${tp+4+k*14}" width="12" height="4" fill="${c}"/><text x="${W-104}" y="${tp+10+k*14}" font-size="10" fill="${n}">${lab}</text>`; });
+  s+=`<text x="${X(2.7)}" y="${Y(0.62)}" font-size="10" fill="${b}">長い周期ほど小さい</text><text x="${X(0.1)}" y="${Y(1.05)}" font-size="10" fill="${r}" text-anchor="start">短い周期は大きい</text>`;
+  return svg(W,H,s); };
+return {p:['motion','hooke','eq'],it:[
+ {t:'1自由度の運動方程式',goal:'m ẍ＋c ẋ＋k x＝F(t)',fig:S(320,190,Fix(30,40,140),P('M30,90 l12,0 l6,-12 l12,24 l12,-24 l12,24 l6,-12 l12,0','none',n,2),R(102,66,60,48,DC.m,n,2),M(132,96,'m',n,16),L(30,130,60,130,n,2),R(60,122,24,16,'#fff',n,2),L(72,130,102,130,n,2),L(84,124,84,136,n,3),T(60,60,'k',n,13),T(72,156,'c',n,13),A(162,90,220,90,r),M(228,95,'F(t)',r,14,'start'),L(132,124,132,150,DC.g,1,'3 3'),A(132,160,170,160,b,1.6),M(176,164,'x',b,14,'start'),G(90,180,180)),
+  cap:'建物を「おもり m・ばね k・ダンパー c」に置き換える。1階建ての骨組なら、m は屋根の重さ、k は柱の水平剛性（12EI/h³ の合計）。',
+  s:['揺れる構造物を、いちばん簡単な模型にする。おもり（質量 m）が、ばね（剛性 k）とダンパー（減衰係数 c）でつながっている。',
+   `おもりが x だけずれて、速さ ${m('ẋ')} で動いているとき、ばねは ${m('−kx')}（③フックの法則）、ダンパーは速さに比例して ${m('−cẋ')} の力で引き戻す。`,
+   {q:'運動の法則（⑤）を当てはめると？'},
+   `${m('mẍ＝F(t) − kx − cẋ')}。並べ替えて<span class="eq">${m('m ẍ＋c ẋ＋k x＝F(t)')}</span>これが1自由度の運動方程式。振動工学の出発点。`,
+   `両辺を m で割り、${m('ωn＝√(k/m)')}（固有円振動数）、${m('ζ＝c/(2√(mk))')}（減衰比）とおくと ${m('ẍ＋2ζωn ẋ＋ωn² x＝F/m')}。振動の性質は ωn と ζ の2つで決まる。`],key:'揺れ＝慣性 mẍ、減衰 cẋ、ばね kx の力比べ。'},
+ {t:'自由振動と減衰',goal:'x＝x₀e^(−ζωn t)cos(ωd t)',fig:decay(),cap:'一度押して離したときの揺れ。減衰比が大きいほど、早く止まる。',
+  s:[`外から力をかけず（F＝0）、最初に x₀ だけずらして離す。まず減衰なし（c＝0）なら ${m('ẍ＝−ωn² x')}。解は ${m('x＝x₀ cos ωn t')}。揺れの周期は ${m('T＝2π/ωn＝2π√(m/k)')}（固有周期）。`,
+   {q:'ダンパーがあると？'},
+   `${m('x＝e^(λt)')} とおいて代入すると ${m('λ²＋2ζωnλ＋ωn²＝0')}。ζ＜1 なら ${m('λ＝−ζωn ± iωd')}、${m('ωd＝ωn√(1−ζ²)')}。<span class="eq">${m('x＝x₀ e^(−ζωn t) cos ωd t')}</span>`,
+   `揺れの大きさは、1回揺れるごとに ${m('e^(−2πζ)')} 倍になる。これを測れば ζ が出る（対数減衰率 ${m('δ＝2πζ')}）。`,
+   `目安：鉄骨の建物 ζ≈0.02、鉄筋コンクリート ≈0.03〜0.05、鋼の歩道橋 ≈0.005〜0.01。ζ が 1 以上だと、揺れずにじわっと戻る（臨界減衰）。`],key:'固有周期 T＝2π√(m/k)。減衰比 ζ で、揺れの止まり方が決まる。'},
+ {t:'強制振動と共振',goal:'応答倍率＝1/√((1−β²)²＋(2ζβ)²)',fig:reso(),cap:'外から振動数 ω で揺すったときの揺れの大きさ（静的なたわみの何倍か）。β＝ω/ωn。',
+  s:[`外から ${m('F＝F₀ sin ωt')} で揺する。しばらくすると、おもりも同じ振動数 ω で揺れる：${m('x＝X sin(ωt − φ)')}。`,
+   {q:'揺れの大きさ X は？'},
+   `代入して整理すると、静的なたわみ ${m('F₀/k')} に対して<span class="eq">${m('X/(F₀/k)＝1/√((1−β²)²＋(2ζβ)²)')}</span>（${m('β＝ω/ωn')}：振動数比）`,
+   `β＝1（揺する振動数が固有振動数と同じ）で最大、およそ ${m('1/(2ζ)')} 倍。ζ＝0.01 の歩道橋なら 50 倍。これが<b>共振</b>。`,
+   `β が √2 より大きいと、倍率は 1 より小さくなる。速く揺すりすぎると、物はついてこられない。<b>免震</b>はこれを利用して、建物の固有周期を地震の周期より長くする。`,
+   'ブランコを、揺れに合わせてタイミングよく押すと大きく揺れるのが共振。歩道橋では、人の歩く振動数（約 2 Hz）と橋の固有振動数が近いと、大きく揺れる。'],key:'揺する振動数が固有振動数に近いと共振。最大はおよそ 1/(2ζ) 倍。'},
+ {t:'地震で地面が揺れるとき',goal:'m ẍ＋c ẋ＋k x＝−m ü<sub>g</sub>',fig:S(320,190,R(110,40,80,30,DC.m,n,2),L(120,70,116,150,n,4),L(180,70,176,150,n,4),R(80,150,140,14,DC.s,n,2),A(70,174,40,174,r),A(230,174,260,174,r),M(150,186,'ü<tspan font-size="9" dy="3">g</tspan>',r,14),A(196,55,236,55,b),M(240,60,'x（ずれ）',b,13,'start'),T(150,30,'地面ごと揺れる',n,12)),
+  cap:'地震では、外から力を押すのではなく、足元（地面）が動く。',
+  s:[`地面が ${m('x<sub>g</sub>(t)')} だけ動き、建物は地面に対して x だけずれる。建物の本当の位置は ${m('x<sub>g</sub>＋x')}。ばねとダンパーの力は、地面とのずれ x で決まる。`,
+   {q:'運動方程式は？'},
+   `${m('m(ẍ<sub>g</sub>＋ẍ)＋cẋ＋kx＝0')}。地面の加速度 ${m('ü<sub>g</sub>')} の項を右へ移すと<span class="eq">${m('m ẍ＋c ẋ＋k x＝−m ü<sub>g</sub>')}</span>地面が揺れることは、建物に「−m × 地面の加速度」の力がかかるのと同じ。`,
+   '重い建物ほど大きな力を受ける。だから、地震力は「重さ × 加速度の倍率」（層せん断力係数）で表す。地震計の記録 ü<sub>g</sub> を入れて、この式を少しずつ時間を進めて解く（時刻歴応答解析）。'],key:'地震＝足元が揺れる。建物には −m ü<sub>g</sub> の力がかかったのと同じ。'},
+ {t:'応答スペクトル',goal:'固有周期で、受ける地震力が変わる',fig:spec(),cap:'固有周期ごとに、ある地震で1自由度の建物が受ける最大の加速度を並べたもの（設計用の形を簡略化した図）。',
+  s:['同じ地震でも、建物の固有周期によって揺れ方が違う。固有周期を少しずつ変えた1自由度の模型に、同じ地震の記録を入れて、それぞれの最大の応答を並べたものが<b>応答スペクトル</b>。',
+   {q:'どんな形になる？'},
+   '短い周期（低くて硬い建物）では、地面とほぼ一緒に揺れて、地面の加速度の2〜3倍を受ける。地盤の周期に近い所で最大になり、長い周期（高い建物・免震）では小さくなる。',
+   `設計では、これを滑らかにした「設計用スペクトル」を使う。建築基準法の地震力も、固有周期 ${m('T≈0.02h〜0.03h')}（h：建物の高さ m）と地盤の種類から、この形で係数（振動特性係数 Rt）を決めている。`,
+   'やわらかい地盤は周期の長い揺れを強める。高い建物は、やわらかい地盤で揺れやすい。'],key:'応答スペクトル＝「固有周期ごとの、最大の揺れ」。設計の地震力はこの形で決まる。'},
+ {t:'2層の建物とモード',goal:'|K − ω²M|＝0',fig:S(320,220,G(20,140,200),L(40,200,40,120,n,3),L(120,200,120,120,n,3),R(36,114,88,10,DC.m,n,2),L(40,114,40,40,n,3),L(120,114,120,40,n,3),R(36,34,88,10,DC.m,n,2),T(80,230,'',n),
+   G(170,300,200),P('M190,200 L198,120 L210,40','none',b,3),P('M270,200 L278,120 L290,40','none',b,3),R(194,114,88,10,'#d7e6f1',b,1.5),R(206,34,88,10,'#d7e6f1',b,1.5),T(240,24,'1次モード',b,12),
+   P('M170,0','none'),T(80,24,'m₂、k₂（2階）',n,11),T(80,104,'m₁、k₁（1階）',n,11)),
+  cap:'2階建てを、2つのおもりと2つのばねで表す。揺れ方には決まった形（モード）がある。',
+  s:[`各階のおもりに運動方程式を立てる。1階：${m('m₁ẍ₁＋k₁x₁ − k₂(x₂−x₁)＝0')}、2階：${m('m₂ẍ₂＋k₂(x₂−x₁)＝0')}。`,
+   `並べると ${m('M ẍ＋K x＝0')}（M：質量マトリクス、K：剛性マトリクス。マトリクス法の K と同じもの）。`,
+   {q:'全体が同じ振動数で揺れる形はある？'},
+   `${m('x＝φ sin ωt')} とおくと ${m('(K − ω²M)φ＝0')}。φ が 0 でない答えがあるのは<span class="eq">${m('|K − ω²M|＝0')}</span>のとき（固有値問題）。2つの ω と、それぞれの揺れの形 φ（<b>モード</b>）が出る。`,
+   `例：${m('m₁＝m₂＝m')}、${m('k₁＝k₂＝k')} なら ${m('ω²＝(3∓√5)k/(2m)')}。1次は全体が同じ向きに揺れ（上ほど大きい）、2次は1階と2階が逆向きに揺れる。`,
+   '実際の揺れは、各モードの揺れの重ね合わせ（モード重ね合わせ法）。ふつうは1次モードがいちばん大きいので、設計では1次の固有周期が特に大事。'],key:'多層の建物は M ẍ＋K x＝0。固有値問題で、固有振動数とモードが出る。'},
+ {t:'免震と制振',goal:'周期をのばす・減衰を足す',fig:S(320,200,G(10,150,186),R(30,174,100,12,'#eee',n,1.5),...[50,80,110].map(x=>C(x,180,6,'#fff',n,1.5)),R(40,60,80,110,DC.m,n,2),T(80,48,'免震：周期をのばす',b,12),
+   G(170,310,186),R(190,60,100,126,DC.m,n,2),L(190,60,290,186,r,2),L(290,60,190,186,r,2),R(232,114,16,16,r,r),T(240,48,'制振：減衰を足す',r,12)),
+  cap:'免震は、建物と基礎の間に柔らかい層を入れる。制振は、建物の中にダンパーを入れる。',
+  s:['応答スペクトルと共振曲線から、揺れを小さくする方法は2つある。',
+   `<b>免震</b>：建物と基礎の間に、積層ゴムなどの柔らかい層を入れて、固有周期を 3〜4 秒にのばす。応答スペクトルの右側（長い周期）に移るので、建物が受ける加速度は数分の1になる。代わりに、免震層が 30〜50 cm 動くので、まわりにすき間が要る。`,
+   `<b>制振</b>：建物の中にダンパー（オイル・鋼材・粘弾性）を入れて、減衰比 ζ を大きくする。共振のピーク（約 1/(2ζ) 倍）が下がる。設計用スペクトルも、減衰補正 ${m('F<sub>h</sub>＝1.5/(1＋10ζ)')} で小さくなる。`,
+   {q:'歩道橋や超高層ビルの風揺れには？'},
+   '<b>TMD（同調質量ダンパー）</b>：揺れやすい振動数に合わせたおもりとばねを、構造物の上に載せる。共振すると、おもりが逆向きに揺れて、構造物の揺れを打ち消す。歩道橋の床下や、超高層ビルの屋上に使われている。'],key:'免震＝周期をのばす、制振＝減衰を足す、TMD＝逆向きに揺れるおもり。'},
+]}; })();
+
+// 用語集：[用語, 読み・別名, 意味, 飛び先（d-単元-番号＝導出、u番号＝単元）]
+const GLOSS=[
+['運動方程式（振動）','m ẍ＋c ẋ＋k x＝F','おもり・ダンパー・ばねの力のつりあい。振動工学の出発点。','d-shindo-0'],
+['減衰比','げんすいひ、ζ、臨界減衰','揺れの止まりやすさ。鉄骨の建物で約 2%。1 以上だと揺れずに戻る。','d-shindo-1'],
+['対数減衰率','たいすうげんすいりつ','1回揺れるごとの振幅の減り方。δ＝2πζ。','d-shindo-1'],
+['共振','きょうしん、応答倍率、動的倍率','揺する振動数が固有振動数と同じになり、揺れが大きくなること。最大でほぼ 1/(2ζ) 倍。','d-shindo-2'],
+['時刻歴応答解析','じこくれきおうとうかいせき、地動加速度','地震の記録を入れて、運動方程式を時間を追って解く方法。','d-shindo-3'],
+['応答スペクトル','おうとうすぺくとる、振動特性係数 Rt','固有周期ごとに、地震で受ける最大の揺れを並べた図。','d-shindo-4'],
+['固有モード','こゆうもーど、固有値問題、モード重ね合わせ','多層の建物が、決まった形で揺れる揺れ方。|K−ω²M|＝0 から出る。','d-shindo-5'],
+['免震','めんしん、積層ゴム','建物と基礎の間に柔らかい層を入れ、周期をのばして揺れを減らす。','d-shindo-6'],
+['制振','せいしん、ダンパー、TMD','ダンパーやおもりで、揺れのエネルギーを吸収する。','d-shindo-6'],
+['力のモーメント','ちからのもーめんと、回転力','物を回そうとする働き。力 × 腕の長さ（回転の中心から力の作用線までの垂直距離）。','d-force-1'],
+['つりあい条件','ΣH＝0、ΣV＝0、ΣM＝0','止まっている物体では、横・縦の力の合計と、どの点まわりのモーメントの合計も0。','d-force-2'],
+['反力','はんりょく、支点反力','支点が構造物を支え返す力。ピンは縦横2つ、ローラーは1つ、固定端は縦横とモーメントの3つ。','d-judge-0'],
+['静定・不静定','せいてい、ふせいてい','つりあい式だけで反力や部材力が全部求まるのが静定。未知数が式より多いのが不静定。','d-judge-1'],
+['不静定次数','ふせいていじすう','未知の力の数 − つりあい式の数。足りない式の本数で、変形の条件から補う。','d-indet-1'],
+['単純梁','たんじゅんばり','片方ピン・片方ローラーで支えた梁。等分布荷重なら最大の曲げは wL²/8。','d-beam-0'],
+['片持ち梁','かたもちばり','片方だけを固定した梁（ベランダ・ひさし）。根元の曲げは wL²/2。','d-beam-3'],
+['せん断力','せんだんりょく、Q','部材を、切り口でずらそうとする力。Q図の傾きが荷重の強さ。','d-beam-2'],
+['曲げモーメント','まげもーめんと、M','部材を曲げようとする働き。M図の傾きがせん断力 Q。','d-beam-1'],
+['ゲルバー梁','げるばーばり','途中にヒンジを入れて静定にした連続梁。ヒンジで切り分けて解く。','d-frame-0'],
+['3ヒンジラーメン','さんひんじらーめん','ヒンジ3つの門形の骨組。静定で、ヒンジの M＝0 から水平反力を出す。','d-frame-1'],
+['トラス','とらす、節点法、切断法','三角形を組んだ骨組。部材は軸力だけを受ける。節点法・切断法（リッター法）で解く。','d-truss-0'],
+['図心','ずしん','断面の重心。曲げのときに応力が0になる中立軸は、図心を通る。','d-section-0'],
+['断面二次モーメント','だんめんにじもーめんと、I','曲げにくさを表す断面の量。高さの3乗で効く（bh³/12）。','d-section-1'],
+['断面係数','だんめんけいすう、Z','I を図心から縁までの距離で割った量。σ＝M/Z。長方形なら bh²/6。','d-stress-0'],
+['平行軸の定理','へいこうじくのていり','図心からずれた軸まわりの I＝I₀＋A·d²。','d-section-2'],
+['曲げ応力度','まげおうりょくど、σ','曲げで断面に生じる応力。縁で最大、中立軸で0。σ＝M/Z。','d-stress-0'],
+['断面の核','だんめんのかく、偏心荷重','この範囲に圧縮力をかければ、断面のどこにも引張が生じない。長方形なら中央の1/3。','d-stress-2'],
+['モールの応力円','もーるのえん、主応力','向きを変えたときの応力を円で表す図。最大・最小の応力（主応力）が読める。','d-stress-3'],
+['ヤング係数','やんぐけいすう、E、弾性係数','応力とひずみの比（σ＝Eε）。鋼は約 2.05×10⁵ N/mm²。','d-strain-0'],
+['温度応力','おんどおうりょく','伸び縮みを止められた部材に、温度変化で生じる応力。σ＝EαΔT。','d-strain-1'],
+['たわみ','δ','荷重で梁が下がる量。単純梁・等分布なら 5wL⁴/(384EI)。','d-defl-2'],
+['たわみ角','θ','梁の各点で、接線が傾く角度。','d-defl-0'],
+['モールの定理','もーるのていり、弾性荷重法','M/EI を荷重とみなした梁の曲げモーメントがたわみ、せん断力がたわみ角になる。','d-defl-3'],
+['座屈','ざくつ、オイラー座屈','細長い柱が、押しつぶれる前に横にぐにゃっと曲がる現象。P_cr＝π²EI/l_k²。','d-buckle-0'],
+['座屈長さ','ざくつながさ、l_k','座屈するときの波の長さ。両端ピンで l、片持ちで 2l、両端固定で 0.5l。','d-buckle-1'],
+['細長比','さいちょうひ、λ','座屈長さ ÷ 断面二次半径。大きいほど座屈しやすい。','d-buckle-0'],
+['ひずみエネルギー','ひずみえねるぎー','荷重がした仕事が、ばねのように部材にたまったもの。','d-energy-0'],
+['単位荷重法','たんいかじゅうほう、仮想仕事の原理','求めたい点に1の力を仮にかけて、∫Mm/EI dx でたわみを出す方法。','d-energy-1'],
+['カスティリアーノの定理','かすてぃりあーの','ひずみエネルギーを荷重で微分すると、その点の変位になる。','d-energy-2'],
+['重ね合わせの原理','かさねあわせ','力と変形が比例する範囲では、荷重ごとの結果を足してよい。座屈・塑性では使えない。','d-indet-0'],
+['応力法','おうりょくほう、余力法','余分な支点や部材力を外して静定にし、外した所の変形が元に戻る条件で余力を決める方法。','d-indet-1'],
+['適合条件','てきごうじょうけん、変形の適合','つながっている所は、切れたり重なったりしない、という条件。不静定を解く式になる。','d-indet-1'],
+['固定端モーメント','こていたんもーめんと、材端固定モーメント、荷重項、C、FEM','両端固定の梁に荷重がのったとき、端に生じるモーメント。等分布なら wL²/12。','d-indet-2'],
+['たわみ角法','たわみかくほう、撓角法','節点の回転角 φ と部材角 ψ を未知数にして、ラーメンを解く方法。','d-indet-3'],
+['たわみ角法の基本式','M＝k(2φ_A＋φ_B＋ψ)＋C','材端モーメントを、両端の回転と部材角、固定端モーメントで表す式。','d-indet-3'],
+['剛度・剛比','ごうど、ごうひ、K、k','剛度 K＝I/L（曲げにくさ ÷ 長さ）。剛比 k＝K/K₀（基準の剛度との比）。','d-indet-3'],
+['部材角','ぶざいかく、R、ψ','部材の両端が上下（横）にずれたときの傾き。R＝Δ/L。ψ＝−6EK₀R。','d-indet-3'],
+['材端モーメント','ざいたんもーめんと','部材の端に働くモーメント。たわみ角法では時計回りを正とする。','d-indet-3'],
+['節点方程式','せってんほうていしき','回る節点ごとに「集まる材端モーメントの合計＝0」とおいた式。未知数 φ の数だけ立てる。','d-indet-4'],
+['層方程式','そうほうていしき','柱を水平に切り、柱のせん断力の合計が横力とつりあう、とおいた式。Σ(M_柱頭＋M_柱脚)＝−Ph。','d-indet-5'],
+['層せん断力','そうせんだんりょく','ある層（階）より上にかかる横力の合計。その層の柱が分担する。','d-indet-5'],
+['三連モーメント式','さんれんもーめんとしき、クラペイロン','連続梁で、隣り合う3つの支点のモーメントを結ぶ式。','d-indet-7'],
+['連続梁','れんぞくばり、連続桁','3つ以上の支点で支えた1本の梁。不静定。中間支点の上で上側が引張になる。','d-indet-7'],
+['固定法','こていほう、モーメント分配法','節点をいったん固定し、不つりあいを剛比で分配・到達させて繰り返す解き方。','d-indet-8'],
+['分配率・到達率','ぶんぱいりつ、とうたつりつ','分配率 DF＝k/Σk。到達率は1/2（反対側の固定端へ伝わる割合）。','d-indet-8'],
+['剛性マトリクス','ごうせいまとりくす、マトリクス法、剛性法','構造物をばねのつながりとみなし、K u＝F の形にしたもの。構造計算ソフトの中身。','d-indet-9'],
+['影響線','えいきょうせん','単位の荷重が動いたとき、ある点の反力や曲げがどう変わるかを表す線。','d-il-0'],
+['全塑性モーメント','ぜんそせいもーめんと、Mp','断面全体が降伏したときの曲げモーメント。塑性ヒンジができる。','d-plastic-0'],
+['崩壊荷重','ほうかいかじゅう、塑性ヒンジ','塑性ヒンジが増えて、構造物がメカニズム（動く仕組み）になる荷重。','d-plastic-1'],
+['固有周期','こゆうしゅうき','建物が1往復揺れる時間。T＝2π√(m/k)。','d-vib-0'],
+['水平剛性','すいへいごうせい','柱を横に1だけずらすのに必要な力。両端固定の柱で 12EI/h³。','d-vib-1'],
+['アーチ','あーち、3ヒンジアーチ','曲がった形で、荷重を主に圧縮で支える構造。','d-arch-1'],
+];
+
+// ---- 用語検索：用語集（GLOSS）＋単元名＋導出の本文から探す ----
+(function(){
+  if(typeof U==='undefined') return;
+  const strip=h=>String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+  const norm=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const TH_=typeof TH!=='undefined'&&TH;
+  // 本文の索引
+  const IDX=[];
+  U.forEach((u,i)=>IDX.push({kind:'単元',t:`${String(i+1).padStart(2,'0')} ${u.name}`,x:strip(u.ds),to:'u'+(i+1)}));
+  if(typeof DER!=='undefined') [...U,...(typeof DXU!=='undefined'?DXU:[])].forEach(u=>{ const d=DER[u.id]; if(!d) return; d.it.forEach((it,j)=>{
+    const body=[it.goal,it.cap,...(it.s||[]).map(z=>typeof z==='string'?z:z.q),it.key].map(strip).join(' ');
+    IDX.push({kind:'導出',t:`${u.name}：${strip(it.t)}`,x:body,to:`d-${u.id}-${j}`}); }); });
+  const G=(typeof GLOSS!=='undefined'?GLOSS:[]).map(([t,y,d,to])=>({t,y,d,to,k:norm(t+' '+y),kd:norm(d)}));
+  IDX.forEach(o=>{ o.kt=norm(o.t); o.kx=norm(o.x); });
+  const css=document.createElement('style'); css.textContent=`
+#srbtn{font:inherit;font-weight:900;font-size:13px;border:2px solid #12286B;background:#fff;color:#12286B;padding:4px 10px;cursor:pointer;white-space:nowrap}
+#srbox{position:fixed;inset:0;z-index:50;background:rgba(18,40,107,.35);display:none}
+#srbox.on{display:block}
+#srp{position:absolute;left:50%;top:0;transform:translateX(-50%);width:min(760px,100%);max-height:100%;overflow:auto;background:#F4F3EF;border:3px solid #12286B;border-top:0;padding:12px 16px 18px;box-sizing:border-box}
+#srp .row{display:flex;gap:8px;align-items:center}
+#srq{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid #12286B;background:#fff;color:#1C3A7E}
+#srx{font:inherit;font-weight:900;border:2px solid #12286B;background:#12286B;color:#fff;padding:7px 12px;cursor:pointer}
+#srp h4{margin:14px 0 6px;font-size:13px;color:#C62422;letter-spacing:.06em}
+.srg{background:#fff;border:2px solid #12286B;padding:8px 10px;margin-bottom:8px;cursor:pointer;text-align:left;width:100%;font:inherit;color:#1C3A7E;display:block}
+.srg:hover,.srh:hover{background:#EAF2F8}
+.srg b{font-size:16px;color:#12286B}.srg small{color:#5E6B86;margin-left:6px}.srg span{display:block;font-size:14px;line-height:1.7;margin-top:2px}.srg em{font-style:normal;font-size:12px;font-weight:700;color:#3286BE}
+.srh{display:block;width:100%;text-align:left;font:inherit;background:#fff;border:1.5px solid #D9D6CC;padding:6px 10px;margin-bottom:6px;cursor:pointer;color:#1C3A7E}
+.srh b{font-size:14px}.srh i{font-style:normal;font-size:11px;font-weight:900;color:#fff;background:#3286BE;padding:1px 6px;margin-right:6px}.srh span{display:block;font-size:12px;color:#5E6B86;line-height:1.6}
+mark{background:#f6d36b;color:inherit;padding:0 1px}
+.srchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.srchips button{font:inherit;font-size:12px;font-weight:700;border:1.5px solid #93BCD6;background:#fff;color:#12286B;padding:3px 8px;cursor:pointer}`;
+  document.head.appendChild(css);
+  const hdr=document.querySelector('header'); const prog=document.getElementById('prog');
+  const btn=document.createElement('button'); btn.id='srbtn'; btn.textContent='用語検索'; btn.title='用語・式・導出を探す';
+  if(prog) prog.before(btn); else if(hdr) hdr.appendChild(btn);
+  const box=document.createElement('div'); box.id='srbox';
+  box.innerHTML=`<div id="srp" role="dialog" aria-label="用語検索"><div class="row"><input id="srq" type="search" placeholder="例：節点方程式、層方程式、有効応力、フルード数" autocomplete="off"><button id="srx">閉じる</button></div><div id="srr"></div></div>`;
+  document.body.appendChild(box);
+  const q=box.querySelector('#srq'), out=box.querySelector('#srr');
+  const hl=(s,w)=>{ const e=esc(s); if(!w) return e; const ns=norm(s); const i=ns.indexOf(w); if(i<0) return e; return esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+w.length))+'</mark>'+esc(s.slice(i+w.length)); };
+  const snip=(s,w)=>{ const ns=norm(s); const i=ns.indexOf(w); if(i<0) return esc(s.slice(0,70)); const a=Math.max(0,i-30), b=Math.min(s.length,i+w.length+40); return (a>0?'…':'')+hl(s.slice(a,b),w)+(b<s.length?'…':''); };
+  function go(to){
+    close();
+    if(/^u\d+$/.test(to)){ if(TH_){ window.open(TH_.main+'#'+to,'_blank','noopener'); return; } location.hash='#'+to; return; }
+    if(location.hash==='#'+to){ const el=document.getElementById(to); if(el) el.scrollIntoView({block:'start'}); return; }
+    location.hash='#'+to;
+    setTimeout(()=>{ const el=document.getElementById(to); if(el){ el.scrollIntoView({block:'start'}); el.style.outline='3px solid #C62422'; setTimeout(()=>el.style.outline='',1800); } },120);
+  }
+  function render(){
+    const w=norm(q.value.trim());
+    if(!w){ out.innerHTML=`<h4>よく探される用語</h4><div class="srchips">${G.slice(0,60).map(g=>`<button data-w="${esc(g.t)}">${esc(g.t)}</button>`).join('')}</div>`;
+      out.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ q.value=b.dataset.w; render(); }); return; }
+    const gs=G.map(g=>({g,sc:g.k.startsWith(w)?3:g.k.includes(w)?2:g.kd.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,20);
+    const hs=IDX.map(o=>({o,sc:o.kt.includes(w)?2:o.kx.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,30);
+    out.innerHTML=(gs.length?`<h4>用語の意味（${gs.length}）</h4>`+gs.map(({g})=>`<button class="srg" data-to="${g.to}"><b>${hl(g.t,w)}</b><small>${hl(g.y,w)}</small><span>${hl(g.d,w)}</span><em>${/^d-/.test(g.to)?'導出を見る →':'単元を開く →'}</em></button>`).join(''):'')
+      +(hs.length?`<h4>出てくる場所（${hs.length}${hs.length>=30?'＋':''}）</h4>`+hs.map(({o})=>`<button class="srh" data-to="${o.to}"><b><i>${o.kind}</i>${hl(o.t,w)}</b><span>${snip(o.x,w)}</span></button>`).join(''):'')
+      ||`<p>「${esc(q.value)}」は見つかりませんでした。短い言葉（例：「たわみ」「土圧」）で探してみてください。</p>`;
+    out.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>go(b.dataset.to));
+  }
+  function open(){ box.classList.add('on'); render(); setTimeout(()=>q.focus(),30); }
+  function close(){ box.classList.remove('on'); }
+  btn.onclick=open; box.querySelector('#srx').onclick=close; box.onclick=e=>{ if(e.target===box) close(); };
+  q.oninput=render; document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); open(); } });
+  window.SEARCH={open,go};
+})();
 
 // ==/NAZO==
 route();

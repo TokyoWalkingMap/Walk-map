@@ -918,6 +918,8 @@ const m=s=>`<span class="mm">${s}</span>`;
 .dst li.hide{display:none}
 .dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
 .mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.dit h3 em{display:inline-block}
+.dd{position:relative;display:inline-block}.dd::before{content:"";position:absolute;left:58%;top:.12em;height:.15em;transform:translateX(-50%);background:radial-gradient(circle closest-side,currentColor 85%,transparent 100%) 0 0/.17em .15em repeat-x}.dd.d1::before{width:.17em}.dd.d2::before{width:.38em;background-size:.19em .15em}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
 .dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
 .dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
@@ -945,7 +947,7 @@ const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
 const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
 function taikei(byP){
   const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
-  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  const uname=id=>{ const u=U.find(x=>x.id===id)||XU().find(x=>x.id===id); return u?u.name:id; };
   return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
    <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
    <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
@@ -955,6 +957,12 @@ function taikei(byP){
    ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
+
+// ẋ・ẍ はフォントによって点がずれるので、点を自前で描く
+function dotFix(root){ if(!root) return; const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>/[ẋẍ]/.test(n.nodeValue)&&!n.parentNode.closest('svg')?1:3}); const ns=[]; while(w.nextNode()) ns.push(w.currentNode);
+  ns.forEach(n=>{ const fr=document.createDocumentFragment(); n.nodeValue.split(/([ẋẍ])/).forEach(p=>{ if(p==='ẋ'||p==='ẍ'){ const sp=document.createElement('span'); sp.className='dd '+(p==='ẋ'?'d1':'d2'); sp.textContent='x'; fr.appendChild(sp); } else if(p) fr.appendChild(document.createTextNode(p)); }); n.parentNode.replaceChild(fr,n); }); }
+(()=>{ if(typeof MutationObserver==='undefined') return; let pend=false; const mo=new MutationObserver(()=>{ if(pend) return; pend=true; setTimeout(()=>{ pend=false; mo.disconnect(); try{ dotFix(document.body); } finally { mo.observe(document.body,{childList:true,subtree:true}); } },0); }); const st=()=>{ dotFix(document.body); mo.observe(document.body,{childList:true,subtree:true}); }; if(document.body) st(); else document.addEventListener('DOMContentLoaded',st); })();
+const XU=()=>typeof DXU!=='undefined'?DXU:[];
 function deriveView(){
   if(typeof DER==='undefined') return;
   cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
@@ -963,13 +971,13 @@ function deriveView(){
   $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
    <p class="lead">${DPR.lead}</p>
    ${taikei(byP)}
-   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
-   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}${XU().map(u=>`<a href="#d-${u.id}">${u.no} ${u.name}</a>`).join('')}</div>
+   ${[...U,...XU()].map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; const ex=i>=U.length; return `<section class="dch" id="d-${u.id}"><h2>${ex?u.no:String(i+1).padStart(2,'0')} ${u.name}</h2>${ex&&u.lead?`<p class="lead">${u.lead}</p>`:''}
      <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
      ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
        <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
        <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
-     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+     <div class="dnav">${ex?'':`<a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a>`}<a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
   const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
   $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
   $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
@@ -1177,6 +1185,253 @@ wave:{p:['mass','mom'],it:[
    `${m('H² √h＝一定')}<span class="eq">${m('H ∝ h<sup>−1/4</sup>')}</span>深さ4000 m から10 m になると、高さは約4.5倍。湾が狭まるとさらに集中して高くなる。`]},
 ]},
 }; })();
+// ---- 追加の章：流体の基礎方程式（ナビエ・ストークス → 浅水方程式 → 漸変流 → 等流） ----
+const DXU=[{id:'fluid',no:'基礎',name:'流体の基礎方程式',lead:'これまでの式（ベルヌーイ、マニング、波の速さ…）は、どれも「水の小さな箱」に質量保存と運動量保存を当てはめた基礎方程式から、条件を足して簡単にしたものです。この章では、おおもとの式から順に下りていきます。'}];
+DPR.groups.push(['流体の基礎方程式','すべての式のおおもと（大学・研究向け）',['fluid'],['DNS（流体の直接数値シミュレーション）','津波・高潮・洪水の予測計算','河川の氾濫シミュレーション']]);
+DER.fluid=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Dim}=dg; const n=DC.n,r=DC.r,b=DC.b;
+const box=(x,y,w,h)=>R(x,y,w,h,'#eef3f8',n,2);
+const node=(x,y,w,t,c=n,f='#fff')=>R(x-w/2,y-14,w,28,f,c,2)+T(x,y+5,t,c,12);
+return {p:['mass','mom','fric'],it:[
+ {t:'基礎方程式の家系図',goal:'N-S → 浅水 → 漸変流 → 等流',fig:S(340,330,
+   node(170,24,250,'ナビエ・ストークス方程式＋連続の式',r,'#fbe3e2'),
+   A(110,38,62,66,n,1.6),A(170,38,170,66,n,1.6),A(230,38,282,66,n,1.6),
+   T(52,52,'粘性なし',DC.g,10,'end',400),T(176,56,'時間平均',DC.g,10,'start',400),T(292,52,'そのまま',DC.g,10,'start',400),
+   node(60,82,96,'オイラー式'),node(170,82,110,'RANS'),node(290,82,80,'DNS',r),
+   A(60,96,60,136,n,1.6),T(66,120,'流線に沿う',DC.g,10,'start',400),node(60,152,96,'ベルヌーイ'),
+   A(200,96,230,136,n,1.6),T(222,114,'深さで平均・静水圧',DC.g,10,'start',400),node(230,152,120,'浅水方程式',b,'#eaf2f8'),
+   A(200,166,170,206,n,1.6),T(150,188,'定常',DC.g,10,'end',400),node(160,222,90,'漸変流'),
+   A(260,166,285,206,n,1.6),T(280,188,'小さな波',DC.g,10,'start',400),node(285,222,90,'波速 √(gh)'),
+   A(160,236,160,266,n,1.6),T(166,254,'水深一定',DC.g,10,'start',400),node(160,282,120,'等流（マニング）'),
+   T(170,320,'下に行くほど、条件を足して簡単になる',n,12)),cap:'上がおおもと。条件（粘性なし・浅い・定常…）を足すたびに、式が簡単になる。',
+  s:['水理学で習う式は、ばらばらの公式ではない。全部、水の小さな箱に「質量保存（②）」と「運動量保存（④）」を当てはめた、ひとつの基礎方程式から出てくる。',
+   '<b>ナビエ・ストークス方程式</b>（運動量保存）と<b>連続の式</b>（質量保存）が、流体のおおもと。粘性（ねばり）も乱れも全部入っている。',
+   {q:'それなら、全部ナビエ・ストークスで解けばいいのでは？'},
+   'コンピュータでそのまま解くのが DNS（直接数値シミュレーション）。ただし、川や海の乱れの渦は mm から km まであり、全部を細かく計算するには、今のスーパーコンピュータでも足りないことが多い。',
+   'そこで、目的に合わせて条件を足して簡単にする。渦を時間で平均すれば RANS、粘性を無視すればオイラー式とベルヌーイ、浅い水なら浅水方程式、さらに定常なら漸変流、水深一定なら等流（マニングの式）。',
+   'この章では、この家系図を上から順に導いていく。'],key:'どの式も「どんな条件で、おおもとの式を簡単にしたか」で理解する。'},
+ {t:'連続の式（微分形）',goal:'∂u/∂x＋∂v/∂y＋∂w/∂z＝0',fig:S(320,230,box(110,50,100,100),A(50,100,108,100,b),A(212,100,270,100,b),M(60,90,'ρu',b,14),M(232,90,'ρu＋∂(ρu)/∂x·dx',b,12,'start'),A(140,190,140,152,b),A(140,48,140,10,b),M(150,182,'ρv',b,14,'start'),Dim(110,210,214,'dx'),T(160,104,'小さな箱',n,12)),
+  cap:'箱に入る量と出る量の差だけ、箱の中の水の量が変わる。',
+  s:['空間に、辺 dx、dy、dz の小さな箱を考える。水はこの箱を通り抜けるだけで、途中で増えたり消えたりしない（②）。',
+   `x 方向：左の面から入る質量は毎秒 ${m('ρu·dy dz')}、右の面から出るのは ${m('(ρu＋∂(ρu)/∂x·dx)dy dz')}。差し引き、${m('−∂(ρu)/∂x·dx dy dz')} だけたまる。`,
+   {q:'y、z 方向も足すと？'},
+   `箱の中の質量の増え方は ${m('∂ρ/∂t·dx dy dz')}。これが3方向の出入りの合計に等しいので<span class="eq">${m('∂ρ/∂t＋∂(ρu)/∂x＋∂(ρv)/∂y＋∂(ρw)/∂z＝0')}</span>`,
+   `水はほとんど縮まない（非圧縮、ρ 一定）ので<span class="eq">${m('∂u/∂x＋∂v/∂y＋∂w/∂z＝0')}</span>管の中の ${m('Q＝A₁v₁＝A₂v₂')} は、これを断面全体で足し合わせたもの。`],key:'連続の式＝「入った分－出た分＝たまった分」を、小さな箱で書いたもの。'},
+ {t:'オイラーの運動方程式',goal:'ρ Du/Dt＝−∂p/∂x＋ρg<sub>x</sub>',fig:S(320,200,box(110,50,100,100),A(40,100,108,100,r),A(280,100,212,100,r),M(46,90,'p',r,15),M(250,90,'p＋∂p/∂x·dx',r,12,'middle'),A(160,110,160,180,DC.g),M(170,176,'ρg',DC.g,14,'start'),T(160,30,'圧力の差と重さで、箱が加速する',n,12)),
+  cap:'箱に働く力は、両側の圧力の差と重力。',
+  s:['箱のなかの水に、ニュートンの運動の法則（質量 × 加速度＝力）を当てはめる（④）。まずは粘性を無視する。',
+   `x 方向の力：左の面を ${m('p')} で押され、右の面を ${m('p＋∂p/∂x·dx')} で押し返される。差は ${m('−∂p/∂x·dx dy dz')}。重力の成分 ${m('ρg<sub>x</sub> dx dy dz')} も足す。`,
+   {q:'「加速度」は、ただの ∂u/∂t でいい？'},
+   `いいえ。流れている水は、時間がたつだけでなく、速さの違う場所へ運ばれても速さが変わる。水のかたまりについていったときの加速度は<span class="eq">${m('Du/Dt＝∂u/∂t＋u∂u/∂x＋v∂u/∂y＋w∂u/∂z')}</span>（右の3項を移流項という。細い管で水が速くなるのはこの項）`,
+   `箱の体積で割ると<span class="eq">${m('ρ Du/Dt＝−∂p/∂x＋ρg<sub>x</sub>')}</span>y、z 方向も同じ形。これがオイラーの運動方程式。`],key:'質量×加速度＝圧力の差＋重さ。加速度には「運ばれて変わる分（移流項）」が入る。'},
+ {t:'ナビエ・ストークス方程式',goal:'ρ Du/Dt＝−∇p＋μ∇²u＋ρg',fig:S(320,210,box(110,60,100,90),A(110,56,200,56,b,2),A(210,154,120,154,b,2),M(150,46,'τ＋∂τ/∂y·dy',b,12),M(150,176,'τ',b,14),
+   L(30,200,30,20,n,1),...[0,1,2,3,4].map(i=>A(30,190-i*40,30+20+i*22,190-i*40,DC.g,1.4)),T(60,14,'速度の分布',DC.g,11,'start',400),T(250,110,'上の面は速い水に',n,11),T(250,126,'引っぱられ、下の面は',n,11),T(250,142,'遅い水に引き止められる',n,11)),
+  cap:'速さの違う層どうしがこすれ合う力（粘性のせん断応力）を足す。',
+  s:['オイラーの式に、水のねばり（粘性）を足す。速さの違う層どうしは、こすれ合ってせん断応力を及ぼす（⑤）。',
+   `ニュートン流体では、せん断応力は速さの変化の割合に比例する：${m('τ＝μ ∂u/∂y')}（μ：粘性係数）。`,
+   {q:'箱に働く粘性の力は？'},
+   `上の面には ${m('τ＋∂τ/∂y·dy')}、下の面には逆向きに ${m('τ')}。差は ${m('∂τ/∂y·dx dy dz＝μ ∂²u/∂y²·dx dy dz')}。x、z の向きの面も同じように足すと ${m('μ(∂²u/∂x²＋∂²u/∂y²＋∂²u/∂z²)＝μ∇²u')}。`,
+   `オイラーの式に足すと<span class="eq">${m('ρ Du/Dt＝−∂p/∂x＋μ∇²u＋ρg<sub>x</sub>')}</span>（3方向まとめて ${m('ρ Du/Dt＝−∇p＋μ∇²u＋ρg')}）。これが<b>ナビエ・ストークス方程式</b>。連続の式と合わせて、未知数 ${m('u,v,w,p')} の4つに、式4本。`,
+   `<b>レイノルズ数</b>：移流項（慣性）と粘性項の大きさの比が ${m('Re＝ρVL/μ＝VL/ν')}。Re が大きいと、慣性が勝って流れは乱れる（乱流）。川の Re は 10⁶ 以上で、ほぼいつも乱流。`,
+   '<b>解けるか？</b>：移流項が「速さ×速さの変化」で非線形なので、一般の解は見つかっていない（滑らかな解がいつも存在するかは、数学の未解決問題の1つ）。だから、実際には数値計算で解く。'],key:'N-S＝オイラーの式＋粘性の力 μ∇²u。流体のおおもとの運動方程式。'},
+ {t:'ベルヌーイの定理をおおもとから',goal:'p/ρg＋z＋v²/2g＝一定',fig:S(320,180,P('M20,140 C100,140 160,60 300,60','none',b,3),A(120,116,150,100,b,2),T(200,40,'流線',b,12),C(120,116,5,r,r),M(130,140,'s（流線に沿った長さ）',n,12,'start')),
+  cap:'流線に沿って、オイラーの式を積分する。',
+  s:['ナビエ・ストークス方程式から、粘性を無視し（μ＝0、オイラー式）、定常（∂/∂t＝0）とする。',
+   `流線に沿った長さ s の方向だけを考えると、加速度は ${m('v dv/ds')}、重力の成分は ${m('−g dz/ds')}：${m('ρ v dv/ds＝−dp/ds − ρg dz/ds')}。`,
+   {q:'s で積分すると？'},
+   `${m('ρv²/2＋p＋ρgz＝一定')}。ρg で割ると<span class="eq">${m('p/ρg＋z＋v²/2g＝一定')}</span>`,
+   '使った条件：粘性なし・定常・同じ流線の上。管路で摩擦損失 hf を足すのは、捨てた粘性の効果を、実験式で戻しているということ。'],key:'ベルヌーイ＝N-S から「粘性なし・定常・流線に沿う」で積分したもの。'},
+ {t:'乱流とレイノルズ平均（RANS）',goal:'−ρ u′v′（レイノルズ応力）',fig:S(320,170,L(20,140,300,140,n,1),L(20,140,20,20,n,1),P('M20,90 '+[...Array(56)].map((_,i)=>`L${25+i*5},${90+18*Math.sin(i*1.7)*Math.cos(i*0.53)}`).join(' '),'none',b,1.5),L(20,90,300,90,r,2.5,'6 4'),M(305,94,'ū',r,14,'start'),T(160,160,'時間 t',n,12),T(100,30,'u＝ū＋u′（平均＋ゆらぎ）',n,12)),
+  cap:'乱流の速さは激しく揺れる。時間で平均した部分と、ゆらぎに分ける。',
+  s:['川の流れは乱流。速さが細かく揺れていて、そのまま計算するには、とても細かい網目（格子）と短い時間刻みが要る（DNS）。',
+   `速さを平均とゆらぎに分ける：${m('u＝ū＋u′')}。ゆらぎの平均は 0（${m('<span style="text-decoration:overline">u′</span>＝0')}）。`,
+   {q:'N-S に入れて時間平均すると、移流項 u∂u/∂x はどうなる？'},
+   `移流項は「速さ×速さ」なので、平均しても ${m('u′v′')} のようなゆらぎどうしの積の平均が残る。これは ${m('−ρ<span style="text-decoration:overline">u′v′</span>')} という、余分な応力のように振る舞う（<b>レイノルズ応力</b>）。`,
+   '平均した式（RANS）は、レイノルズ応力という未知数が増えて、式が足りない（乱流の閉じない問題）。そこで「渦粘性」などの乱流モデルで補う。',
+   '<b>3つの解き方</b>：DNS（全部の渦を計算、研究用）、LES（大きな渦だけ計算して小さな渦はモデル）、RANS（平均だけ計算、実務の主流）。管路の摩擦係数 f やマニングの n は、乱流の効果をまとめた実験値。'],key:'乱流を平均すると、ゆらぎがレイノルズ応力として残る。それをどう扱うかで DNS・LES・RANS に分かれる。'},
+ {t:'浅水方程式（サン・ブナン方程式）',goal:'∂h/∂t＋∂(uh)/∂x＝0',fig:S(320,200,P('M10,170 L310,150','none',n,2),G(10,310,172),P('M10,170 L10,70 C90,60 140,90 200,80 S280,70 310,76 L310,150Z','#d7e6f1','none'),P('M10,70 C90,60 140,90 200,80 S280,70 310,76','none',b,2.5),
+   L(150,85,150,160,r,1.5),M(156,128,'h',r,15,'start'),A(60,120,110,120,b,2),M(70,112,'u',b,14),T(160,40,'水深に比べて、とても長い流れ',n,12)),
+  cap:'深さに比べて水平に長い流れ（川・津波・高潮）。深さ方向に平均した速さ u と水深 h で書く。',
+  s:['川や津波のように、水深 h に比べて水平の広がりがずっと大きい流れを考える。鉛直の加速度は小さいので無視でき、圧力は静水圧 ${m("p＝ρg(水面までの深さ)")} になる（①）。'.replace('${m("p＝ρg(水面までの深さ)")}',m('p＝ρg（水面までの深さ）')),
+   `<b>質量保存</b>：連続の式を底から水面まで積分する（幅 1 の水柱）。入る流量 ${m('uh')} と出る流量の差だけ水深が変わる<span class="eq">${m('∂h/∂t＋∂(uh)/∂x＝0')}</span>`,
+   {q:'運動量保存はどうなる？'},
+   `N-S（x 方向）を深さで平均する。静水圧なので、圧力の差は水面の傾きになる：${m('−(1/ρ)∂p/∂x＝−g ∂(h＋z<sub>b</sub>)/∂x')}（z<sub>b</sub>：底の高さ）。底の摩擦は、マニングの式で ${m('S<sub>f</sub>＝n²u²/h^(4/3)')} とおく。`,
+   `<span class="eq">${m('∂u/∂t＋u ∂u/∂x＋g ∂h/∂x＝g(S₀ − S<sub>f</sub>)')}</span>（${m('S₀＝−∂z<sub>b</sub>/∂x')}：川底の勾配）。2本合わせて<b>浅水方程式</b>（1次元ではサン・ブナン方程式）。`,
+   '洪水の伝わり方、ダムが壊れたときの流れ、津波・高潮の予測計算は、主にこの式（平面2次元版）を数値計算で解いている。'],key:'浅水方程式＝N-S を「静水圧・深さで平均」で簡単にしたもの。川・津波の計算の主役。'},
+ {t:'浅水方程式から波の速さを出す',goal:'c＝√(gh)',fig:S(320,170,L(10,110,310,110,DC.g,1,'4 3'),P('M10,110 L120,110 C150,110 150,80 180,80 C210,80 210,110 240,110 L310,110','none',b,2.5),A(200,70,260,70,r),M(268,74,'c',r,15,'start'),L(10,150,310,150,n,2),L(290,110,290,150,n,1),M(296,134,'h',n,14,'start'),M(170,74,'η',b,14)),
+  cap:'静かな水面に、小さなこぶ η ができたとき、それがどの速さで進むか。',
+  s:[`止まった水（u＝0、水深 h、平らな底、摩擦なし）に、小さな盛り上がり η ができたとする。u と η は小さいので、それらの積（${m('u ∂u/∂x')} など）は無視できる（線形化）。`,
+   `浅水方程式は ${m('∂η/∂t＋h ∂u/∂x＝0')}、${m('∂u/∂t＋g ∂η/∂x＝0')}。`,
+   {q:'u を消すと？'},
+   `1本目を t で、2本目を x で微分して u を消すと<span class="eq">${m('∂²η/∂t²＝gh ∂²η/∂x²')}</span>これは波動方程式。波は速さ ${m('c＝√(gh)')} で進む。`,
+   '水深 4000 m の海では c＝√(9.8×4000)≈200 m/s（ジェット機並み）。水深 10 m では約 10 m/s。浅くなると遅くなり、後ろが追いついて波が高くなる（グリーンの法則）。'],key:'浅水方程式を小さな波で線形化すると波動方程式。波速 √(gh) が出る。'},
+ {t:'漸変流と等流（マニングへ）',goal:'dh/dx＝(S₀−S<sub>f</sub>)/(1−Fr²)',fig:S(320,190,P('M10,60 L310,130','none',n,2),G(10,310,132),P('M10,60 L10,20 C120,26 220,70 310,92 L310,130Z','#d7e6f1','none'),P('M10,20 C120,26 220,70 310,92','none',b,2.5),L(10,40,310,110,DC.g,1,'6 4'),T(80,16,'せき上げ（M1曲線）',b,11),T(240,120,'等流水深',DC.g,11),T(160,180,'時間で変わらない（定常）が、場所で少しずつ変わる流れ',n,11)),
+  cap:'ダムや堰の上流では、水深が少しずつ変わる（せき上げ背水）。',
+  s:[`浅水方程式で、時間で変わらない（定常：${m('∂/∂t＝0')}）とする。連続の式から ${m('q＝uh＝一定')}（幅あたりの流量）。`,
+   `運動量の式 ${m('u du/dx＋g dh/dx＝g(S₀ − S<sub>f</sub>)')} に ${m('u＝q/h')}、${m('du/dx＝−(q/h²)dh/dx')} を入れる。`,
+   {q:'dh/dx について解くと？'},
+   `${m('(g − q²/h³)dh/dx＝g(S₀ − S<sub>f</sub>)')}。${m('q²/(gh³)＝u²/(gh)＝Fr²')} なので<span class="eq">${m('dh/dx＝(S₀ − S<sub>f</sub>)/(1 − Fr²)')}</span>これが<b>漸変流の式</b>。分母が 0（Fr＝1、限界水深）になる所で、水面が急に変わる（跳水など）。`,
+   `さらに水深が場所で変わらない（${m('dh/dx＝0')}）なら ${m('S₀＝S<sub>f</sub>')}。底の勾配と摩擦の勾配がつりあう。これが<b>等流</b>で、${m('S<sub>f</sub>＝n²v²/R^(4/3)')} を入れると<span class="eq">${m('v＝(1/n)R^(2/3)S₀^(1/2)')}</span>マニングの式に戻ってくる。`],key:'N-S → 浅水方程式 → 定常で漸変流 → 水深一定で等流（マニング）。ここで家系図がつながる。'},
+]}; })();
+// ---- 追加の章：礫間の流れ（粒径別） ----
+DXU.push({id:'gravel',no:'礫間',name:'礫間の流れ（粒径別）',lead:'砂や礫（れき）のすき間を通る水は、粒が小さいとゆっくりしみ出し（ダルシー則）、粒が大きいと渦を巻いて流れる（乱流）。どこで切り替わるかは、粒の大きさで決まります。'});
+DPR.groups.push(['礫間の流れ','粒の大きさで流れ方が変わる',['gravel'],['河川の礫間浄化施設','捨石堤・透過型の砂防堰堤','地下水のくみ上げ・ろ過池']]);
+DER.gravel=(()=>{ const {S,L,A,T,M,R,P,C,B,G}=dg; const n=DC.n,r=DC.r,b=DC.b;
+const nu=1.0e-6, g=9.8, por=0.4;
+const erg=d=>({a:150*nu*(1-por)**2/(g*por**3*d*d), b:1.75*(1-por)/(g*por**3*d)});
+const SIZES=[[0.0002,'細砂 0.2 mm','#93BCD6'],[0.002,'粗砂 2 mm','#3286BE'],[0.01,'細礫 10 mm','#4E9A5B'],[0.05,'礫 50 mm','#C8A02A'],[0.15,'玉石 150 mm','#C62422']];
+// i–v の両対数グラフ（エルガン式）
+const plotIV=()=>{ const W=320,H=240,l=46,rt=10,tp=12,bt=40; const vx=[-5,0], iy=[-4,1]; const X=v=>l+(W-l-rt)*(Math.log10(v)-vx[0])/(vx[1]-vx[0]), Y=i=>tp+(H-tp-bt)*(1-(Math.log10(i)-iy[0])/(iy[1]-iy[0]));
+  let s=`<rect x="${l}" y="${tp}" width="${W-l-rt}" height="${H-tp-bt}" fill="#fff" stroke="${n}"/>`;
+  for(let e=vx[0];e<=vx[1];e++) s+=`<line x1="${X(10**e)}" x2="${X(10**e)}" y1="${tp}" y2="${H-bt}" stroke="#E6E3DA"/><text x="${X(10**e)}" y="${H-bt+13}" font-size="9" text-anchor="middle" fill="#5E6B86">10${e<0?'⁻'+'⁰¹²³⁴⁵'[-e]:'⁰'}</text>`;
+  for(let e=iy[0];e<=iy[1];e++) s+=`<line x1="${l}" x2="${W-rt}" y1="${Y(10**e)}" y2="${Y(10**e)}" stroke="#E6E3DA"/><text x="${l-4}" y="${Y(10**e)+3}" font-size="9" text-anchor="end" fill="#5E6B86">10${e<0?'⁻'+'⁰¹²³⁴⁵'[-e]:e===1?'¹':'⁰'}</text>`;
+  SIZES.forEach(([d,lab,col],k)=>{ const {a,b:bb}=erg(d); const pts=[]; for(let t=0;t<=60;t++){ const v=10**(vx[0]+(vx[1]-vx[0])*t/60); const i=a*v+bb*v*v; if(i>=10**iy[0]&&i<=10**iy[1]) pts.push(`${X(v).toFixed(1)},${Y(i).toFixed(1)}`); }
+    s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+    const vt=a/bb; if(vt>10**vx[0]&&vt<10**vx[1]){ const it=2*a*vt; if(it>10**iy[0]&&it<10**iy[1]) s+=`<circle cx="${X(vt)}" cy="${Y(it)}" r="3.5" fill="#fff" stroke="${col}" stroke-width="2"/>`; }
+    s+=`<rect x="${l+6}" y="${tp+6+k*14}" width="12" height="4" fill="${col}"/><text x="${l+22}" y="${tp+12+k*14}" font-size="10" fill="${n}">${lab}</text>`; });
+  s+=`<text x="${(l+W-rt)/2}" y="${H-8}" font-size="11" text-anchor="middle" fill="${n}" font-weight="700">見かけの流速 v（m/s）</text><text x="12" y="${(tp+H-bt)/2}" font-size="11" text-anchor="middle" fill="${n}" font-weight="700" transform="rotate(-90 12 ${(tp+H-bt)/2})">動水勾配 i</text>
+   <text x="${W-rt-4}" y="${tp+14}" font-size="10" text-anchor="end" fill="${r}">傾き2＝乱流（i∝v²）</text><text x="${W-rt-4}" y="${H-bt-6}" font-size="10" text-anchor="end" fill="${b}">傾き1＝ダルシー（i∝v）</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="dfig" role="img"><rect width="${W}" height="${H}" fill="#fff"/>${s}</svg>`; };
+const table=()=>`<table class="gtab" style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px"><tr style="background:#EAF2F8"><th>粒の大きさ</th><th>ダルシー則での k</th><th>i＝0.01 の流速</th><th>切り替わる流速</th></tr>${SIZES.map(([d,lab])=>{ const {a,b:bb}=erg(d); const v=(-a+Math.sqrt(a*a+4*bb*0.01))/(2*bb); const f=x=>{ const e=Math.floor(Math.log10(x)); return (x/10**e).toFixed(1)+'×10<sup>'+e+'</sup>'; }; return `<tr><td>${lab}</td><td>${f(1/a)} m/s</td><td>${f(v)} m/s</td><td>${f(a/bb)} m/s</td></tr>`; }).join('')}</table><p style="font-size:12px;margin:4px 0 0;color:#5E6B86">礫・玉石の k は、ダルシー則が成り立つと仮定した場合の値で、実際の流速ではほぼ乱流になるため使えない。</p>`;
+return {p:['darcy','fric','mom'],it:[
+ {t:'粒の大きさで、流れ方が変わる',goal:'粒子レイノルズ数 Re＝vd/ν',fig:plotIV(),cap:'エルガン式で計算した、粒径ごとの「動水勾配 i と流速 v」の関係（間隙率 0.4、水温 20℃）。○ は、粘性と慣性の抵抗が同じ大きさになる流速（切り替わりの目安）。',
+  s:['砂のすき間の水は、ゆっくりしみ出す。礫や玉石のすき間では、水は勢いよく渦を巻いて流れる。同じ「すき間の流れ」でも、粒の大きさで性質がまったく違う。',
+   {q:'何で切り替わる？'},
+   `管の流れと同じく、慣性と粘性の比、レイノルズ数で決まる。長さに粒径 d、速さに見かけの流速 v（流量 ÷ 全断面積）をとって<span class="eq">${m('Re<sub>d</sub>＝v d/ν')}</span>（ν：水の動粘性係数 ≈ 1.0×10⁻⁶ m²/s）`,
+   `${m('Re<sub>d</sub>')} がおよそ 1〜10 より小さいと、粘性が勝って ${m('i ∝ v')}（ダルシー則）。100 を超えると慣性が勝って ${m('i ∝ v²')}（乱流）。その間が遷移域。`,
+   'グラフの傾きを見ると、細砂は全部の範囲で傾き1（ダルシー）。礫や玉石は、ふつうの流速で、もう傾き2（乱流）になっている。礫の中の流れに、ダルシー則はそのまま使えない。'],key:'粒が小さい → 粘性が勝つ → ダルシー則。粒が大きい → 慣性が勝つ → i は v² に比例。'},
+ {t:'ダルシー則と透水係数（ヘーゼン・コゼニー＝カルマン）',goal:'k ∝ d²',fig:S(320,180,...[...Array(5)].map((_,i)=>C(40+i*22,60,10,DC.s,n,1.5)),...[...Array(4)].map((_,i)=>C(51+i*22,80,10,DC.s,n,1.5)),...[...Array(3)].map((_,i)=>C(210+i*44,70,22,DC.s,n,1.5)),A(20,120,150,120,b,1.6),A(190,120,310,120,b,2.8),T(85,150,'細かい粒：すき間が細い',n,11),T(255,150,'粗い粒：すき間が太い',n,11),T(160,24,'すき間の太さは、粒の大きさに比例する',n,12)),
+  cap:'すき間を細い管の束とみなすと、管の太さは粒径に比例する。',
+  s:['すき間を、たくさんの細い管の束と考える。細い管の層流では、平均流速は管径の2乗に比例する（ハーゲン・ポアズイユ）。',
+   {q:'すき間の太さは何で決まる？'},
+   `すき間の太さは、粒の大きさ d にほぼ比例する。だから透水係数は ${m('k ∝ d²')}。粒が10倍になると、k は100倍。`,
+   `すき間の割合（間隙率 n）も入れると<span class="eq">${m('k＝(g/ν)·d²/180·n³/(1−n)²')}</span>（コゼニー＝カルマンの式）。実務で手早く使うのは、ヘーゼンの式 ${m('k[cm/s]≈100·D₁₀²[cm]')}（D₁₀：10%粒径。細かい粒が流れを決めるので、平均ではなく小さい方の粒径を使う）。`,
+   `ただし、これは粘性が勝つ（${m('Re<sub>d</sub>')} が小さい）ときだけ。礫では次の項目の式が要る。`,table()],key:'ダルシー領域では k ∝ d²。細かい粒（D₁₀）が透水性を決める。'},
+ {t:'フォルヒハイマー則とエルガン式',goal:'i＝a v＋b v²',fig:S(320,180,L(40,150,300,150,n,1.5),L(40,150,40,20,n,1.5),P('M40,150 L300,90','none',b,2,'6 4'),P('M40,150 Q200,140 300,30','none',r,2.5),T(250,104,'a v（粘性）',b,11),T(240,40,'a v＋b v²',r,12),T(170,172,'流速 v',n,12),T(20,86,'i',n,13)),
+  cap:'流速が大きくなると、粘性の抵抗（直線）に、慣性の抵抗（2乗）が足される。',
+  s:['礫の中では、水はすき間を通るたびに、広がったり縮んだり曲がったりする。そのたびに渦ができて、勢い（運動量）を失う。',
+   {q:'その抵抗は、流速の何乗に比例する？'},
+   `急な広がりや曲がりの損失は、管路と同じく速度水頭 ${m('v²/2g')} に比例する（④運動量保存）。粘性の抵抗（${m('∝ v')}）に足すと<span class="eq">${m('i＝a v＋b v²')}</span>（フォルヒハイマー則）`,
+   `球に近い粒を詰めた層では、実験からエルガン式が使われる：${m('a＝150ν(1−n)²/(g n³ d²)')}、${m('b＝1.75(1−n)/(g n³ d)')}。`,
+   `a は ${m('1/d²')}、b は ${m('1/d')} に比例する。だから粒が大きいほど、2乗の項（乱流の抵抗）が早く効いてくる。2つが等しくなる流速 ${m('v＝a/b')} が、切り替わりの目安（前の項目のグラフの ○）。`,
+   `ダルシー則は、この式の ${m('b v²')} を捨てたもの。${m('k＝1/a')}。`],key:'礫間の流れ＝粘性の抵抗 a v ＋ 渦の抵抗 b v²。粒が大きいほど b v² が効く。'},
+ {t:'粒径別に、同じ水を流してみる',goal:'礫は流しやすいが、表面積は小さい',fig:S(320,170,R(20,40,280,90,'#fff',n,1.5),...[...Array(40)].map((_,i)=>C(30+(i%20)*14,55+Math.floor(i/20)*14,5,DC.s,n,1)),...[...Array(6)].map((_,i)=>C(50+i*44,110,18,DC.s,n,1)),T(160,30,'上：細かい礫　下：大きい礫',n,12),T(160,154,'同じ体積なら、表面積は粒径に反比例する',r,12)),
+  cap:'浄化に効くのは礫の表面（微生物の膜）。流しやすさとは逆の関係になる。',
+  s:[`礫の層の体積 V のうち、礫の表面積は、球なら ${m('a<sub>s</sub>＝6(1−n)/d')}（1 m³ あたり）。粒径が半分なら、表面積は2倍。`,
+   {q:'細かい礫ほど良い？'},
+   `表面積は大きいが、${m('i＝a v＋b v²')} の a も b も大きくなり、同じ流量を流すのに大きな落差が要る。さらに、すき間が細いと泥で詰まりやすい。`,
+   '<b>設計のかけひき</b>：浄化には細かい礫、流しやすさと詰まりにくさには大きい礫。河川の礫間接触酸化施設では、50〜150 mm 程度の礫がよく使われる。実践ラボの「礫間浄化施設」で、このかけひきを体験できる。'],key:'流しやすさ（d が大きい）と表面積（d が小さい）は逆。その間で粒径を選ぶ。'},
+]}; })();
+
+// 用語集：[用語, 読み・別名, 意味, 飛び先]
+const GLOSS=[
+['フォルヒハイマー則','ふぉるひはいまー、非ダルシー流','礫の中の流れの式 i＝av＋bv²。粘性の抵抗と、渦による抵抗の和。','d-gravel-2'],
+['エルガン式','えるがん','粒を詰めた層の抵抗の実験式。a＝150ν(1−n)²/(gn³d²)、b＝1.75(1−n)/(gn³d)。','d-gravel-2'],
+['礫間の流れ','れきかん、粒子レイノルズ数','礫のすき間の流れ。粒子レイノルズ数 vd/ν で、ダルシー則か乱流かが分かれる。','d-gravel-0'],
+['ヘーゼンの式','へーぜん、コゼニー・カルマン、D10','透水係数を粒径から見積もる式。k[cm/s]≈100·D₁₀²[cm]。','d-gravel-1'],
+['礫間接触酸化','れきかんせっしょくさんか、礫間浄化','礫の表面の微生物で、川の水の汚れを取る施設。','d-gravel-3'],
+['ナビエ・ストークス方程式','なびえすとーくす、N-S','流体のおおもとの運動方程式。質量×加速度＝圧力の差＋粘性の力＋重力。','d-fluid-3'],
+['連続の式（微分形）','質量保存、非圧縮','∂u/∂x＋∂v/∂y＋∂w/∂z＝0。小さな箱に入る量と出る量がつりあう。','d-fluid-1'],
+['オイラーの運動方程式','おいらー、移流項','粘性を無視した流体の運動方程式。加速度には、運ばれて変わる移流項が入る。','d-fluid-2'],
+['DNS','直接数値シミュレーション','ナビエ・ストークス方程式を、乱れの渦まで全部そのまま数値計算する方法。','d-fluid-5'],
+['RANS・LES','れいのるず平均、乱流モデル、レイノルズ応力','乱流を平均して解く方法（RANS）と、大きな渦だけ計算する方法（LES）。','d-fluid-5'],
+['浅水方程式','せんすいほうていしき、サン・ブナン方程式、浅水波方程式','N-S を深さで平均し、静水圧とした式。川・洪水・津波・高潮の計算に使う。','d-fluid-6'],
+['漸変流','ぜんぺんりゅう、背水、せき上げ','定常で、水深が場所で少しずつ変わる流れ。dh/dx＝(S₀−S_f)/(1−Fr²)。','d-fluid-8'],
+['静水圧','せいすいあつ','止まった水の圧力。深さに比例する。p＝ρgh。','d-hydrostatic-0'],
+['パスカルの原理','ぱすかる','閉じた水の中の圧力は、全方向に同じ大きさで伝わる。','d-hydrostatic-1'],
+['マノメータ','まのめーた、圧力計','管の中の液面の高さの差から、圧力の差を測る器具。','d-hydrostatic-2'],
+['全水圧','ぜんすいあつ','面に働く水圧の合計。P＝ρg·（図心の深さ）·A。','d-force-0'],
+['圧力の中心','あつりょくのちゅうしん、作用点','全水圧が作用する点。図心より深い。','d-force-1'],
+['浮力','ふりょく、アルキメデスの原理','物が押しのけた水の重さに等しい上向きの力。','d-buoy-0'],
+['浮体の安定','ふたいのあんてい、メタセンター','傾いた浮体が元に戻るかどうか。メタセンターが重心より上なら安定。','d-buoy-1'],
+['連続の式','れんぞくのしき','流量は途中で変わらない。Q＝A₁v₁＝A₂v₂。','d-bern-0'],
+['ベルヌーイの定理','べるぬーい、全水頭','位置水頭＋圧力水頭＋速度水頭は、流れに沿って一定（損失がなければ）。','d-bern-1'],
+['水頭','すいとう、位置水頭、圧力水頭、速度水頭','エネルギーを、水の柱の高さに直して表したもの。','d-bern-1'],
+['ベンチュリ計','べんちゅりけい','管を細くした所の圧力の下がり方から、流量を測る器具。','d-bern-2'],
+['運動量の式','うんどうりょうのしき','水の運動量の変化＝働く力。曲がり管や噴流の力を出す。','d-momentum-0'],
+['摩擦損失','まさつそんしつ、ダルシー・ワイスバッハ','管の壁との摩擦で失う水頭。hf＝f(L/D)v²/2g。','d-pipe-0'],
+['レイノルズ数','れいのるずすう、層流・乱流','流れの乱れやすさ。約2000より小さいと層流、大きいと乱流。','d-pipe-1'],
+['動水勾配線','どうすいこうばいせん、エネルギー線','位置水頭＋圧力水頭を結んだ線。管の中の水の勢いを表す。','d-pipe-2'],
+['等流','とうりゅう','水深と流速が場所で変わらない流れ。重力と壁の摩擦がつりあう。','d-manning-0'],
+['マニングの式','まにんぐ、粗度係数','開水路の流速 v＝(1/n)R^(2/3)I^(1/2)。n は表面のざらざら。','d-manning-1'],
+['径深','けいしん、R','流れの断面積 ÷ 濡れている周の長さ。','d-manning-1'],
+['比エネルギー','ひえねるぎー、E','水路の底から測った全水頭。E＝h＋v²/2g。','d-energy-0'],
+['限界水深','げんかいすいしん、hc','同じ流量で、比エネルギーが最小になる水深。','d-energy-1'],
+['フルード数','ふるーどすう、Fr、常流・射流','流速 ÷ 波の速さ。1より小さいと常流、大きいと射流。','d-energy-1'],
+['跳水','ちょうすい、共役水深','射流が常流に変わるとき、水面が急に跳ね上がる現象。','d-jump-0'],
+['トリチェリの定理','とりちぇりのていり、オリフィス','穴から出る水の速さ v＝√(2gh)。','d-orifice-0'],
+['せき','堰、刃形せき','水路をせき止めて越流させ、水深から流量を測る構造物。','d-orifice-1'],
+['被圧帯水層','ひあつたいすいそう、井戸','上下を水を通しにくい層ではさまれた地下水の層。','d-well-0'],
+['不圧帯水層','ふあつたいすいそう','上に水面（地下水面）がある地下水の層。','d-well-1'],
+['合理式','ごうりしき、流出係数、降雨強度','雨水のピーク流量 Q＝(1/3.6)·C·I·A。','d-hydro-0'],
+['波速','はそく、長波','浅い水の波の速さ c＝√(gh)。津波が速い理由。','d-wave-0'],
+['グリーンの法則','ぐりーんのほうそく','波が浅い所に来ると高くなる。高さは水深の−1/4乗に比例。','d-wave-1'],
+];
+
+// ---- 用語検索：用語集（GLOSS）＋単元名＋導出の本文から探す ----
+(function(){
+  if(typeof U==='undefined') return;
+  const strip=h=>String(h||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+  const norm=x=>String(x||'').normalize('NFKC').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60));
+  const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const TH_=typeof TH!=='undefined'&&TH;
+  // 本文の索引
+  const IDX=[];
+  U.forEach((u,i)=>IDX.push({kind:'単元',t:`${String(i+1).padStart(2,'0')} ${u.name}`,x:strip(u.ds),to:'u'+(i+1)}));
+  if(typeof DER!=='undefined') [...U,...(typeof DXU!=='undefined'?DXU:[])].forEach(u=>{ const d=DER[u.id]; if(!d) return; d.it.forEach((it,j)=>{
+    const body=[it.goal,it.cap,...(it.s||[]).map(z=>typeof z==='string'?z:z.q),it.key].map(strip).join(' ');
+    IDX.push({kind:'導出',t:`${u.name}：${strip(it.t)}`,x:body,to:`d-${u.id}-${j}`}); }); });
+  const G=(typeof GLOSS!=='undefined'?GLOSS:[]).map(([t,y,d,to])=>({t,y,d,to,k:norm(t+' '+y),kd:norm(d)}));
+  IDX.forEach(o=>{ o.kt=norm(o.t); o.kx=norm(o.x); });
+  const css=document.createElement('style'); css.textContent=`
+#srbtn{font:inherit;font-weight:900;font-size:13px;border:2px solid #12286B;background:#fff;color:#12286B;padding:4px 10px;cursor:pointer;white-space:nowrap}
+#srbox{position:fixed;inset:0;z-index:50;background:rgba(18,40,107,.35);display:none}
+#srbox.on{display:block}
+#srp{position:absolute;left:50%;top:0;transform:translateX(-50%);width:min(760px,100%);max-height:100%;overflow:auto;background:#F4F3EF;border:3px solid #12286B;border-top:0;padding:12px 16px 18px;box-sizing:border-box}
+#srp .row{display:flex;gap:8px;align-items:center}
+#srq{flex:1;min-width:0;font:inherit;font-size:16px;padding:8px 10px;border:2px solid #12286B;background:#fff;color:#1C3A7E}
+#srx{font:inherit;font-weight:900;border:2px solid #12286B;background:#12286B;color:#fff;padding:7px 12px;cursor:pointer}
+#srp h4{margin:14px 0 6px;font-size:13px;color:#C62422;letter-spacing:.06em}
+.srg{background:#fff;border:2px solid #12286B;padding:8px 10px;margin-bottom:8px;cursor:pointer;text-align:left;width:100%;font:inherit;color:#1C3A7E;display:block}
+.srg:hover,.srh:hover{background:#EAF2F8}
+.srg b{font-size:16px;color:#12286B}.srg small{color:#5E6B86;margin-left:6px}.srg span{display:block;font-size:14px;line-height:1.7;margin-top:2px}.srg em{font-style:normal;font-size:12px;font-weight:700;color:#3286BE}
+.srh{display:block;width:100%;text-align:left;font:inherit;background:#fff;border:1.5px solid #D9D6CC;padding:6px 10px;margin-bottom:6px;cursor:pointer;color:#1C3A7E}
+.srh b{font-size:14px}.srh i{font-style:normal;font-size:11px;font-weight:900;color:#fff;background:#3286BE;padding:1px 6px;margin-right:6px}.srh span{display:block;font-size:12px;color:#5E6B86;line-height:1.6}
+mark{background:#f6d36b;color:inherit;padding:0 1px}
+.srchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.srchips button{font:inherit;font-size:12px;font-weight:700;border:1.5px solid #93BCD6;background:#fff;color:#12286B;padding:3px 8px;cursor:pointer}`;
+  document.head.appendChild(css);
+  const hdr=document.querySelector('header'); const prog=document.getElementById('prog');
+  const btn=document.createElement('button'); btn.id='srbtn'; btn.textContent='用語検索'; btn.title='用語・式・導出を探す';
+  if(prog) prog.before(btn); else if(hdr) hdr.appendChild(btn);
+  const box=document.createElement('div'); box.id='srbox';
+  box.innerHTML=`<div id="srp" role="dialog" aria-label="用語検索"><div class="row"><input id="srq" type="search" placeholder="例：節点方程式、層方程式、有効応力、フルード数" autocomplete="off"><button id="srx">閉じる</button></div><div id="srr"></div></div>`;
+  document.body.appendChild(box);
+  const q=box.querySelector('#srq'), out=box.querySelector('#srr');
+  const hl=(s,w)=>{ const e=esc(s); if(!w) return e; const ns=norm(s); const i=ns.indexOf(w); if(i<0) return e; return esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+w.length))+'</mark>'+esc(s.slice(i+w.length)); };
+  const snip=(s,w)=>{ const ns=norm(s); const i=ns.indexOf(w); if(i<0) return esc(s.slice(0,70)); const a=Math.max(0,i-30), b=Math.min(s.length,i+w.length+40); return (a>0?'…':'')+hl(s.slice(a,b),w)+(b<s.length?'…':''); };
+  function go(to){
+    close();
+    if(/^u\d+$/.test(to)){ if(TH_){ window.open(TH_.main+'#'+to,'_blank','noopener'); return; } location.hash='#'+to; return; }
+    if(location.hash==='#'+to){ const el=document.getElementById(to); if(el) el.scrollIntoView({block:'start'}); return; }
+    location.hash='#'+to;
+    setTimeout(()=>{ const el=document.getElementById(to); if(el){ el.scrollIntoView({block:'start'}); el.style.outline='3px solid #C62422'; setTimeout(()=>el.style.outline='',1800); } },120);
+  }
+  function render(){
+    const w=norm(q.value.trim());
+    if(!w){ out.innerHTML=`<h4>よく探される用語</h4><div class="srchips">${G.slice(0,60).map(g=>`<button data-w="${esc(g.t)}">${esc(g.t)}</button>`).join('')}</div>`;
+      out.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{ q.value=b.dataset.w; render(); }); return; }
+    const gs=G.map(g=>({g,sc:g.k.startsWith(w)?3:g.k.includes(w)?2:g.kd.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,20);
+    const hs=IDX.map(o=>({o,sc:o.kt.includes(w)?2:o.kx.includes(w)?1:0})).filter(o=>o.sc).sort((a,b)=>b.sc-a.sc).slice(0,30);
+    out.innerHTML=(gs.length?`<h4>用語の意味（${gs.length}）</h4>`+gs.map(({g})=>`<button class="srg" data-to="${g.to}"><b>${hl(g.t,w)}</b><small>${hl(g.y,w)}</small><span>${hl(g.d,w)}</span><em>${/^d-/.test(g.to)?'導出を見る →':'単元を開く →'}</em></button>`).join(''):'')
+      +(hs.length?`<h4>出てくる場所（${hs.length}${hs.length>=30?'＋':''}）</h4>`+hs.map(({o})=>`<button class="srh" data-to="${o.to}"><b><i>${o.kind}</i>${hl(o.t,w)}</b><span>${snip(o.x,w)}</span></button>`).join(''):'')
+      ||`<p>「${esc(q.value)}」は見つかりませんでした。短い言葉（例：「たわみ」「土圧」）で探してみてください。</p>`;
+    out.querySelectorAll('[data-to]').forEach(b=>b.onclick=()=>go(b.dataset.to));
+  }
+  function open(){ box.classList.add('on'); render(); setTimeout(()=>q.focus(),30); }
+  function close(){ box.classList.remove('on'); }
+  btn.onclick=open; box.querySelector('#srx').onclick=close; box.onclick=e=>{ if(e.target===box) close(); };
+  q.oninput=render; document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); open(); } });
+  window.SEARCH={open,go};
+})();
 
 // ==/NAZO==
 route();

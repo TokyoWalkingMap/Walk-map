@@ -82,6 +82,13 @@ section h3 span{background:var(--red);color:#fff;width:22px;height:22px;display:
 .nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
 .b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 14px;cursor:pointer}
 .b.main{background:var(--red);border-color:var(--red);color:#fff}
+
+.pctl{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:start;margin-bottom:8px}.pctl>b{font-size:13px;padding-top:8px}
+.pctl .opts{margin-top:0}.pctl .opts button{font-size:12px;min-height:30px;padding:3px 8px}
+#plot svg{display:block;width:100%;max-width:640px;height:auto;border:1px solid var(--line)}
+.pleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;margin-top:6px}.pleg i{display:inline-block;width:14px;height:4px;margin-right:5px;vertical-align:middle}
+.pnote{font-size:14px;margin:8px 0 0}
+@media (max-width:560px){.pctl{grid-template-columns:1fr}.pctl>b{padding-top:2px}}
 </style></head><body>
 <header><button class="logo" id="logo" title="案件の一覧へ">水理学<b>実践ラボ</b></button><div id="crumb"></div><div id="prog"></div></header>
 <main id="main"></main>
@@ -176,6 +183,63 @@ return [
  },
  links:[['合理式',URLS.suiriR+'#d-hydro'],['マニングの式',URLS.suiriR+'#d-manning-1'],['連続の式',URLS.suiriR+'#d-bern'],['水理学ラボ「水文」',URLS.suiri+'#u12']],
  real:'最近は 1時間に 100 mm を超える雨も増え、管だけでは流しきれません。そこで、公園の地下に雨水をためる調整池をつくったり、しみ込みやすい舗装にしたりして、ピーク流量そのものを減らします。'},
+{id:'gate',title:'可動堰のゲート',client:'国土交通省 ○○河川事務所',
+ thumb:S(160,70,R(10,50,140,16,DC.s,'none',0),R(20,12,10,54,'#ddd',n,1.5),R(130,12,10,54,'#ddd',n,1.5),R(30,24,100,30,DC.m,n,2),...[32,42].map(y=>L(30,y,130,y,n,1.5)),P('M10,26 L30,26 L30,54 L10,54Z','#d7e6f1','none')),
+ story:'川をせき止めて水位を保ち、洪水のときは全開にして流す「可動堰」。その扉（ゲート）は、水圧を鋼の板（スキンプレート）で受け、横に渡した主桁で両側の柱（堰柱）へ伝え、上の巻上機で吊り上げて開け閉めします。1門のゲートを設計しよう。',
+ req:['上流側の水深 H まで、ゲートが静水圧を受ける（下流は空として安全側に）','主桁は、それぞれが同じ力を受けるように高さを変えて配置する（等荷重配置）。両端は堰柱で支える単純梁','スキンプレートは、主桁と縦の補助桁で囲まれた板。曲げ応力度 σ＝0.5·p·b²/t²（b：補助桁の間隔）','鋼材の許容応力度 120 N/mm²（水門の基準の目安）。主桁のたわみは 径間の 1/800 以下','巻上機（開閉装置）の力は 1500 kN 以下（標準の機械で済む範囲）'],
+ inputs:[{k:'H',label:'上流の水深（ゲートの高さ）',opts:[[3,'3 m'],[5,'5 m'],[7,'7 m']],def:5},{k:'Bg',label:'ゲートの径間（堰柱の間隔）',opts:[[10,'10 m'],[15,'15 m'],[20,'20 m']],def:15},
+  {d:1,k:'type',label:'ゲートの形式',help:'ローラーは車輪で転がるので開閉力が小さいが、高い。',opts:[['r','ローラーゲート（摩擦 0.05）'],['s','スライドゲート（摩擦 0.3）']],def:'s'},
+  {d:1,cont:false,k:'ng',label:'主桁の本数',opts:[[2,'2 本'],[3,'3 本'],[4,'4 本'],[5,'5 本']],def:2},
+  {d:1,cont:false,k:'gs',label:'主桁の断面',opts:[[0,'H-700×300'],[1,'H-900×300'],[2,'溶接I桁 1200'],[3,'溶接I桁 1500'],[4,'溶接I桁 1800'],[5,'溶接I桁 2000']],def:1},
+  {d:1,k:'t',label:'スキンプレートの厚さ',opts:[[9,'9 mm'],[12,'12 mm'],[16,'16 mm']],def:9},
+  {d:1,k:'bs',label:'補助桁の間隔',opts:[[0.4,'0.4 m'],[0.6,'0.6 m'],[0.8,'0.8 m']],def:0.8}],
+ calc(s){ const GS=[[5640,197000,185],[8990,404000,243],[14000,840000,300],[20000,1500000,360],[30000,2700000,430],[38000,3800000,480]];
+   const [Z,I,kg]=GS[s.gs]; const H=s.H, Bg=s.Bg, g=9.8; const P_=0.5*g*H*H*Bg; const yc=H/3; const w=0.5*g*H*H/s.ng; const Mx=w*Bg*Bg/8; const sig=Mx*1e6/(Z*1e3); const d=5*w*(Bg*1000)**4/(384*2.05e5*I*1e4), dl=Bg*1000/800;
+   const p=g*H/1000, bb=s.bs*1000; const sp=0.5*p*bb*bb/(s.t*s.t);
+   const Wg=(s.ng*kg*Bg+s.t*7.85*Bg*H+ (Bg/s.bs)*H*40)*9.8/1000; const mu=s.type==='r'?0.05:0.3; const F=1.2*(Wg+mu*P_);
+   const steel=(s.ng*kg*Bg+s.t*7.85*Bg*H+(Bg/s.bs)*H*40)/1000; const cost=steel*1.2+(s.type==='r'?40:0)+F*0.08; // 百万円
+   return {rows:[['ゲートが受ける全水圧',mm('P＝½ρgH²·B'),nf(P_,0),'kN'],['全水圧の作用点（底から）',mm('H/3'),nf(yc),'m'],['主桁1本が受ける力（1 m あたり）',mm('w＝½ρgH²/n'),nf(w),'kN/m'],['主桁の最大曲げモーメント',mm('M＝wB²/8'),nf(Mx,0),'kN·m'],['主桁の曲げ応力度',mm('σ＝M/Z'),nf(sig),'N/mm²'],['主桁のたわみ',mm('δ＝5wB⁴/(384EI)'),nf(d),'mm'],['底での水圧',mm('p＝ρgH'),nf(p*1000),'kN/m²'],['スキンプレートの曲げ応力度',mm('σ＝0.5·p·b²/t²'),nf(sp),'N/mm²'],['ゲートの重さ',mm('鋼材の合計'),nf(Wg,0),'kN'],['巻上機に必要な力',mm('F＝1.2(W＋μP)'),nf(F,0),'kN']],
+     checks:[['主桁の曲げ（折れないか）',sig/120,120,sig<=120,`${nf(sig)} ／ 許容 120 N/mm²`],['主桁のたわみ（水が漏れないか）',d/dl,dl,d<=dl,`${nf(d)} ／ 上限 ${nf(dl)} mm`],['スキンプレート（板が曲がらないか）',sp/120,120,sp<=120,`${nf(sp)} ／ 許容 120 N/mm²`],['巻上機（持ち上げられるか）',F/1500,1500,F<=1500,`${nf(F,0)} ／ 上限 1,500 kN`]],
+     cost, costTxt:`鋼材 ${nf(steel,1)} t ／ 約 ${nf(cost,0)} 百万円（1門）`, sig, sp, F, P:P_};
+ },
+ fig(s,q){ const H=s.H*22, y0=210, x0=150; const okG=q.sig<=120, okP=q.sp<=120;
+   // 主桁の等荷重配置：深さ d_k＝H√(k/n) で区切り、各帯の作用点に置く
+   let gs=''; for(let k=1;k<=s.ng;k++){ const a=Math.sqrt((k-1)/s.ng), c2=Math.sqrt(k/s.ng); const yc=2/3*(c2**3-a**3)/(c2**2-a**2); const y=y0-H+yc*H; gs+=R(x0+4,y-6,16,12,okG?DC.m:'#f6c9c7',n,1.5); }
+   return S(340,250,G(10,330,y0),R(x0+20,y0-H-6,170,H+6,'#fff','none',0),
+     P(`M${x0},${y0-H} L${x0},${y0} L${x0-Math.min(120,q.P/ s.Bg*0.6)},${y0}Z`,'#d7e6f1',b,1.5),P(`M10,${y0-H} L${x0},${y0-H}`,'none',b,2.5),P(`M10,${y0} L10,${y0-H} L${x0},${y0-H} L${x0},${y0}Z`,'rgba(147,188,214,.35)','none'),
+     ...[0.25,0.5,0.75,1].map(t=>A(x0-Math.min(120,q.P/s.Bg*0.6)*t-4,y0-H+H*t,x0-2,y0-H+H*t,b,1.4)),
+     L(x0+2,y0-H,x0+2,y0,okP?n:r,4),gs,R(x0-6,y0-H-40,30,34,'#eee',n,1.5),L(x0+10,y0-H-6,x0+10,y0-H,n,2),T(x0+9,y0-H-46,'巻上機',n,11),
+     A(x0-80,y0-H/3,x0-6,y0-H/3,r,3),M(x0-84,y0-H/3-6,'P',r,15,'end'),L(x0+30,y0-H/3,x0+60,y0-H/3,r,1,'3 3'),T(x0+64,y0-H/3+4,'H/3',r,11,'start'),
+     T(60,y0-H-12,'上流',b,12),T(250,y0-20,'下流',n,12),L(x0+70,y0-H,x0+70,y0,n,1),M(x0+76,y0-H/2,`H＝${s.H} m`,n,13,'start'),
+     T(250,40,okG&&okP?'水圧に耐える':(!okG?'主桁が曲がる！':'板がふくらむ！'),okG&&okP?b:r,14),T(250,60,`主桁 ${s.ng} 本（等荷重配置）`,n,11));
+ },
+ links:[['面に働く全水圧',URLS.suiriR+'#d-force'],['作用点の深さ',URLS.suiriR+'#d-force-1'],['曲げ応力（σ＝M/Z）',URLS.kozoR+'#d-stress'],['たわみ',URLS.kozoR+'#d-defl-2'],['刃形せき・オリフィス',URLS.suiriR+'#d-orifice']],
+ real:'ダムの洪水吐きでは、扇形の「ラジアルゲート（テンターゲート）」がよく使われます。水圧が回転の中心（トラニオン）に向かうので、開閉力が小さくて済みます。設計では、地震時の動水圧、流木の衝突、凍結、開けたときに下を流れる水の振動まで照査します。ゲートが開かないと洪水があふれるので、予備の電源や手動の開閉装置も備えます。'},
+{id:'reki',title:'川の礫間浄化施設',client:'△△県 河川課',
+ thumb:S(160,70,R(10,20,140,40,'#fff',n,1.5),...[...Array(18)].map((_,i)=>C(18+(i%9)*15,30+Math.floor(i/9)*16,6,DC.s,n,1)),A(2,40,14,40,b,2),A(146,40,158,40,b,2)),
+ story:'汚れた支川の水を、河川敷の地下に敷き詰めた礫の層に通してきれいにする（礫間接触酸化）。礫の表面に付いた微生物が汚れを分解する。礫の大きさと、層の大きさを決めよう。',
+ req:['水は、礫の層を横向きに流れる。抵抗はエルガン式 i＝a v＋b v²（間隙率 0.4、水温 20℃）','使える落差（入口と出口の水位差）は 0.5 m 以内','汚れを分解する時間として、水が層の中にいる時間（滞留時間）を 1 時間以上','礫の表面積の合計が、流量 1 m³/s あたり 30 万 m² 以上（微生物の住む場所）','濁りの多い川では、目詰まりを防ぐため 50 mm 以上の礫を使う'],
+ inputs:[{k:'Q',label:'浄化する流量',opts:[[0.1,'0.1 m³/s'],[0.3,'0.3 m³/s'],[0.5,'0.5 m³/s']],def:0.3},{k:'tur',label:'川の濁り',opts:[['l','少ない'],['h','多い（大雨のあとに泥）']],def:'l'},
+  {d:1,k:'d',label:'礫の大きさ',opts:[[0.02,'20 mm'],[0.05,'50 mm'],[0.1,'100 mm'],[0.15,'150 mm']],def:0.02},
+  {d:1,k:'Bw',label:'層の幅',opts:[[5,'5 m'],[10,'10 m'],[20,'20 m']],def:5},
+  {d:1,k:'Dp',label:'層の深さ',opts:[[1,'1.0 m'],[1.5,'1.5 m'],[2,'2.0 m']],def:1},
+  {d:1,k:'Lb',label:'層の長さ',opts:[[50,'50 m'],[100,'100 m'],[200,'200 m']],def:100}],
+ calc(s){ const nu=1e-6,g=9.8,por=0.4; const a=150*nu*(1-por)**2/(g*por**3*s.d*s.d), bb=1.75*(1-por)/(g*por**3*s.d);
+   const Ar=s.Bw*s.Dp, v=s.Q/Ar, i=a*v+bb*v*v, h=i*s.Lb, Re=v*s.d/nu; const Vol=Ar*s.Lb, T=por*Vol/s.Q/3600; const as=6*(1-por)/s.d, Sa=as*Vol, Sreq=3e5*s.Q; const dmin=s.tur==='h'?0.05:0.02;
+   const cost=Vol*0.012+s.Lb*0.05; // 百万円
+   return {rows:[['見かけの流速',mm('v＝Q/(B·D)'),nf(v*1000,2),'mm/s'],['粒子レイノルズ数',mm('Re<sub>d</sub>＝v d/ν'),nf(Re,1),''],['粘性の抵抗の係数',mm('a＝150ν(1−n)²/(g n³ d²)'),nf(a,3),'s/m'],['渦の抵抗の係数',mm('b＝1.75(1−n)/(g n³ d)'),nf(bb,1),'s²/m²'],['動水勾配',mm('i＝a v＋b v²'),nf(i,4),''],['渦の抵抗の割合',mm('b v²/i'),nf(bb*v*v/i*100,0),'%'],['必要な落差',mm('h＝i L'),nf(h,3),'m'],['滞留時間',mm('T＝n V/Q'),nf(T,2),'時間'],['礫の表面積の合計',mm('6(1−n)/d × V'),nf(Sa/1e4,1),'万 m²']],
+     checks:[['落差（流しきれるか）',h/0.5,0.5,h<=0.5,`${nf(h,2)} ／ 上限 0.50 m`],['滞留時間（分解する時間）',1/Math.max(T,1e-6),1,T>=1,`${nf(T,2)} ／ 必要 1 時間`],['表面積（微生物の量）',Sreq/Sa,Sreq,Sa>=Sreq,`${nf(Sa/1e4,1)} ／ 必要 ${nf(Sreq/1e4,1)} 万 m²`],['目詰まり（礫の大きさ）',dmin/s.d,dmin,s.d>=dmin,`${s.d*1000} ／ 最小 ${dmin*1000} mm`]],
+     cost, costTxt:`礫 ${nf(Vol,0)} m³ ／ 約 ${nf(cost,1)} 百万円`, h, T, v, turb:bb*v*v/i};
+ },
+ fig(s,q){ const Lp=Math.min(260,s.Lb*1.3), Dp=s.Dp*40, x0=40, y0=60; const ok=q.h<=0.5; const rr=Math.max(2.2,s.d*60);
+   let gr=''; for(let y=y0+rr;y<y0+Dp;y+=rr*2.1) for(let x=x0+rr+((Math.round((y-y0)/(rr*2.1))%2)?rr:0);x<x0+Lp;x+=rr*2.1) gr+=C(x,y,rr,DC.s,n,0.8);
+   const hd=Math.min(40,q.h*60);
+   return S(340,230,L(x0-30,y0-6,x0,y0-6,b,2.5),L(x0+Lp,y0-6+hd,x0+Lp+30,y0-6+hd,b,2.5),P(`M${x0},${y0-6} L${x0+Lp},${y0-6+hd}`,'none',ok?b:r,1.5,'5 4'),R(x0,y0,Lp,Dp,'#fff',n,1.5),gr,
+     A(x0-28,y0+Dp/2,x0-4,y0+Dp/2,b,2),A(x0+Lp+4,y0+Dp/2,x0+Lp+28,y0+Dp/2,b,2),T(x0+Lp/2,y0-14,`落差 ${nf(q.h,2)} m`,ok?b:r,12),Dim(x0,x0+Lp,y0+Dp+24,`L＝${s.Lb} m`),
+     T(170,y0+Dp+56,`滞留 ${nf(q.T,1)} 時間 ／ 渦の抵抗 ${nf(q.turb*100,0)}%`,n,12),T(170,y0+Dp+74,q.turb>0.5?'礫の中は、ほぼ乱流（i∝v²）':'礫の中は、ほぼダルシー流（i∝v）',q.turb>0.5?r:b,11));
+ },
+ links:[['粒の大きさで流れ方が変わる',URLS.suiriR+'#d-gravel-0'],['フォルヒハイマー則とエルガン式',URLS.suiriR+'#d-gravel-2'],['粒径別に同じ水を流す',URLS.suiriR+'#d-gravel-3'],['ダルシーの法則',URLS.jibanR+'#d-perm-0']],
+ real:'日本では1980年代から、多摩川の支川（野川など）や江戸川などで礫間接触酸化施設がつくられ、BOD（汚れの量）を半分以下にしてきました。礫の層は、何年かで泥がたまるので、逆向きに水を流したり空気を吹き込んだりして洗います。下水道が整った今は、役目を終えた施設もあります。'},
 ]; })();
 
 // ---- 実践ラボ：本物を設計する流れ（依頼 → 条件 → 計算 → 照査 → 図面 → コスト） ----
@@ -188,6 +252,46 @@ function combos(c,base){ let out=[Object.assign({},base)]; c.inputs.filter(x=>x.
 // 条件（d なし）は固定したまま、設計で決める項目（d:1）だけを総当たりして、最も安い安全な案を探す
 function best(c,s){ const base={}; c.inputs.filter(x=>!x.d).forEach(x=>base[x.k]=s[x.k]); const key=JSON.stringify(base); c._best=c._best||{}; if(key in c._best) return c._best[key]; let bc=null; combos(c,base).forEach(t=>{ const r=c.calc(t); if(r.checks.every(x=>x[3])&&(!bc||r.cost<bc.cost)) bc={s:t,cost:r.cost}; }); return c._best[key]=bc; }
 function stars(c){ return (JS[c.id]||{}).st||0; }
+// ---- 諸量の変化のグラフ ----
+const PCOLS=['#C62422','#3286BE','#12286B','#C8A02A','#4E9A5B','#8E5BB5'];
+const numv=x=>{ const v=+String(x).replace(/,/g,''); return isFinite(v)?v:NaN; };
+const PS={};
+function niceTicks(lo,hi,n=5){ if(!(hi>lo)){ hi=lo+1; } const st=Math.pow(10,Math.floor(Math.log10((hi-lo)/n))); const err=(hi-lo)/n/st; const step=st*(err>=7.5?10:err>=3.5?5:err>=1.5?2:1); const out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) out.push(+v.toPrecision(12)); return out; }
+function drawPlot(c,s,r){
+  const xs=c.inputs.filter(x=>x.opts.every(o=>typeof o[0]==='number')); if(!xs.length){ $('.plot').style.display='none'; return; }
+  const st=PS[c.id]=PS[c.id]||{x:(xs.find(x=>x.d&&x.cont!==false)||xs[0]).k,y:'ck'};
+  const ys=[['ck','照査の使用率'],...r.rows.map((row,i)=>[i,row[0]]).filter(([i])=>isFinite(numv(r.rows[i][2]))),['cost','コスト']];
+  if(!ys.find(y=>String(y[0])===String(st.y))) st.y='ck';
+  $('#px').innerHTML=xs.map(x=>`<button data-px="${x.k}" class="${x.k===st.x?'on':''}">${x.label}</button>`).join('');
+  $('#py').innerHTML=ys.map(([k,l])=>`<button data-py="${k}" class="${String(k)===String(st.y)?'on':''}">${l}</button>`).join('');
+  $('#px').querySelectorAll('button').forEach(b=>b.onclick=()=>{ st.x=b.dataset.px; drawPlot(c,s,c.calc(s)); });
+  $('#py').querySelectorAll('button').forEach(b=>b.onclick=()=>{ st.y=b.dataset.py; drawPlot(c,s,c.calc(s)); });
+  const inp=c.inputs.find(x=>x.k===st.x); const vals=inp.opts.map(o=>o[0]); const disc=inp.cont===false;
+  const lo=Math.min(...vals), hi=Math.max(...vals); const X=disc?vals:[...Array(61)].map((_,i)=>lo+(hi-lo)*i/60);
+  const pts=X.map(x=>{ const t=Object.assign({},s,{[st.x]:x}); const rr=c.calc(t); return {x,rr,ok:rr.checks.every(z=>z[3])}; });
+  let series;
+  if(st.y==='ck') series=r.checks.map((ck,j)=>({name:ck[0],ys:pts.map(p=>p.rr.checks[j][1])}));
+  else if(st.y==='cost') series=[{name:'コスト',ys:pts.map(p=>p.rr.cost)}];
+  else { const i=+st.y; series=[{name:r.rows[i][0]+(r.rows[i][3]?`（${r.rows[i][3]}）`:''),ys:pts.map(p=>numv(p.rr.rows[i][2]))}]; }
+  const W=340,H=230,l=46,rt=12,tp=14,bt=40; const all=series.flatMap(z=>z.ys).filter(isFinite); let y0=Math.min(0,...all), y1=Math.max(...all); if(st.y==='ck'){ y0=0; y1=Math.max(1.3,Math.min(5,y1)); }
+  if(!(y1>y0)) y1=y0+1; y1+= (y1-y0)*0.05;
+  const xi=disc?(v=>l+(W-l-rt)*(vals.indexOf(v)+0.5)/vals.length):(v=>l+(W-l-rt)*(v-lo)/((hi-lo)||1)); const yi=v=>tp+(H-tp-bt)*(1-(Math.min(y1,Math.max(y0,v))-y0)/(y1-y0));
+  let g='';
+  // OK band
+  if(disc) pts.forEach(p=>{ if(p.ok){ const w=(W-l-rt)/vals.length; g+=`<rect x="${xi(p.x)-w/2}" y="${tp}" width="${w}" height="${H-tp-bt}" fill="#d7e6f1"/>`; } });
+  else { let a=null; pts.forEach((p,i)=>{ if(p.ok&&a==null) a=p.x; if((!p.ok||i===pts.length-1)&&a!=null){ const e=p.ok?p.x:pts[i-1].x; g+=`<rect x="${xi(a)}" y="${tp}" width="${Math.max(2,xi(e)-xi(a))}" height="${H-tp-bt}" fill="#d7e6f1"/>`; a=null; } }); }
+  niceTicks(y0,y1).forEach(v=>{ g+=`<line x1="${l}" x2="${W-rt}" y1="${yi(v)}" y2="${yi(v)}" stroke="#D9D6CC"/><text x="${l-5}" y="${yi(v)+4}" font-size="10" text-anchor="end" fill="#5E6B86">${nf(v)}</text>`; });
+  if(st.y==='ck') g+=`<line x1="${l}" x2="${W-rt}" y1="${yi(1)}" y2="${yi(1)}" stroke="#C62422" stroke-width="1.5" stroke-dasharray="6 4"/><text x="${W-rt}" y="${yi(1)-4}" font-size="10" text-anchor="end" fill="#C62422" font-weight="700">1.0（ここを超えると NG）</text>`;
+  (disc?vals:niceTicks(lo,hi,4)).forEach(v=>{ const lab=disc?(inp.opts.find(o=>o[0]===v)[1]):nf(v); g+=`<text x="${xi(v)}" y="${H-bt+14}" font-size="10" text-anchor="middle" fill="#5E6B86">${lab}</text>`; });
+  g+=`<line x1="${l}" x2="${W-rt}" y1="${H-bt}" y2="${H-bt}" stroke="#12286B"/><line x1="${l}" x2="${l}" y1="${tp}" y2="${H-bt}" stroke="#12286B"/><text x="${(l+W-rt)/2}" y="${H-6}" font-size="11" text-anchor="middle" fill="#12286B" font-weight="700">${inp.label}</text>`;
+  series.forEach((z,j)=>{ const col=PCOLS[j%PCOLS.length]; const pp=pts.map((p,i)=>[xi(p.x),yi(z.ys[i])]).filter((q,i)=>isFinite(z.ys[i]));
+    g+=disc?pp.map(q=>`<circle cx="${q[0]}" cy="${q[1]}" r="4" fill="${col}"/>`).join('')+`<polyline points="${pp.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="3 3"/>`:`<polyline points="${pp.map(q=>q.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5"/>`;
+    const cy=st.y==='ck'?r.checks[j][1]:st.y==='cost'?r.cost:numv(r.rows[+st.y][2]); if(isFinite(cy)) g+=`<circle cx="${xi(s[st.x])}" cy="${yi(cy)}" r="5.5" fill="#fff" stroke="${col}" stroke-width="3"/>`; });
+  g+=`<line x1="${xi(s[st.x])}" x2="${xi(s[st.x])}" y1="${tp}" y2="${H-bt}" stroke="#12286B" stroke-dasharray="2 3"/>`;
+  $('#plot').innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="pfig" role="img"><rect width="${W}" height="${H}" fill="#fff"/>${g}</svg><div class="pleg">${series.map((z,j)=>`<span><i style="background:${PCOLS[j%PCOLS.length]}"></i>${z.name}</span>`).join('')}</div>`;
+  const okx=pts.filter(p=>p.ok).map(p=>p.x);
+  $('#pnote').innerHTML=okx.length?`${inp.label}は、ほかが今のままなら <b>${disc?okx.map(v=>inp.opts.find(o=>o[0]===v)[1]).join('・'):nf(Math.min(...okx))+' 〜 '+nf(Math.max(...okx))}</b> で全部 OK。`:`${inp.label}だけを変えても、全部 OK にはなりません。ほかの条件も変えてみよう。`;
+}
 function home(){
   location.hash=''; const tot=CASES.reduce((a,c)=>a+stars(c),0);
   $('#crumb').textContent=''; $('#prog').textContent=`★ ${tot} / ${CASES.length*3}`;
@@ -209,6 +313,8 @@ function openCase(i){
    <section class="calc"><h3><span>3</span>計算する</h3><div id="rows"></div></section>
    <section class="chk"><h3><span>4</span>照査する（安全か）</h3><div id="checks"></div></section>
    <section class="cost"><h3><span>6</span>コストを比べる</h3><div id="cost"></div></section>
+   <section class="plot"><h3><span>7</span>変えるとどうなる？（グラフ）</h3><p class="hint">横軸に条件を1つ選ぶと、ほかを今の値のままにして、その条件を少しずつ変えたときの変化を描きます。● が今の設計、青い帯が「全部 OK」になる範囲です。</p>
+    <div class="pctl"><b>横軸</b><div class="opts" id="px"></div><b>縦軸</b><div class="opts" id="py"></div></div><div id="plot"></div><p class="pnote" id="pnote"></p></section>
    <section class="why"><h3>この設計で使った勉強</h3><div class="ulinks">${c.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>${c.real?`<p class="real"><b>本物では：</b>${c.real}</p>`:''}</section>
    <div class="nav">${i>0?`<button class="b" id="pv">← 前の案件</button>`:''}<button class="b" id="hm">案件の一覧</button>${i<CASES.length-1?`<button class="b main" id="nx">次の案件 →</button>`:''}</div>`;
   const upd=()=>{ const r=c.calc(s); const ok=r.checks.every(x=>x[3]); const bc=best(c,s);
@@ -218,9 +324,10 @@ function openCase(i){
     let st=0; if(ok){ st=2; if(bc&&r.cost<=bc.cost*1.0001) st=3; }
     else st=1;
     const prev=stars(c); JS[c.id]={s:Object.assign({},s),st:Math.max(prev,st)}; jsave(); $('#prog').textContent=`★ ${CASES.reduce((a,x)=>a+stars(x),0)} / ${CASES.length*3}`;
+    drawPlot(c,s,r);
     $('#cost').innerHTML=`<div class="cbox"><div><small>この設計</small><b>${r.costTxt}</b></div><div><small>評価</small><b class="stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</b></div></div><p>${ok?(st===3?'<b>最も安い安全な設計です。</b>実務でも、安全を満たす中でいちばん経済的な案を選びます。':'安全ですが、もっと安くできる組み合わせがあります（★3は最安の安全な設計）。'):(bc?'まずは全部の照査を OK にしよう（★2）。':'<b>この条件では、どの部材を選んでも安全になりません。</b>実務なら、構造の形式そのものを見直します。条件を変えてみよう。')}</p>${bc&&!(ok&&st===3)?`<details class="ans"><summary>降参：最も安い安全な案を見る</summary><p>${c.inputs.filter(x=>x.d).map(x=>`${x.label}：<b>${(x.opts.find(o=>o[0]==bc.s[x.k])||[])[1]}</b>`).join('　')}</p></details>`:''}`;
   };
-  document.querySelectorAll('.opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
+  document.querySelectorAll('.inp .opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
   upd();
   $('#hm').onclick=home; const pv=$('#pv'); if(pv) pv.onclick=()=>openCase(i-1); const nx=$('#nx'); if(nx) nx.onclick=()=>openCase(i+1);
   window.scrollTo(0,0);
