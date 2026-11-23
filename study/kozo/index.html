@@ -556,7 +556,7 @@ unit({id:'energy',name:'仕事とエネルギー法',tag:'c',ds:'仮想仕事の
  ]});
 
 // ---- 12 不静定構造
-unit({id:'indet',name:'不静定構造',tag:'c',ds:'固定端モーメント、たわみ角法、固定法、三連モーメント式',
+unit({id:'indet',name:'不静定構造',tag:'c',ds:'重ね合わせの原理、応力法、固定端モーメント、たわみ角法、固定法、三連モーメント式',
  pts:[`両端固定梁 等分布：端 ${F('wL²/12')}、中央 ${F('wL²/24')}。中央集中：端・中央とも ${F('PL/8')}`,`一端固定・他端ピン 等分布：固定端 ${F('wL²/8')}、ピン側反力 ${F('3wL/8')}`,`たわみ角法 ${F('M_AB = 2EK(2θA + θB − 3R) + C_AB')}`,`固定法：固定端モーメント → 不釣合い → 解放 → 分配（剛比の比）→ 到達（1/2）`,`分配率 ${F('DF = k / Σk')}、ピン端の有効剛比は ${F('0.75k')}`,`三連モーメント式（等断面）${F('M₁L₁ + 2M₂(L₁+L₂) + M₃L₂ = −(w₁L₁³ + w₂L₂³)/4')}`],
  game:[{name:'固定法ラボ',url:'../kotei/'},{name:'断面力図ラボ（荷重を動かしてN図・Q図・M図を見る）',url:'../dan/'}],
  gens:[
@@ -836,6 +836,8 @@ document.getElementById('logo').onclick=home;
 function route(){ const m=location.hash.match(/^#u(\d+)$/); if(m&&U[+m[1]-1]) openUnit(+m[1]-1); else home(); }
 window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#u(\d+)$/); if(m){ if(cur!==+m[1]-1) openUnit(+m[1]-1); } else if(cur!=null) home(); });
 // ==NAZO==
+const THEORY_URL='../kozo-riron/';
+const JISSEN_URL='../kozo-jissen/';
 const NAZO={
  force:{q:'重い荷物を2人で1本の棒にぶら下げて担ぐ。荷物が自分の近くにぶら下がっていたら、重いのはどっち？',o:['自分','相手','同じ'],a:0,w:'棒が回らないためには、支える2人のまわりのモーメントがつりあう必要があります。荷物に近い人の腕は短く、遠い人の腕は長い。力は距離の逆の比で分かれるので、近い人ほど重くなります。'},
  judge:{q:'橋の片方の端は、わざわざ転がる「ローラー」で支えてある。なぜ？',o:['安く作れるから','夏に伸びた分を逃がすため','地震のときに倒れやすくするため'],a:1,w:'両端をピンで固定すると、温度で伸びようとする桁が両端を押し合い、大きな力（温度応力）が生まれます。片方をローラーにすると静定になり、伸びた分は転がって逃げるので、余計な力が生まれません。'},
@@ -853,6 +855,13 @@ const NAZO={
  plastic:{q:'鋼の梁は、どこか1か所が曲がり始めたら、すぐに崩れる？',o:['すぐ崩れる','まだ耐える','曲がり始めた所から折れる'],a:1,w:'1か所が全塑性モーメントに達して「塑性ヒンジ」になっても、不静定なら力がほかの場所に回ります。ヒンジがいくつかでき、崩壊メカニズムになるまで耐え続けます。'},
  vib:{q:'地震のとき、背の高い柱と短い柱が並んでいたら、壊れやすいのは？',o:['長い柱','短い柱','同じ'],a:1,w:'柱の水平剛性は 12EI/h³。同じ層の柱は同じだけ横にずれるので、硬い（短い）柱ほど大きな力を受けます。腰壁で短くなった柱が地震で壊れやすいのはこのためです。'},
  arch:{q:'吊り橋のケーブル。たるみを少なくピンと張るほど、ケーブルの力は？',o:['小さくなる','大きくなる','変わらない'],a:1,w:'ケーブルの水平張力 H＝wL²/(8f)。たるみ f が小さいほど大きくなります。洗濯ロープをピンと張るほど切れやすいのと同じです。'},
+};
+const NAZO2={
+ indet:[
+  {q:'梁の真ん中に 10 kN をのせたら、たわみは 2 mm。そこに、もう 10 kN を同じ場所にのせる。たわみは？',o:['2 mm のまま','4 mm','8 mm（重いほど急に増える）'],a:1,w:'鋼やコンクリートは、壊れるずっと手前では、力とたわみが比例します（フックの法則）。だから荷重が2倍ならたわみも2倍。荷重を別々にのせた答えを足してよい、というのが「重ね合わせの原理」です。ただし、降伏した後や、座屈しかけているときは比例しないので、足せません。',link:['導出：重ね合わせの原理','#d-indet-0']},
+  {q:'橋の支点が1つ、地震で壊れた。ただ乗せただけの橋（静定）と、3つ以上の支点でつながった橋（不静定）。落ちにくいのは？',o:['静定の橋','不静定の橋','どちらも同じ'],a:1,w:'静定の構造は、支えが「ちょうど足りている」状態なので、1つ失うと形を保てません。不静定の構造は支えに「余り」があるので、1つ壊れても、力が別の道を通って流れます（冗長性）。その代わり、温度の変化や地盤の沈下でも力が生まれるので、設計は難しくなります。',link:['導出：応力法（余分な支点を外す）','#d-indet-1']},
+  {q:'同じ長さの単純梁を2本並べる橋と、2径間を1本につないだ連続梁の橋。径間の真ん中の曲げモーメントが小さいのは？',o:['単純梁2本','連続梁','同じ'],a:1,w:'つなぐと、中間支点の上で梁が山なりに曲がり、その分だけ径間の真ん中の曲げが減ります（wL²/8 → 約 0.07wL²）。そのため、高速道路の高架橋の多くは連続桁です。継ぎ目が減って、車の走りも静かになります。',link:['導出：三連モーメント式','#d-indet-4']},
+ ],
 };
 
 // ---- 謎解きの層：各単元を「謎→予想→確かめる→答え→腕試し」にする ----
@@ -918,6 +927,463 @@ function nzCard(i){
   const _check=check; check=function(){ _check.apply(this,arguments); const c=document.getElementById('nzcard'); if(c&&c._r) c._r(); }; }
 { const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>home(); }
 { const _h=home; home=function(){ _h.apply(this,arguments); const h=$main.querySelector('h1'); if(h){ const nm=document.title.replace(/ラボ$/,''); h.innerHTML=`${nm}の謎を、<b>予想して</b>解き明かす。`; } }; }
+// ---- もう一歩の謎（NAZO2）：単元のおまけの謎。予想 → 答えと理由 ----
+function nzExtra(i){
+  if(typeof NAZO2==='undefined') return; const u=U[i], L=NAZO2[u.id]; if(!L||!L.length) return;
+  const anchor=document.getElementById('nzcard'); if(!anchor) return;
+  L.forEach((z,k)=>{ const id='nzx-'+k; const old=document.getElementById(id); if(old) old.remove();
+    const c=document.createElement('section'); c.className='nzcard nzx'; c.id=id; c.style.borderWidth='3px';
+    (k===0?anchor:document.getElementById('nzx-'+(k-1))).after(c); const key=u.id+'#'+k;
+    const r=()=>{ const zz=NZ[key]||{};
+      c.innerHTML=`<span class="lb" style="background:#3286BE">もう一歩の謎 ${k+1}</span><h3>${z.q}</h3>
+       <div class="nzopts">${z.o.map((o,j)=>`<button data-k="${j}" class="${zz.p===j?'on':''} ${zz.p!=null&&j===z.a?'ans':''}">${o}</button>`).join('')}</div>
+       <div class="nzmsg">${zz.p==null?'予想してから、答えを見よう。':`<span class="hit">${zz.p===z.a?'予想どおり！':'予想が外れた！ だから面白い。'}</span>　答え：<b>${z.o[z.a]}</b><br>${z.w}${z.link?`<br><a href="${(typeof THEORY_URL!=='undefined'&&/^#d/.test(z.link[1]))?THEORY_URL+z.link[1]:z.link[1]}" target="_blank" rel="noopener">${z.link[0]} →</a>`:''}`}</div>`;
+      c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ if((NZ[key]||{}).p!=null) return; NZ[key]={p:+b.dataset.k}; nzSave(); r(); });
+    }; r(); });
+}
+{ const _open=openUnit; openUnit=function(i,g){ _open.apply(this,arguments); nzExtra(i); }; }
+
+// ---- 導出ノート：基本原理から、図と式で一歩ずつ導く ----
+const DC={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#93BCD6',s:'#D8CFBE',g:'#5E6B86',w:'#fff'};
+const dg={
+ S:(w,h,...p)=>`<svg viewBox="0 0 ${w} ${h}" class="dfig" role="img"><rect width="${w}" height="${h}" fill="#fff"/>${p.join('')}</svg>`,
+ L:(x1,y1,x2,y2,c=DC.n,w=2,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`,
+ A:(x1,y1,x2,y2,c=DC.r,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=9; const p1=[x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)], p2=[x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)];
+   return `<line x1="${x1}" y1="${y1}" x2="${x2-6*Math.cos(a)}" y2="${y2-6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${p1} ${p2}" fill="${c}"/>`; },
+ T:(x,y,s,c=DC.n,fs=13,an='middle',b=700)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="${b}" text-anchor="${an}" font-family="'Zen Kaku Gothic New',sans-serif">${s}</text>`,
+ M:(x,y,s,c=DC.n,fs=15,an='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-style="italic" font-weight="700" text-anchor="${an}" font-family="'Times New Roman',serif">${s}</text>`,
+ R:(x,y,w,h,f=DC.m,st=DC.n,sw=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" stroke="${st}" stroke-width="${sw}"/>`,
+ P:(d,f='none',st=DC.n,w=2,da='')=>`<path d="${d}" fill="${f}" stroke="${st}" stroke-width="${w}"${da?` stroke-dasharray="${da}"`:''}/>`,
+ C:(x,y,r,f=DC.w,st=DC.n,w=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${st}" stroke-width="${w}"/>`,
+ B:(x1,x2,y,c=DC.n,w=6)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,
+ G:(x1,x2,y)=>{ let s=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${DC.n}" stroke-width="2"/>`; for(let x=x1+4;x<=x2;x+=7) s+=`<line x1="${x}" y1="${y}" x2="${x-6}" y2="${y+7}" stroke="${DC.n}" stroke-width="1"/>`; return s; },
+ Pin:(x,y)=>dg.P(`M${x},${y} l-11,18 h22z`,DC.w)+dg.G(x-16,x+16,y+18),
+ Rol:(x,y)=>dg.P(`M${x},${y} l-11,14 h22z`,DC.w)+dg.C(x-6,y+18,3.5)+dg.C(x+6,y+18,3.5)+dg.G(x-16,x+16,y+22),
+ Fix:(x,y1,y2,side=-1)=>{ let s=dg.L(x,y1,x,y2,DC.n,3); for(let y=y1+3;y<=y2;y+=7) s+=dg.L(x,y,x+side*7,y+6,DC.n,1); return s; },
+ W:(x1,x2,y,c=DC.r,n,lab)=>{ n=n||Math.max(3,Math.round((x2-x1)/22)); let s=dg.L(x1,y-28,x2,y-28,c,2); for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=dg.A(x,y-28,x,y-2,c,1.6);} return s+(lab?dg.M((x1+x2)/2,y-34,lab,c,14):''); },
+ Dim:(x1,x2,y,lab,c=DC.n)=>dg.L(x1,y,x2,y,c,1.2)+dg.L(x1,y-6,x1,y+6,c,1.2)+dg.L(x2,y-6,x2,y+6,c,1.2)+`<rect x="${(x1+x2)/2-String(lab).length*4-4}" y="${y-9}" width="${String(lab).length*8+8}" height="16" fill="#fff"/>`+dg.M((x1+x2)/2,y+5,lab,c,14),
+ Mo:(x,y,r,lab,ccw=false,c=DC.b)=>{ const s=ccw?0:1; const a0=-2.4,a1=1.4; const x0=x+r*Math.cos(a0),y0=y+r*Math.sin(a0),xe=x+r*Math.cos(a1),ye=y+r*Math.sin(a1);
+   const [sx,sy,ex,ey]=ccw?[xe,ye,x0,y0]:[x0,y0,xe,ye]; const t=ccw?a0:a1; const tx=ccw?Math.sin(t):-Math.sin(t), ty=ccw?-Math.cos(t):Math.cos(t);
+   return `<path d="M${sx},${sy} A${r},${r} 0 1 ${s} ${ex},${ey}" fill="none" stroke="${c}" stroke-width="2.2"/>`+dg.A(ex-tx*6,ey-ty*6,ex+tx*2,ey+ty*2,c,2.2)+(lab?dg.M(x+r+8,y-r+4,lab,c,14,'start'):''); },
+};
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const m=s=>`<span class="mm">${s}</span>`;
+(function(){ const s=document.createElement('style'); s.textContent=`
+.pfd{display:block;margin:6px 0 8px;padding:8px 10px;background:#12286B;color:#fff!important;font-weight:900;text-decoration:none;font-size:14px}
+.pfd:hover{background:#C62422}.pfdi{display:inline-block;margin-top:6px;font-weight:700;font-size:13px;color:#C62422}
+.dv h1{font-family:"Dela Gothic One";font-weight:400;font-size:clamp(26px,5vw,40px);color:#12286B;margin:6px 0 8px;line-height:1.3}.dv h1 b{color:#C62422;font-weight:400}
+.dv .lead{max-width:760px}
+.dprin{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0 20px}
+.dprin div{background:#fff;border:3px solid #12286B;padding:10px 12px}.dprin b{display:block;color:#C62422;font-size:16px}.dprin .mm{font-size:16px;white-space:normal}
+.dprin small{display:block;margin-top:6px;font-size:12px;line-height:1.6;color:#5E6B86}.dprin small a{color:#12286B}
+.dtoc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 20px}.dtoc a{border:2px solid #12286B;padding:3px 10px;font-weight:700;font-size:13px;color:#12286B;text-decoration:none;background:#fff}.dtoc a:hover{background:#12286B;color:#fff}
+.dch{background:#fff;border:3px solid #12286B;padding:14px 16px 16px;margin:0 0 22px;scroll-margin-top:70px}
+.dch>h2{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;color:#12286B;font-size:24px}
+.dch .from{font-size:13px;font-weight:700;margin:0 0 10px}.dch .from span{display:inline-block;background:#C62422;color:#fff;padding:1px 8px;margin:2px 4px 2px 0}
+.dit{border-top:2px dashed #93BCD6;padding:14px 0 4px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:start;scroll-margin-top:70px}
+.dit h3{grid-column:1/-1;margin:0;font-size:19px;color:#12286B}.dit h3 em{font-style:normal;color:#C62422}
+.dfig{width:100%;height:auto;border:2px solid #12286B;background:#fff;display:block}
+.dfcap{font-size:12px;color:#5E6B86;margin:4px 0 0;line-height:1.5}
+.dst{margin:0;padding:0;list-style:none;counter-reset:s}
+.dst li{counter-increment:s;position:relative;padding:6px 0 8px 36px;line-height:1.8;border-bottom:1px solid #eceae3}
+.dst li::before{content:counter(s);position:absolute;left:0;top:7px;width:26px;height:26px;border-radius:50%;background:#12286B;color:#fff;font-weight:900;text-align:center;line-height:26px;font-size:14px}
+.dst li.q{color:#C62422;font-weight:700}.dst li.q::before{content:"？";background:#C62422}
+.dst li.hide{display:none}
+.dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
+.mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
+.dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
+.tk{background:#fff;border:4px solid #12286B;padding:14px 16px 16px;margin:14px 0 20px;scroll-margin-top:70px}
+.tkh{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;font-size:22px;color:#12286B}.tkh b{color:#C62422;font-weight:400}
+.tkl{margin:0 0 10px;font-size:13px;color:#5E6B86}
+.tkp{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.tkpc{font:inherit;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;cursor:pointer;background:#fff;border:2px solid var(--c);border-top:8px solid var(--c);padding:8px 10px;color:#12286B}
+.tkpc b{display:block;color:var(--c);font-size:14px}.tkpc .mm{font-size:14px;white-space:normal}.tkpc small{display:block;font-size:11px;line-height:1.5;color:#5E6B86;margin-top:4px}
+.tkpc.on{background:var(--c);color:#fff}.tkpc.on b,.tkpc.on small{color:#fff}
+.tka{text-align:center;font-weight:900;color:#12286B;margin:10px 0;font-size:14px;letter-spacing:.1em}
+.tkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.tkgb{border:2px solid #12286B;padding:10px;background:#F4F3EF;display:flex;flex-direction:column}.tkgb h3{margin:0;font-size:17px;color:#12286B}.tkgb>p{margin:2px 0 8px;font-size:12px;color:#5E6B86;line-height:1.5}
+.tku{display:flex;flex-direction:column;gap:5px}
+.tkuc{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1.5px solid #93BCD6;padding:5px 8px;font-size:13px;font-weight:700;color:#12286B;text-decoration:none;transition:.2s}
+.tkuc:hover{border-color:#C62422}.tkuc span{display:flex;gap:3px;flex:none}.tkuc i{width:10px;height:10px;border-radius:50%;display:block}
+.tk.hl .tkuc{opacity:.25}.tk.hl .tkuc.lit{opacity:1;border-color:#C62422;box-shadow:0 0 0 2px #C62422 inset}
+.tka2{margin:10px 0 4px;font-size:12px;font-weight:900;color:#C62422;margin-top:auto;padding-top:10px}
+.tkuse{margin:0;padding-left:1.2em;font-size:13px;line-height:1.6}
+.tksh{margin-top:12px;border-top:2px dashed #93BCD6;padding-top:8px}.tksh summary{cursor:pointer;font-weight:900;color:#12286B}
+.tksh table{border-collapse:collapse;margin-top:8px;font-size:13px;width:100%}.tksh td,.tksh th{border:1px solid #93BCD6;padding:4px 8px;text-align:left}.tksh th{background:#12286B;color:#fff}
+@media(max-width:700px){.dit{grid-template-columns:1fr}}`; document.head.appendChild(s); })();
+const TH=typeof THEORY!=='undefined'?THEORY:null;
+const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
+const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
+function taikei(byP){
+  const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
+  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
+   <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
+   <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
+   <div class="tka">▼ 原理を組み合わせると ▼</div>
+   <div class="tkg">${(DPR.groups||[]).map(([gn,gd,ids,uses])=>`<div class="tkgb"><h3>${gn}</h3><p>${gd}</p><div class="tku">${ids.filter(id=>DER[id]).map(id=>`<a href="#d-${id}" class="tkuc" data-ps="${DER[id].p.join(' ')}">${uname(id)}<span>${DER[id].p.map(k=>`<i style="background:${col(k)}"></i>`).join('')}</span></a>`).join('')}</div>
+     <div class="tka2">▼ 使う場面</div><ul class="tkuse">${uses.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}</div>
+   ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
+   <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
+}
+function deriveView(){
+  if(typeof DER==='undefined') return;
+  cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
+  const nm=TH?TH.name:document.title.replace(/ラボ$/,'');
+  const byP={}; U.forEach(u=>{ const d=DER[u.id]; if(d) d.p.forEach(k=>{ (byP[k]=byP[k]||[]).push(u); }); });
+  $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
+   <p class="lead">${DPR.lead}</p>
+   ${taikei(byP)}
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
+   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+     <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
+     ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
+       <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
+       <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
+     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+  const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
+  $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
+  $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
+  $main.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>step(b.dataset.all,true));
+  const id=location.hash.slice(1); const el=id&&id!=='d'?document.getElementById(id):null;
+  if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),30); else window.scrollTo(0,0);
+}
+{ const _h=home; home=function(){ if(TH||/^#d(-|$)/.test(location.hash)) return deriveView(); return _h.apply(this,arguments); };
+  const _o=openUnit; openUnit=function(i,g){ _o.apply(this,arguments); const u=U[i]; if(typeof DER==='undefined'||!DER[u.id]) return; const pf=$main.querySelector('.pf h3');
+    const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; const tg=TU?' target="_blank" rel="noopener"':'';
+    if(pf){ pf.insertAdjacentHTML('afterend',`<a class="pfd" href="${TU}#d-${u.id}"${tg}>理論ラボ：基本原理から、図と式で一歩ずつ導く →</a>`);
+      $main.querySelectorAll('.pf details .pfb').forEach(b=>b.insertAdjacentHTML('beforeend',`<a class="pfdi" href="${TU}#d-${u.id}"${tg}>理論ラボで、図つきの導出を見る →</a>`)); } };
+  window.addEventListener('hashchange',()=>{ if((TH||/^#d(-|$)/.test(location.hash)) && cur==null) deriveView(); });
+  const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>{ if(location.hash) history.replaceState(null,'',location.pathname+location.search); home(); };
+  const _hm=home; home=function(){ _hm.apply(this,arguments); if(/^#d/.test(location.hash)) return; const f=$main.querySelector('.nzintro')||$main.querySelector('.filters'); if(f&&typeof DER!=='undefined'&&!TH){ const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; f.insertAdjacentHTML('beforebegin',`<a class="pfd" href="${TU}#taikei"${TU?' target="_blank" rel="noopener"':''} style="margin:0 0 12px">理論ラボ：${document.title.replace(/ラボ$/,'')}の体系図と、基本原理からの導出（図つき）→</a>`+(typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:0 0 12px">実践ラボ：本物の案件を、依頼から図面・コストまで設計してみる →</a>`:'')); } };
+}
+
+const DPR={title:'5つの基本原理',lead:'構造力学の公式は、覚えるものではありません。下の5つの原理だけを出発点にして、図を描き、つりあいを書けば、全部自分で作れます。各導出は「次の一歩」で1行ずつ進みます。次の行を読む前に、自分で考えてみてください。',
+groups:[
+ ['力をつかむ','荷重が、どの道を通って支点まで流れるか',['force','judge','beam','frame','truss','il','arch'],['歩道橋の桁の曲げを出す','トラックが渡る橋の最大の曲げ']],
+ ['断面で受ける','流れてきた力に、部材が耐えられるか',['section','stress','strain'],['鉄骨・コンクリートの梁の大きさを決める','夏と冬の伸び縮み']],
+ ['変形と安定','たわみすぎ・座屈・崩壊を防ぐ',['defl','buckle','energy','indet','plastic'],['床のたわみの制限','柱の座屈チェック','ラーメンの設計']],
+ ['揺れ','地震や風で、建物がどう揺れるか',['vib'],['耐震設計（柱の力の分担）']],
+],
+list:[
+ ['eq','① 力のつりあい','ΣH＝0, ΣV＝0, ΣM＝0','止まっている物は、どの向きにも動かず、どこを中心にも回らない（ニュートンの第1法則）。'],
+ ['comp','② 変形の適合','平面保持・つながり','部材は切れたり重なったりしない。曲がっても断面は平らなまま（ベルヌーイ・ナビエの仮定）。'],
+ ['hooke','③ フックの法則','σ＝Eε','材料は、応力に比例してひずむ（弾性の範囲で）。'],
+ ['sup','③′ 重ね合わせ','δ＝δ₁＋δ₂','③から出る道具。力と変形が比例する範囲なら、荷重ごとの結果を別々に出して足してよい。'],
+ ['work','④ 仕事とエネルギー','外力の仕事＝ひずみエネルギー','力がした仕事は、部材の中にばねのエネルギーとしてたまる。'],
+ ['motion','⑤ 運動の法則','F＝ma','つりあっていないと、その分だけ加速する（振動の出発点）。'],
+]};
+const DER=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim,Mo}=dg; const n=DC.n,r=DC.r,b=DC.b;
+return {
+force:{p:['eq'],it:[
+ {t:'力の合成',goal:'R＝√(X²＋Y²)',fig:S(320,180,A(60,140,200,140,b),A(60,140,120,50,b),L(200,140,260,50,n,1,'4 3'),L(120,50,260,50,n,1,'4 3'),A(60,140,260,50,r,3),M(130,160,'P₁',b),M(80,85,'P₂',b),M(170,85,'R',r,16)),cap:'2つの力の合力は、平行四辺形の対角線。',
+  s:['力は「大きさ」と「向き」をもつベクトル。足すときは、矢印をつなげる（平行四辺形をつくる）。',
+   {q:'斜めの力どうしは、どうやって足す？'},
+   `それぞれを横と縦の成分に分ける：${m('X＝ΣP cosθ')}、${m('Y＝ΣP sinθ')}。横どうし、縦どうしなら、ふつうの足し算ができる。`,
+   `合力の大きさは三平方の定理で<span class="eq">${m('R＝√(X²＋Y²)')}</span>向きは ${m('tanα＝Y/X')}。`],key:'斜めの力は「成分に分けて足す」。これが全ての計算の基本。'},
+ {t:'力のモーメント',goal:'M＝P×a',fig:S(320,170,B(40,280,110,n,10),C(40,110,6,DC.w),A(240,30,240,104,r),L(40,110,40,140,n,1),L(240,110,240,140,n,1),Dim(40,240,140,'a'),Mo(40,110,26,'M',false),M(255,50,'P',r)),cap:'スパナを回す効果は、力の大きさと腕の長さで決まる。',
+  s:['ドアを押すとき、ちょうつがいの近くを押すと開きにくい。回す効果は、力だけでは決まらない。',
+   {q:'回す効果を、ひとつの数で表すには？'},
+   `回す中心から、力の作用線までの<b>垂直距離</b>（腕）a をとる。回す効果は<span class="eq">${m('M＝P × a')}</span>`,
+   '力を作用線の上でずらしても、腕は変わらない。だから M も変わらない。',
+   `いくつかの力の合力 R のモーメントは、それぞれの力のモーメントの和に等しい（バリニオンの定理）：${m('R·a<sub>R</sub>＝ΣP<sub>i</sub>a<sub>i</sub>')}。合力の位置はこれで求める。`]},
+ {t:'つりあいの3条件',goal:'ΣH＝0, ΣV＝0, ΣM＝0',fig:S(320,170,P('M60,120 L160,40 L260,120Z','#eef3f8'),A(60,120,20,150,r),A(260,120,300,150,r),A(160,40,160,4,r),M(30,165,'P₁',r),M(290,165,'P₂',r),M(175,18,'P₃',r),T(160,100,'止まっている物体',n,13)),
+  s:['止まっている物体は、横にも縦にも動かない。だから、横向きの力の合計と縦向きの力の合計は 0：',`<span class="eq">${m('ΣH＝0,　ΣV＝0')}</span>`,
+   {q:'力の合計が 0 なら、それで十分？'},
+   '向き合った2つの力が、ずれた線の上にあると（偶力）、合計は 0 でも物体は回る。',
+   `だから「どこを中心にしても回らない」条件も必要：<span class="eq">${m('ΣM＝0')}</span>平面の問題では、この3つの式で未知の力を3つまで求められる。`],key:'構造力学の問題の9割は、この3式を正しく立てることで解ける。'},
+]},
+judge:{p:['eq'],it:[
+ {t:'支点が出す反力の数',fig:S(320,150,Pin(50,70),Rol(160,70),Fix(270,40,100,1),B(270,70,305,n,6),A(50,128,50,92,b),A(10,88,38,88,b),A(160,128,160,98,b),A(305,120,305,82,b),A(245,95,265,95,b),Mo(285,70,18,'',true),T(50,30,'ピン：2',n,13),T(160,30,'ローラー：1',n,13),T(270,30,'固定：3',n,13)),
+  s:['支点は、動きを止める代わりに力（反力）を出す。止める動きの数だけ反力がある。',
+   'ローラー：転がれるので、横には動ける。止めるのは上下だけ → 反力1つ（鉛直）。',
+   'ピン：横も上下も止めるが、回転は自由 → 反力2つ（水平・鉛直）。',
+   '固定：横・上下・回転をすべて止める → 反力3つ（水平・鉛直・モーメント）。']},
+ {t:'静定・不静定の判別',goal:'m＝n＋s＋r−2k',fig:S(320,175,B(40,280,70,n,5),Pin(40,76),Rol(280,76),T(160,40,'反力 3、つりあい式 3 → 静定',n,13),B(40,280,130,DC.g,5),Pin(40,136),Pin(280,136),T(160,110,'反力 4 ＞ 3 → 1次不静定',r,13)),
+  s:['平面の物体1つでは、つりあい式は3つ。未知の反力が3つなら、つりあいだけで全部決まる（静定）。',
+   {q:'反力が4つあったら？'},
+   '式が足りない。つりあいだけでは決まらず、変形の条件（適合）も使う必要がある（不静定）。足りない数が不静定次数。',
+   `骨組全体では、未知数（反力の数 n、部材の数 s、剛接合でつながる部材の数 r）と、使える式（節点 k 個 × 2）の差をとる：<span class="eq">${m('m＝n＋s＋r−2k')}</span>`,
+   'm＜0 は不安定（動いてしまう）、m＝0 は静定、m＞0 は m 次の不静定。'],key:'不静定は「つりあい＋変形」で解く。静定は「つりあいだけ」で解ける。'},
+]},
+beam:{p:['eq'],it:[
+ {t:'単純梁の反力',goal:'R＝wL/2',fig:S(320,170,W(40,280,80,r,10,'w'),B(40,280,82),Pin(40,86),Rol(280,86),A(40,150,40,112,b),A(280,150,280,112,b),M(55,145,'R<tspan font-size="10">A</tspan>',b,14,'start'),M(265,145,'R<tspan font-size="10">B</tspan>',b,14,'end'),Dim(40,280,162,'L')),
+  s:['等分布荷重 w（1 m あたりの重さ）がのった長さ L の梁。全体の重さは wL で、真ん中（L/2）に集まっていると考えてよい。',
+   {q:'左端 A を中心にした、回す力のつりあいを書くと？'},
+   `${m('ΣM<sub>A</sub>＝0')}：${m('R<sub>B</sub> × L − wL × L/2＝0')}`,
+   `<span class="eq">${m('R<sub>B</sub>＝wL/2')}</span>鉛直のつりあい ${m('R<sub>A</sub>＋R<sub>B</sub>＝wL')} から ${m('R<sub>A</sub>＝wL/2')}。`]},
+ {t:'切って、曲げモーメントを出す',goal:'M＝wL²/8',fig:S(320,190,W(40,170,80,r,6,'w'),B(40,170,82),Pin(40,86),L(170,40,170,120,r,2,'5 4'),A(40,150,40,112,b),M(55,145,'wL/2',b,14,'start'),A(105,20,105,76,r,3),M(118,30,'wx',r,14,'start'),Mo(170,82,18,'M',true),Dim(40,170,168,'x'),Dim(105,170,184,'x/2'),T(250,90,'切り口',r,13)),
+  s:['梁を左端から x の位置で切り、左側だけを取り出す。切り口には、内側の力 M（曲げモーメント）が働いている。',
+   '左側にのっている荷重は wx。その重さは、左側の真ん中、切り口から x/2 の位置に集まる。',
+   {q:'切り口のまわりのつりあいを書くと？'},
+   `${m('M＝(wL/2) × x − wx × x/2')}<span class="eq">${m('M(x)＝')}${fr(m('wx'),'2')}${m('(L − x)')}</span>`,
+   `放物線。いちばん大きいのは真ん中 x＝L/2：<span class="eq">${m('M<sub>max</sub>＝wL²/8')}</span>`],key:'切って、片側だけでつりあいを書く（切断法）。これが断面力の全て。'},
+ {t:'荷重・せん断力・曲げの関係',goal:'dM/dx＝Q',fig:PFIG&&PFIG.beamcut?`<div>${PFIG.beamcut.replace('<svg','<svg class="dfig"')}</div>`:'',
+  s:['梁から、長さ dx のとても短い1切れを取り出す。左の切り口に Q と M、右の切り口に Q＋dQ と M＋dM が働く。上から w dx の荷重。',
+   {q:'上下のつりあいからわかることは？'},
+   `${m('Q − (Q＋dQ) − w dx＝0')} → <span class="eq">${m('dQ/dx＝−w')}</span>`,
+   `右端まわりの回転のつりあい（dx² の項は小さいので消す）：${m('M＋Q dx − (M＋dM)＝0')} → <span class="eq">${m('dM/dx＝Q')}</span>`,
+   'だから、M が最大になるのは Q＝0 の点（グラフの山の頂上は傾き 0）。Q図の面積を足すと M図になる。'],key:'w → Q → M は、積分でつながっている。図を描くときの最強の道具。'},
+ {t:'片持ち梁（ベランダ）',goal:'M＝wL²/2',fig:S(320,160,Fix(40,40,120),W(40,280,80,r,10,'w'),B(40,280,82),Mo(40,82,20,'M',true,b),Dim(40,280,140,'L'),T(210,120,'先端は自由',n,12)),
+  s:['根元が固定された梁。先端から根元まで、全部の荷重 wL を根元が支える。',
+   '荷重 wL は、根元から L/2 の位置に集まる。',
+   `根元のつりあい：<span class="eq">${m('M＝wL × L/2＝wL²/2')}</span>単純梁の真ん中（wL²/8）の4倍。上側が引っ張られるので、鉄筋は上に入れる。`]},
+]},
+frame:{p:['eq'],it:[
+ {t:'ヒンジで切り分ける（ゲルバー梁）',fig:S(320,150,B(30,290,70),Fix(30,40,100),C(180,70,6,DC.w),Rol(290,74),A(240,20,240,64,r),M(252,30,'P',r,14,'start'),T(180,105,'ヒンジ：M＝0',r,13),Dim(180,290,135,'b')),
+  s:['ヒンジ（蝶番）は自由に回るので、曲げを伝えられない。ヒンジでは M＝0。',
+   {q:'M＝0 という条件を、どう使う？'},
+   'ヒンジで切ると、右側の梁は「ヒンジとローラーで支えられた単純梁」になる。右側だけでつりあいを解いて、ヒンジの力を出す。',
+   'その力を、左側の片持ち梁の先端にかかる荷重として扱えば、左側も解ける。式が1つ増えた分、静定のまま長い梁が作れる。']},
+ {t:'3ヒンジラーメンの水平反力',goal:'H＝M₀/h',fig:S(320,190,L(60,150,60,50,n,5),L(260,150,260,50,n,5),L(60,50,260,50,n,5),C(160,50,6,DC.w),Pin(60,154),Pin(260,154),W(60,260,48,r,9,'w'),A(20,140,52,140,b),A(300,140,268,140,b),M(22,132,'H',b,14),M(298,132,'H',b,14),Dim(60,260,184,'L'),T(160,80,'頂点ヒンジ',r,12)),
+  s:['両足がピンで、反力は4つ（左右の H と V）。式は3つだが、頂点のヒンジで M＝0 という条件が1つ増えて、静定になる。',
+   '全体のつりあいから鉛直反力 V＝wL/2（左右対称）。',
+   {q:'頂点ヒンジで左半分を切り取ると？'},
+   `左半分の頂点まわりのつりあい：${m('V × L/2 − (wL/2) × L/4 − H × h＝0')}`,
+   `${m('H＝')}${fr(m('wL²/8'),m('h'))}<span class="eq">${m('H＝M₀ / h')}</span>（M₀ は同じ長さの単純梁の真ん中の M）。高さ h が低いほど、足を外に開く力 H が大きい。`]},
+]},
+truss:{p:['eq'],it:[
+ {t:'節点法',fig:S(320,170,L(60,130,160,50,n,4),L(160,50,260,130,n,4),L(60,130,260,130,n,4),C(60,130,5,DC.w),C(160,50,5,DC.w),C(260,130,5,DC.w),A(160,10,160,44,r),M(172,20,'P',r,14,'start'),A(60,130,95,102,b),A(60,130,110,130,b),M(85,98,'N₁',b,14),M(118,124,'N₂',b,14,'start'),A(60,170,60,138,DC.g),T(36,160,'R',DC.g,13)),
+  s:['トラスの部材は、両端がピン。だから部材には軸方向の力（引張か圧縮）しか働かない。',
+   '1つの節点を切り取ると、そこに集まる部材の力と外力が、1点に集まる力のつりあいになる。',
+   {q:'1つの節点で使える式はいくつ？'},
+   `回転の式は使えない（全部1点を通る）ので、${m('ΣH＝0, ΣV＝0')} の2つ。未知の部材力が2つ以下の節点から順に解いていく。`,
+   `例：左の支点で ${m('ΣV＝0')}：${m('R＋N₁ sinθ＝0')}、${m('ΣH＝0')}：${m('N₁ cosθ＋N₂＝0')}。`]},
+ {t:'切断法（リッター法）',goal:'N＝M/h',fig:S(320,180,L(30,130,290,130,n,4),L(30,50,290,50,n,4),...[30,95,160,225,290].map(x=>L(x,50,x,130,n,3)),L(95,130,160,50,n,3),L(160,50,225,130,n,3),L(128,30,128,150,r,2,'6 4'),C(160,50,5,r),A(128,130,175,130,b),T(178,148,'N（下弦材）',b,12,'start'),L(170,50,170,130,DC.g,1),M(184,95,'h',DC.g,14),T(160,24,'他の2本の交点',r,12)),
+  s:['知りたい部材を含む3本を切って、片側を取り出す。',
+   {q:'未知数が3つ。1つだけ一発で出すには？'},
+   'ほかの2本の部材の作用線が交わる点を、モーメントの中心に選ぶ。その2本の力は腕が 0 になり、式から消える。',
+   `下弦材なら、上の節点まわりで：${m('N × h＝M')}（M はその位置の単純梁としての曲げモーメント）<span class="eq">${m('N＝M / h')}</span>`,
+   'トラス全体は1本の梁のように曲がる。下弦材は引張、上弦材は圧縮。高さ h が大きいほど部材力は小さい。'],key:'モーメントの中心を上手に選ぶと、未知数を1つずつ取り出せる。'},
+]},
+section:{p:['eq'],it:[
+ {t:'図心',goal:'y₀＝ΣAy/ΣA',fig:S(320,170,R(110,30,100,24,DC.m),R(148,54,24,90,DC.s),L(60,150,260,150,n,1),A(70,150,70,42,DC.g,1.2),A(90,150,90,99,DC.g,1.2),M(62,38,'y₁',DC.g,13,'end'),M(84,95,'y₂',DC.g,13,'end'),C(160,72,4,r,r),T(230,76,'図心',r,12,'start')),
+  s:['図心は、断面の「重さの中心」。そこを支えると、断面が傾かない点。',
+   {q:'T形の図心の高さは？'},
+   '断面を長方形 ①② に分ける。それぞれの面積 A と、図心の高さ y はすぐわかる。',
+   `下の線のまわりのモーメントのつりあい（重さ＝面積とみなす）：${m('(A₁＋A₂) y₀＝A₁y₁＋A₂y₂')}<span class="eq">${m('y₀＝ΣAy / ΣA')}</span>`]},
+ {t:'断面二次モーメント',goal:'I＝bh³/12',fig:S(320,190,R(110,25,100,140,'#eef3f8'),L(90,95,230,95,r,1.5,'6 4'),R(110,58,100,10,DC.m,n,1),A(250,95,250,62,DC.g,1.2),M(258,82,'y',DC.g,14,'start'),M(220,66,'dy',n,13,'start'),Dim(110,210,182,'b'),L(80,25,80,165,n,1.2),M(70,100,'h',n,14,'end'),T(244,100,'中立軸',r,12,'start')),
+  s:['曲げのとき、中立軸から離れた所ほど大きく伸び縮みし、大きな力を出す（「応力度」の導出を参照）。',
+   '断面を、中立軸から y の位置の厚さ dy の細い帯に分ける。帯の面積は b dy。',
+   {q:'「離れているほど効く」をどう足し合わせる？'},
+   `力は y に比例し、その力の腕も y。だから効き目は ${m('y² dA')}。全部足すと<span class="eq">${m('I＝∫y² dA')}</span>`,
+   `長方形なら ${m('I＝∫<sub>−h/2</sub><sup>h/2</sup> y² b dy＝b[y³/3]')} を計算して<span class="eq">${m('I＝bh³/12')}</span>高さの3乗。板を立てると曲がりにくいのはこのため。`]},
+ {t:'平行軸の定理',goal:'I＝I₀＋Ae²',fig:S(320,160,R(120,40,80,40,DC.m),L(90,60,230,60,DC.g,1.2,'5 4'),L(90,130,230,130,r,1.5,'6 4'),A(250,130,250,62,n,1.2),M(258,100,'e',n,14,'start'),T(234,56,'自分の図心',DC.g,11,'start'),T(234,128,'全体の中立軸',r,11,'start')),
+  s:['T形やH形の I は、長方形に分けて足す。でも、各長方形の中心は全体の中立軸からずれている。',
+   `距離 e だけずれた軸まわり：${m('∫(y＋e)² dA＝∫y² dA＋2e∫y dA＋e²∫dA')}`,
+   {q:'真ん中の項はどうなる？'},
+   `${m('∫y dA')} は自分の図心まわりの1次モーメントで、図心の定義から 0。<span class="eq">${m('I＝I₀＋A e²')}</span>`,
+   `最後に、断面係数 ${m('Z＝I / y<sub>max</sub>')}、断面二次半径 ${m('i＝√(I/A)')}。`]},
+]},
+stress:{p:['eq','comp','hooke','sup'],it:[
+ {t:'曲げ応力',goal:'σ＝My/I',fig:typeof PFIG!=='undefined'&&PFIG.bend?PFIG.bend.replace('<svg','<svg class="dfig"'):'',cap:'曲げられた梁。上が縮み、下が伸びる。',
+  s:[`<b>適合（平面保持）</b>：曲げても断面は平らなまま。半径 ρ で曲がると、中立軸から y の位置のひずみは<span class="eq">${m('ε＝y / ρ')}</span>`,
+   `<b>フックの法則</b>：${m('σ＝Eε＝E y / ρ')}。応力は、中立軸からの距離に比例する（三角形の分布）。`,
+   {q:'中立軸はどこにある？'},
+   `<b>つりあい（軸方向）</b>：曲げだけなら軸力 0。${m('∫σ dA＝(E/ρ)∫y dA＝0')} → ${m('∫y dA＝0')}、中立軸は図心を通る。`,
+   `<b>つりあい（回転）</b>：応力が作るモーメントが M。${m('M＝∫σ y dA＝(E/ρ)∫y² dA＝EI/ρ')}`,
+   `2式から ρ を消すと<span class="eq">${m('σ＝My / I')}</span>いちばん外側（y＝y<sub>max</sub>）で最大：${m('σ<sub>max</sub>＝M / Z')}。`],key:'3つの原理（適合・フック・つりあい）が全部そろって、初めて出てくる式。'},
+ {t:'せん断応力',goal:'τ<sub>max</sub>＝1.5Q/A',fig:S(320,170,R(80,30,160,110,'#eef3f8'),R(80,30,160,40,DC.m),L(60,85,260,85,r,1.2,'6 4'),L(80,70,240,70,n,2),A(160,70,200,70,b),M(206,66,'τ',b,15,'start'),P('M250,30 L290,30 L290,140 L250,140',DC.w,n,1),P('M250,30 Q300,85 250,140','none',r,2),T(286,160,'τ の分布',r,11)),
+  s:['梁は、薄い板を重ねたもののように、層どうしがずれようとする。それを止めるのがせん断応力 τ。',
+   '中立軸から y より外側の部分を取り出す。その左右の切り口では、曲げ応力の合計が M の差の分だけ違う。',
+   `差を、境目の面（幅 b）のせん断で止める：${m('τ b dx＝(dM/I) S')}、${m('dM/dx＝Q')} より<span class="eq">${m('τ＝QS / (Ib)')}</span>（S は取り出した部分の、中立軸まわりの1次モーメント）`,
+   `長方形の中立軸で S＝b(h/2)(h/4)＝bh²/8、I＝bh³/12 を入れると<span class="eq">${m('τ<sub>max</sub>＝1.5 Q / A')}</span>平均の1.5倍。`]},
+ {t:'偏心荷重と断面の核',goal:'σ＝N/A ± Ne/Z',fig:S(320,170,R(110,50,100,80,DC.m),A(180,10,180,48,r),M(192,22,'N',r,14,'start'),L(160,50,160,130,DC.g,1.2,'4 3'),Dim(160,180,40,'e'),T(160,155,'圧縮＋曲げ',n,12)),
+  s:['柱の真ん中からずれた所（偏心 e）を押すと、押す力 N に加えて、曲げ M＝Ne がかかる。',
+   `<b>重ね合わせ</b>：一様な圧縮 ${m('N/A')} と曲げ ${m('M/Z')} を足す<span class="eq">${m('σ＝N/A ± Ne/Z')}</span>`,
+   {q:'引っ張りが出ないためには？'},
+   `${m('N/A − Ne/Z ≧ 0')} → ${m('e ≦ Z/A')}。長方形なら ${m('Z/A＝h/6')}。この範囲を「断面の核」という。石やレンガの柱は、ここに荷重をのせる。`]},
+ {t:'主応力とモールの円',goal:'σ₁,₂＝σ/2 ± √((σ/2)²＋τ²)',fig:S(320,180,L(20,100,300,100,n,1.2),L(60,20,60,170,n,1.2),C(170,100,70,'#eef3f8',r,2),L(130,43,210,157,b,1.5),C(130,43,4,b,b),C(210,157,4,b,b),C(100,100,4,r,r),C(240,100,4,r,r),M(96,90,'σ₂',r,14,'end'),M(246,90,'σ₁',r,14,'start'),M(290,115,'σ',n,14),M(70,30,'τ',n,14,'start')),
+  s:['同じ点でも、切る向きを変えると、面に働く σ と τ が変わる。',
+   '角度 θ の面のつりあいを書くと、σ と τ の組は、円の上を動くことがわかる（モールの応力円）。',
+   {q:'τ＝0 になる向きでは、何が起きている？'},
+   `円が横軸と交わる2点。そこでは τ＝0 で、σ がいちばん大きい（主応力）。<span class="eq">${m('σ<sub>1,2</sub>＝σ/2 ± √((σ/2)²＋τ²)')}</span>コンクリートの斜めひび割れは、この最大引張の向きに直角に入る。`]},
+]},
+strain:{p:['hooke','comp','eq'],it:[
+ {t:'伸び',goal:'δ＝PL/(EA)',fig:S(320,130,Fix(30,40,90),R(30,52,200,26,DC.m),R(230,52,20,26,DC.s),A(250,65,300,65,r),M(290,55,'P',r,14),Dim(30,230,108,'L'),Dim(230,250,108,'δ')),
+  s:[`応力の定義：${m('σ＝P / A')}（1 mm² あたりの力）`,`ひずみの定義：${m('ε＝δ / L')}（1 mm あたりの伸び）`,
+   `<b>フックの法則</b> ${m('σ＝Eε')} に入れると ${m('P/A＝E δ/L')}<span class="eq">${m('δ＝PL / (EA)')}</span>EA は「伸びにくさ」。`]},
+ {t:'温度応力',goal:'σ＝EαΔT',fig:S(320,130,Fix(40,40,90),Fix(280,40,90,1),R(40,52,240,26,DC.m),A(160,40,190,40,r),T(175,32,'伸びたい αΔTL',r,12),A(275,100,245,100,b),T(220,118,'壁が押し戻す',b,12)),
+  s:['自由なら、温度が ΔT 上がると ${m(\'αΔT L\')} だけ伸びる。'.replace('${m(\'αΔT L\')}',m('αΔT L')),
+   {q:'両端が壁で動けなかったら？'},
+   '壁が押し戻す力 P で縮められ、合計の伸びは 0（適合）。',
+   `${m('αΔT L − PL/(EA)＝0')} → ${m('P/A＝EαΔT')}<span class="eq">${m('σ＝E α ΔT')}</span>長さに関係しない。鋼で30 ℃なら約74 N/mm²。橋にローラーと伸縮装置がある理由。`]},
+ {t:'合成部材',fig:S(320,140,R(60,40,200,20,DC.s),R(60,60,200,20,DC.m),R(60,80,200,20,DC.s),R(60,30,200,8,n),A(160,4,160,28,r),M(172,14,'P',r,14,'start'),T(290,94,'材料1',n,11),T(290,74,'材料2',n,11)),
+  s:['2つの材料（例：コンクリートと鉄筋）を一緒に押す。',
+   '<b>適合</b>：一緒に縮むので、どちらも同じ δ（同じひずみ）。',
+   `<b>フック</b>：${m('P<sub>i</sub>＝E<sub>i</sub>A<sub>i</sub> δ / L')}。<b>つりあい</b>：${m('P＝P₁＋P₂')}`,
+   `${m('δ＝PL / (E₁A₁＋E₂A₂)')}。硬い材料（E が大きい方）ほど、多くの力を受け持つ。`]},
+]},
+defl:{p:['comp','hooke','eq'],it:[
+ {t:'たわみの方程式',goal:'EI y″＝−M',fig:S(320,140,P('M40,50 Q160,120 280,50',DC.w,n,6),L(40,50,280,50,DC.g,1,'4 3'),A(160,50,160,84,r,1.5),M(170,72,'y',r,14,'start'),P('M160,150 m0,0','none'),T(160,130,'曲率 1/ρ',n,12)),
+  s:[`「曲げ応力」の導出で出た ${m('M＝EI / ρ')} を使う。曲がり具合（曲率）は ${m('1/ρ＝M / (EI)')}。`,
+   {q:'曲率を、たわみ y で表すと？'},
+   `たわみが小さいとき、曲率はたわみの2回微分：${m('1/ρ ≈ d²y/dx²')}（傾きの変わり方）。`,
+   `<span class="eq">${m('EI y″＝−M(x)')}</span>（下向きのたわみを正、下に凸に曲げる M を正としたときの符号）。M(x) を2回積分すると、たわみが出る。`]},
+ {t:'片持ち梁の先端',goal:'δ＝PL³/(3EI)',fig:S(320,150,Fix(40,30,110),P('M40,60 Q180,62 280,100','none',n,6),L(40,60,280,60,DC.g,1,'4 3'),A(280,20,280,94,r),M(292,34,'P',r,14,'start'),Dim(40,280,135,'L'),A(296,62,296,98,b,1.5),M(304,86,'δ',b,14,'start')),
+  s:[`先端から x の位置の曲げは ${m('M＝−Px')}（上が引っ張られる）。根元を原点に取り直すと ${m('EI y″＝P(L − x)')}。`,
+   `1回積分（根元で傾き0）：${m('EI y′＝P(Lx − x²/2)')}`,
+   `2回積分（根元でたわみ0）：${m('EI y＝P(Lx²/2 − x³/6)')}`,
+   `先端 x＝L：<span class="eq">${m('δ＝PL³ / (3EI)')}</span>長さの3乗。`]},
+ {t:'単純梁・等分布',goal:'δ＝5wL⁴/(384EI)',fig:S(320,140,W(40,280,60,r,10,'w'),P('M40,62 Q160,110 280,62','none',n,6),Pin(40,66),Rol(280,66),A(160,62,160,84,b,1.5),M(170,80,'δ',b,14,'start')),
+  s:[`「梁」の導出から ${m('M(x)＝(w/2)(Lx − x²)')}。${m('EI y″＝−M')}（下向き正なら ${m('EI y″＝M')} の向きで書く）。`,
+   `2回積分：${m('EI y＝(w/24)(x⁴ − 2Lx³＋L³x)')}（両端で y＝0 になるように積分定数を決める）`,
+   `真ん中 x＝L/2 を入れると<span class="eq">${m('δ＝5wL⁴ / (384EI)')}</span>長さの4乗。スパン2倍で16倍たわむ。`]},
+ {t:'モールの定理',fig:S(320,150,B(40,280,50),Pin(40,54),Rol(280,54),P('M40,90 L160,130 L280,90Z','#fbe3e2',r,2),T(160,150,'M/EI を「荷重」とみなす',r,12)),
+  s:['たわみの式 ${m("y″＝−M/(EI)")} と、梁の式 ${m("M″＝−w")} は、同じ形をしている。'.replace('${m("y″＝−M/(EI)")}',m('y″＝−M/(EI)')).replace('${m("M″＝−w")}',m('M″＝−w')),
+   {q:'同じ形なら、どう使える？'},
+   'M/EI の図を「仮の荷重」として梁にのせ、その梁の「せん断力」を求めると、それがたわみ角になる。「曲げモーメント」を求めると、それがたわみになる。',
+   '積分をしなくても、図の面積と重心だけでたわみが出せる。']},
+]},
+buckle:{p:['eq','hooke','comp'],it:[
+ {t:'オイラーの座屈荷重',goal:'P＝π²EI/l²',fig:S(320,200,Pin(160,170),A(160,10,160,30,r),M(172,20,'P',r,14,'start'),P('M160,32 Q210,100 160,168','none',n,6),L(160,32,160,168,DC.g,1,'4 3'),A(160,100,183,100,b,1.5),M(190,104,'y',b,14,'start'),C(160,32,5,DC.w)),
+  s:['真っすぐな柱を押す。少しだけ横に y たわんだとする。',
+   {q:'たわんだ柱には、何が起きる？'},
+   `押す力 P が、腕 y で柱を曲げる：${m('M＝P y')}。たわみの式 ${m('EI y″＝−P y')}。`,
+   `解は ${m('y＝A sin(kx)')}、${m('k＝√(P/EI)')}。両端で y＝0 だから ${m('kl＝π')}（一番小さい解）。`,
+   `<span class="eq">${m('P＝π²EI / l²')}</span>この力で、柱はまっすぐでも曲がっても、どちらでもつりあえる。少しの揺れで、ぐにゃっと曲がる（座屈）。`],key:'材料の強さではなく、曲がりにくさ EI と長さで決まる。'},
+ {t:'座屈長さ',fig:S(320,170,...[[40,'両端ピン','l'],[120,'固定−自由','2l'],[200,'固定−ピン','0.7l'],[280,'両端固定','0.5l']].map(([x,t,lk],i)=>L(x,30,x,140,DC.g,1,'3 3')+P(i===0?`M${x},30 Q${x+24},85 ${x},140`:i===1?`M${x},140 Q${x},70 ${x+30},30`:i===2?`M${x},140 Q${x+2},90 ${x+18},70 Q${x+20},40 ${x},30`:`M${x},30 Q${x},55 ${x+10},70 Q${x+20},85 ${x+10},110 Q${x},125 ${x},140`,'none',n,4)+M(x,160,lk,r,14)+T(x,20,t,n,11))),
+  s:['端の止め方で、曲がった形が変わる。',
+   '曲がった形の中で、「両端ピンの柱と同じ半波（サインの山1つ）」になっている長さを座屈長さ l<sub>k</sub> という。',
+   `${m('P＝π²EI / l<sub>k</sub>²')}。両端固定なら l<sub>k</sub>＝0.5l で、4倍強い。`,
+   `細長比 ${m('λ＝l<sub>k</sub> / i')} を使うと ${m('σ＝π²E / λ²')}。λ が大きい（細長い）ほど弱い。`]},
+]},
+energy:{p:['work','hooke'],it:[
+ {t:'ひずみエネルギー',goal:'U＝½Pδ',fig:S(320,170,L(50,140,280,140,n,1.5),L(50,140,50,20,n,1.5),P('M50,140 L230,40 L230,140Z','#fbe3e2',r,2),M(290,155,'δ',n,14),M(40,24,'P',n,14),T(180,120,'U＝面積',r,13)),
+  s:['ばねをゆっくり引くと、力は 0 から P まで比例して増える。',
+   {q:'した仕事（力×距離）は？'},
+   `力が一定でないので、グラフの面積を足す。三角形だから<span class="eq">${m('U＝½ P δ')}</span>この仕事は、部材の中にばねのエネルギーとしてたまる。`,
+   `棒の場合は ${m('δ＝PL/(EA)')} を入れて ${m('U＝P²L / (2EA)')}。曲げの場合は、短い1切れごとに足して ${m('U＝∫M² / (2EI) dx')}。`]},
+ {t:'単位荷重法（仮想仕事）',goal:'δ＝∫Mm/(EI)dx',fig:S(320,170,B(40,280,50),Pin(40,54),Rol(280,54),W(40,280,48,r,10,'w'),T(160,90,'本当の荷重 → M',r,12),B(40,280,130),Pin(40,134),Rol(280,134),A(200,100,200,126,b),M(210,108,'1',b,14,'start'),T(120,160,'知りたい所に 1 → m',b,12)),
+  s:['知りたい点のたわみ δ を求めたい。その点に、仮に「1」の力をかけた状態を考え、その曲げを m とする。',
+   {q:'本当の変形を、仮の力の系に「させて」みると？'},
+   '仮の系（1の力）が、本当の変形の上でする仕事：外では 1×δ、内では各部の m が、本当の曲がり具合 M/EI で回転する分。',
+   `外の仕事＝内の仕事<span class="eq">${m('1 × δ＝∫ M m / (EI) dx')}</span>どんな梁でも、知りたい点に1を置くだけでたわみが出る。`]},
+ {t:'カスティリアーノの定理',goal:'δ＝∂U/∂P',fig:S(320,150,L(50,130,280,130,n,1.5),L(50,130,50,20,n,1.5),P('M50,130 Q170,120 260,40','none',r,2.5),L(200,90,260,40,b,2),T(250,90,'傾き＝δ',b,12),M(290,145,'P',n,14),M(40,24,'U',n,14)),
+  s:['ためたエネルギー U を、荷重 P の式で書く。',
+   {q:'P を少し dP 増やすと、U はどれだけ増える？'},
+   '増えた分の仕事は、その荷重の位置が動く量 δ × dP。',
+   `<span class="eq">${m('δ＝∂U / ∂P')}</span>エネルギーを荷重で微分すると、その荷重の向きの変位。片持ち梁なら ${m('U＝P²L³/(6EI)')} を微分して ${m('δ＝PL³/(3EI)')}。`]},
+]},
+indet:{p:['sup','eq','comp','hooke'],it:[
+ {t:'重ね合わせの原理',goal:'δ＝δ₁＋δ₂',fig:S(320,200,T(55,18,'荷重1だけ',n,12),B(15,95,50,n,5),Pin(15,54),Rol(95,54),A(40,14+10,40,46,r),M(30,30,'P₁',r,13),P('M15,50 Q55,64 95,50','none',b,1.5,'4 3'),
+   T(160,18,'荷重2だけ',n,12),B(120,200,50,n,5),Pin(120,54),Rol(200,54),A(175,24,175,46,r),M(186,30,'P₂',r,13),P('M120,50 Q160,62 200,50','none',b,1.5,'4 3'),
+   T(270,18,'両方',n,12),B(230,310,50,n,5),Pin(230,54),Rol(310,54),A(255,24,255,46,r),A(290,24,290,46,r),P('M230,50 Q270,76 310,50','none',b,2.5),
+   T(105,44,'＋',n,20),T(215,44,'＝',n,20),
+   L(40,180,140,180,n,1.5),L(40,180,40,100,n,1.5),L(40,180,130,110,b,2.5),T(90,196,'荷重 P',n,11),T(30,140,'δ',n,12),T(120,104,'比例（直線）',b,11),
+   L(190,180,290,180,n,1.5),L(190,180,190,100,n,1.5),P('M190,180 Q240,175 260,130 T280,104','none',r,2.5),T(240,196,'荷重 P',n,11),T(270,150,'曲がる（足せない）',r,11)),
+  cap:'比例する範囲（左下）なら、別々に出した結果を足すだけで、両方のせた答えになる。',
+  s:['梁に荷重が2つ以上のっていると、そのまま解くのは大変。1つずつなら、公式がすぐ使える。',
+   {q:'1つずつ出した答えを、足してよい？'},
+   `フックの法則（③）で、応力はひずみに比例する。だから、たわみ・反力・曲げモーメントは、どれも荷重に比例する：${m('δ₁＝a P₁')}、${m('δ₂＝a P₂')}（a は梁の形だけで決まる数）。`,
+   `つりあい（①）の式も、荷重について1次式（足し算と定数倍だけ）。両方のせると<span class="eq">${m('δ＝a(P₁＋P₂)＝δ₁＋δ₂')}</span>これが重ね合わせの原理。`,
+   {q:'いつでも足してよい？'},
+   '<b>足してはいけない場面</b>：① 材料が降伏して比例が崩れたとき（塑性）、② 変形が大きくて、つりあいを変形後の形で書く必要があるとき（座屈・吊り橋のケーブル）、③ 接触や浮き上がりのように、条件が途中で変わるとき。',
+   '足してよい範囲では、複雑な荷重を「知っている形」に分けて足すだけ。不静定構造の解き方（応力法・たわみ角法）は、全部この原理の上に立っている。'],key:'比例するなら、分けて解いて足す。比例しないなら、足せない。'},
+ {t:'不静定次数と応力法（余力法）',goal:'R＝3wL/8',fig:S(320,210,T(80,16,'元の梁（不静定1次）',n,12),Fix(20,30,70),B(20,150,50,n,5),Rol(150,54),W(20,150,48,r,6,''),
+   T(240,16,'余分な支点を外す',n,12),Fix(180,30,70),B(180,300,50,n,5),W(180,300,48,r,6,''),P('M180,50 Q260,56 300,80','none',b,1.5,'4 3'),M(306,76,'δ₁',b,13,'start'),
+   T(80,116,'外した所に R だけ',n,12),Fix(20,130,170),B(20,150,150,n,5),A(150,200,150,154,r),M(160,190,'R',r,14,'start'),P('M20,150 Q100,146 150,126','none',b,1.5,'4 3'),M(156,124,'δ₂',b,13,'start'),
+   T(240,140,'δ₁ − δ₂ ＝ 0',r,16),T(240,166,'（ローラーは動かない）',n,12)),
+  cap:'余分な支点を「外して、その力 R を荷重とみなす」。外した所の変形が 0 になるように R を決める。',
+  s:[`<b>不静定次数</b>＝未知の反力（と部材力）の数 − つりあい式の数。片端固定・片端ローラーの梁は、反力 4（固定端3＋ローラー1）− 式 3 ＝ <b>1次</b>。式が1本足りない。`,
+   {q:'足りない1本の式は、どこから持ってくる？'},
+   '変形の適合（②）から。ローラーの所は、上下に動かない（δ＝0）。この「動かない」が、足りない式になる。',
+   `<b>手順1</b>：ローラーを外すと片持ち梁（静定）。等分布 w で、先端は ${m('δ₁＝wL⁴/(8EI)')} 下がる。`,
+   `<b>手順2</b>：外した所に上向きの力 R だけをかけると、先端は ${m('δ₂＝RL³/(3EI)')} 上がる。`,
+   `<b>手順3</b>：重ね合わせて、元の状態に戻す：${m('δ₁ − δ₂＝0')}<span class="eq">${m('wL⁴/(8EI)＝RL³/(3EI)　→　R＝3wL/8')}</span>`,
+   `あとは静定の問題。固定端の反力は ${m('5wL/8')}、固定端モーメントは ${m('wL²/8')}。不静定次数が n なら、外す力も n 個、条件式も n 本になる。`],key:'応力法＝余分な力を外す → 静定で解く → 外した所の変形を0に戻す（重ね合わせ）。'},
+ {t:'両端固定梁',goal:'M＝wL²/12',fig:S(320,170,Fix(40,40,100),Fix(280,40,100,1),W(40,280,70,r,10,'w'),B(40,280,72),Mo(40,72,18,'',true,b),Mo(280,72,18,'',false,b),M(30,40,'M',b,14),M(292,40,'M',b,14),T(160,140,'端が回らない（適合）',n,12)),
+  s:['未知の反力が多すぎて、つりあいだけでは解けない。そこで、端のモーメント M を「未知の荷重」として、変形の条件を使う。',
+   `<b>重ね合わせ</b>：単純梁に w をのせると、端が ${m('wL³/(24EI)')} だけ回る。`,
+   `両端に M をかけると、端は逆向きに ${m('ML/(2EI)')} 回る。`,
+   {q:'固定端の条件は？'},
+   `固定端は回らない：${m('wL³/(24EI)＝ML/(2EI)')}<span class="eq">${m('M＝wL²/12')}</span>真ん中は ${m('wL²/8 − wL²/12＝wL²/24')}。単純梁の3分の1。`],key:'不静定＝「余分な力を外して、外した所の変形を元に戻す」。'},
+ {t:'たわみ角法の基本式',goal:'M＝2EK(2θ_A＋θ_B−3R)＋C',fig:S(320,190,B(40,280,100,n,5),C(40,100,5,DC.w),C(280,100,5,DC.w),Mo(40,100,22,'',true,b),Mo(280,100,22,'',false,b),M(30,66,'M<tspan font-size="10" dy="3">AB</tspan>',b,14,'middle'),M(292,66,'M<tspan font-size="10" dy="3">BA</tspan>',b,14,'middle'),
+   P('M40,100 Q120,128 200,118 T280,140','none',r,2,'5 3'),L(40,100,90,118,r,1),M(82,96,'θ<tspan font-size="10" dy="3">A</tspan>',r,13),L(280,140,240,128,r,1),M(250,160,'θ<tspan font-size="10" dy="3">B</tspan>',r,13),L(280,100,280,140,DC.g,1,'3 3'),T(296,124,'Δ',DC.g,12),
+   T(160,30,'端の回転と、端の上下のずれから、端のモーメントを出す',n,11)),
+  cap:'部材の両端が θ_A、θ_B だけ回り、片方が Δ だけずれる（部材角 R＝Δ/L）。',
+  s:['不静定ラーメンでは、未知の力より「節点がどれだけ回ったか」を未知数にしたほうが、数が少なくてすむ。',
+   `単純梁の両端にモーメントをかけたときの回転（重ね合わせで足す）：${m('θ_A＝M_AB·L/(3EI) − M_BA·L/(6EI)')}、${m('θ_B＝M_BA·L/(3EI) − M_AB·L/(6EI)')}。`,
+   {q:'逆に、θ から M を出すには？'},
+   `この2本の連立方程式を M について解く：${m('M_AB＝(2EI/L)(2θ_A＋θ_B)')}。`,
+   `さらに、端が Δ だけずれると部材が ${m('R＝Δ/L')} だけ傾くので、その分を引く。荷重による固定端モーメント C も重ね合わせると<span class="eq">${m('M_AB＝2EK(2θ_A＋θ_B−3R)＋C_AB')}</span>（${m('K＝I/L')}：剛比のもと）。`,
+   '各節点で「集まるモーメントの合計＝0」（節点方程式）を立てると、θ が求まり、全部の M が出る。'],key:'たわみ角法＝未知数を「回転角」にした重ね合わせ。'},
+ {t:'三連モーメント式（連続梁）',goal:'M_B＝−wL²/8',fig:S(320,200,B(20,300,70,n,5),Pin(20,74),Pin(160,74),Rol(300,74),W(20,300,68,r,14,'w'),Dim(20,160,112,'L'),Dim(160,300,112,'L'),
+   P('M20,160 Q55,190 90,186 Q130,180 160,134 Q190,180 230,186 Q265,190 300,160','#fbe3e2',r,2),L(20,160,300,160,n,1),T(160,128,'M_B＝wL²/8（上が引張）',r,11),T(80,200,'径間：下が引張',b,11),T(245,200,'径間：下が引張',b,11)),
+  cap:'2径間の連続梁と M図（引張側に描く）。中間支点の上で、梁は山なりに曲がる。',
+  s:['連続梁を、支点ごとに単純梁に切り分ける。切った所の曲げモーメント（M_A、M_B、M_C）を未知数にする。',
+   {q:'切った所で、どんな条件が成り立つ？'},
+   '本当はつながっているので、中間支点 B の左の梁の回転角と、右の梁の回転角は等しい（適合）。',
+   `左右それぞれ、荷重による回転と、端のモーメントによる回転を重ね合わせて等しいとおくと（EI 一定）<span class="eq">${m('M_A L₁＋2M_B(L₁＋L₂)＋M_C L₂＝−(w₁L₁³＋w₂L₂³)/4')}</span>（クラペイロンの三連モーメント式）`,
+   `両端がピンなら ${m('M_A＝M_C＝0')}。等スパン ${m('L₁＝L₂＝L')} なら ${m('4M_B L＝−wL³/2')} → ${m('M_B＝−wL²/8')}。`,
+   `<b>比べてみよう</b>：単純梁2本なら最大 ${m('wL²/8')}（真ん中）。連続にすると、径間の中の最大は ${m('9wL²/128 ≈ 0.07wL²')} まで下がる。代わりに支点の上に ${m('wL²/8')} が出る。`],key:'連続梁は、中間支点の上で「回転角が等しい」条件を使う。'},
+ {t:'固定法の分配と到達',fig:S(320,170,L(40,90,160,90,n,5),L(160,90,280,90,n,5),L(160,90,160,160,n,5),C(160,90,7,r,r),Mo(160,90,26,'',true,r),T(100,80,'k₁',n,13),T(220,80,'k₂',n,13),T(175,140,'k₃',n,13),T(160,30,'節点を回す力 → 硬さの比で分ける',r,12)),
+  s:['まず節点を全部固定して、各部材の固定端モーメントを出す。節点では合計が0にならず、余った分（不つりあい）がある。',
+   '節点を解放すると、余った分の逆向きを、部材が分け合って受け持つ。',
+   {q:'どう分ける？'},
+   `同じ角度だけ回るので、硬い部材ほど多く受け持つ：分配率 ${m('DF＝k / Σk')}（適合＋フック）。`,
+   `分配された分の半分が、反対側の端に伝わる（到達率 1/2）。これを繰り返すと、すぐに収束する。`]},
+ {t:'マトリクス法の入口（剛性法）',goal:'K u＝F',fig:S(320,170,Fix(30,60,120),P('M30,90 l10,0 l5,-10 l10,20 l10,-20 l10,20 l10,-20 l5,10 l10,0','none',n,2),R(90,74,26,32,DC.m),P('M116,90 l10,0 l5,-10 l10,20 l10,-20 l10,20 l10,-20 l5,10 l10,0','none',n,2),R(176,74,26,32,DC.m),A(202,90,250,90,r),M(260,95,'F₂',r,14,'start'),
+   T(60,70,'k₁',n,13),T(146,70,'k₂',n,13),M(103,130,'u₁',b,14),M(189,130,'u₂',b,14),T(160,160,'部材＝ばね、節点の変位が未知数',n,12)),
+  cap:'構造物を「ばねのつながり」とみなすと、コンピュータで解ける形になる。',
+  s:['ばね1本なら ${m("F＝k u")}。梁や柱も、端の変位と端の力が比例する「ばね」とみなせる（③）。'.replace('${m("F＝k u")}',m('F＝k u')),
+   {q:'ばねを2本つないだら？'},
+   `各節点で、力のつりあい（①）を書く。節点1：${m('k₁u₁ − k₂(u₂−u₁)＝F₁')}、節点2：${m('k₂(u₂−u₁)＝F₂')}。`,
+   `並べて書くと<span class="eq">${m('[k₁＋k₂, −k₂ ; −k₂, k₂]·[u₁ ; u₂]＝[F₁ ; F₂]')}</span>これが ${m('K u＝F')}。K を剛性マトリクスという。`,
+   '部材ごとの小さな K を、つながる節点の位置に足し込んでいく（重ね合わせ）だけで、ビルや橋全体の K ができる。未知数が何万個でも、手順は同じ。',
+   '今の構造計算ソフトは、ほとんどこの方法。たわみ角法は、これを手で解ける大きさにしたものと考えてよい。'],key:'部材をばねとみなし、節点でつりあいを書いて並べる → K u＝F。'},
+]},
+il:{p:['eq','sup'],it:[
+ {t:'反力の影響線',fig:S(320,170,B(40,280,50),Pin(40,54),Rol(280,54),A(130,14,130,44,r),M(140,22,'1',r,14,'start'),Dim(40,130,30,'x'),P('M40,110 L280,150 L40,150Z','#e2edf6',b,2),M(30,114,'1',b,13,'end'),T(160,166,'R_A の影響線',b,12)),
+  s:['大きさ1の荷重が、橋の上を左から右に動く。位置 x のときの反力を、グラフにしたものが影響線。',
+   `B まわりのつりあい：${m('R<sub>A</sub>＝(L − x) / L')}。x について1次式 → 直線。`,
+   '荷重が A の上で 1、B の上で 0。']},
+ {t:'曲げモーメントの影響線',goal:'頂点＝ab/L',fig:S(320,170,B(40,280,50),Pin(40,54),Rol(280,54),L(130,30,130,150,r,1.5,'4 3'),M(130,24,'C',r,14),P('M40,90 L130,150 L280,90Z','#fbe3e2',r,2),Dim(40,130,166,'a'),Dim(130,280,166,'b'),T(150,130,'ab/L',r,12,'start')),
+  s:['点 C（左から a）の曲げを考える。荷重1が C より右にあるとき、左側だけ見れば ${m("M<sub>C</sub>＝R<sub>A</sub> × a")}。'.replace('${m("M<sub>C</sub>＝R<sub>A</sub> × a")}',m('M<sub>C</sub>＝R<sub>A</sub> × a')),
+   '左にあるときは右側を見て、同じように直線。',
+   `荷重が C にきたとき最大：${m('M<sub>C</sub>＝ab / L')}。三角形の影響線になる。`,
+   {q:'トラックで真ん中の M が最大になるのはいつ？'},
+   '影響線の頂点（C の真上）に重い車輪がきたとき。等分布の荷重なら、影響線の面積 × w。']},
+]},
+plastic:{p:['eq','work'],it:[
+ {t:'全塑性モーメント',goal:'Mp＝σy·bh²/4',fig:S(320,160,R(40,30,60,100,'#eef3f8'),P('M150,30 L190,30 L150,80 L110,130 L150,130','#e2edf6',b,2),T(150,150,'弾性',b,12),P('M240,30 L280,30 L280,80 L200,80 L200,130 L240,130','#fbe3e2',r,2),L(240,30,240,130,n,1),T(240,150,'全塑性',r,12)),
+  s:['弾性では、応力は三角形の分布で、外側が σ<sub>y</sub> に達したら終わり：${m("M<sub>y</sub>＝σ<sub>y</sub> bh²/6")}。'.replace('${m("M<sub>y</sub>＝σ<sub>y</sub> bh²/6")}',m('M<sub>y</sub>＝σ<sub>y</sub> bh²/6')),
+   {q:'さらに曲げると？'},
+   '鋼は降伏しても粘る。内側まで σ<sub>y</sub> に達し、上半分全部が σ<sub>y</sub> の圧縮、下半分全部が σ<sub>y</sub> の引張になる。',
+   `上下の合力 ${m('σ<sub>y</sub> bh/2')} が、腕 h/2 で偶力をつくる<span class="eq">${m('M<sub>p</sub>＝σ<sub>y</sub> bh² / 4')}</span>弾性の限界の1.5倍（形状係数）。`]},
+ {t:'崩壊荷重',goal:'P＝4Mp/L',fig:S(320,150,P('M40,60 L160,100 L280,60','none',n,6),Pin(40,64),Rol(280,64),C(160,100,7,r,r),A(160,40,160,90,r),M(172,52,'P',r,14,'start'),T(160,130,'塑性ヒンジ（回転 2θ）',r,12),M(90,92,'θ',b,14)),
+  s:['荷重を増やすと、M が最大の所（真ん中）が M<sub>p</sub> に達して、そこが自由に回るヒンジ（塑性ヒンジ）になる。単純梁は、これで崩れる形（メカニズム）になる。',
+   '崩れるときに、少しだけ θ 回ったとする（仮想仕事）。',
+   `外の仕事：真ん中は ${m('(L/2)θ')} 下がる → ${m('P (L/2) θ')}。内の仕事：ヒンジは 2θ 回る → ${m('M<sub>p</sub> × 2θ')}。`,
+   `等しいとおいて<span class="eq">${m('P＝4M<sub>p</sub> / L')}</span>不静定なら、ヒンジがいくつもできるまで耐える。`]},
+]},
+vib:{p:['motion','hooke'],it:[
+ {t:'固有周期',goal:'T＝2π√(m/K)',fig:S(320,140,Fix(30,40,110),P('M30,75 l15,0 l8,-12 l12,24 l12,-24 l12,24 l12,-24 l8,12 l15,0','none',n,2),R(140,50,70,50,DC.m),M(175,82,'m',n,18),A(215,75,265,75,r),M(270,80,'x',r,15,'start'),M(90,50,'K',n,14)),
+  s:['重さ m のおもりが、硬さ K のばねにつながっている（建物の床とばねになる柱）。',
+   `x ずれると、ばねが戻す力 ${m('−Kx')}。<b>運動の法則</b>：${m('m x″＝−K x')}`,
+   {q:'この式を満たす動きは？'},
+   `${m('x＝A sin ωt')} を入れると ${m('−mω²＝−K')}、${m('ω＝√(K/m)')}。1往復で ωT＝2π<span class="eq">${m('T＝2π√(m / K)')}</span>重いほど・柔らかいほど、ゆっくり揺れる。`]},
+ {t:'柱の水平剛性',goal:'K＝12EI/h³',fig:S(320,170,L(0,150,320,150,n,2),P('M80,150 Q80,95 100,90 Q120,85 120,30','none',n,6),L(80,150,80,30,DC.g,1,'4 3'),A(130,30,170,30,r),M(178,34,'P',r,14,'start'),Dim(80,120,18,'δ'),L(60,30,60,150,n,1),M(50,95,'h',n,14,'end'),T(220,110,'両端固定（頭は回らない）',n,12)),
+  s:['床に固定され、頭も梁に固定された柱を、横に δ ずらす。',
+   '形は上下対称（S字）で、真ん中で M＝0。だから、長さ h/2 の片持ち梁が2本つながったものと同じ。',
+   `片持ち梁のたわみ ${m('P(h/2)³/(3EI)')} が2本分：${m('δ＝Ph³/(12EI)')}`,
+   `<span class="eq">${m('K＝P/δ＝12EI / h³')}</span>高さの3乗に反比例。半分の高さの柱は8倍硬く、8倍の力を受ける。`]},
+]},
+arch:{p:['eq'],it:[
+ {t:'ケーブルの張力',goal:'H＝wL²/(8f)',fig:S(320,170,P('M40,40 Q160,160 280,40','none',n,3),C(40,40,5,DC.w),C(280,40,5,DC.w),W(40,280,40,r,10),A(160,100,110,100,b),M(110,92,'H',b,14),L(300,40,300,100,n,1),M(306,74,'f',n,14,'start'),A(40,40,40,10,b),T(70,160,'中央で切った左半分',n,11)),
+  s:['ケーブルは曲げを持てない（M＝0）。どこでも、ケーブルの向きに引っ張るだけ。',
+   '真ん中で切って左半分を取り出す。切り口の張力は、いちばん下なので水平で H。',
+   {q:'左の支点まわりのつりあいは？'},
+   `左半分の荷重 wL/2 は腕 L/4、張力 H は腕 f（たるみ）：${m('H f＝(wL/2)(L/4)')}<span class="eq">${m('H＝wL² / (8f)')}</span>分子は単純梁の真ん中の M。ピンと張る（f が小さい）ほど大きい。`]},
+ {t:'3ヒンジアーチ',goal:'H＝M₀/f',fig:S(320,170,P('M40,140 Q160,20 280,140','none',n,6),Pin(40,144),Pin(280,144),C(160,80,6,DC.w),A(160,10,160,72,r),M(172,20,'P',r,14,'start'),A(10,138,34,138,b),A(310,138,286,138,b),M(14,130,'H',b,14)),
+  s:['アーチはケーブルを上下逆にしたもの。今度は押されて（圧縮で）支える。',
+   'てっぺんのヒンジで M＝0。そこまでの左半分で、つりあいを書く。',
+   `鉛直反力によるモーメントは、同じ長さの単純梁の M₀ と同じ。水平反力 H が、腕 f で逆向きに回す：${m('M₀ − H f＝0')}`,
+   `<span class="eq">${m('H＝M₀ / f')}</span>アーチの形を M₀ の形（放物線）にすると、どこでも M＝0 になり、圧縮だけで支えられる。`]},
+]},
+}; })();
 
 // ==/NAZO==
 route();

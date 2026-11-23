@@ -1,0 +1,255 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>構造力学 実践ラボ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>/* Layout: practice lab. Home = design-flow strip + case cards. Case view = brief, inputs | drawing, calc table, checks with utilisation gauges, cost & stars. Riso palette shared with the lab series. */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;
+ --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;--f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;color-scheme:light}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--f-body);margin:0}
+body{-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:5;background:var(--paper);display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:2px solid var(--navy)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#crumb{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#prog{font-size:13px;font-weight:900;color:var(--red);white-space:nowrap}
+main{max-width:1080px;margin:0 auto;padding:18px 16px 48px}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(28px,6vw,52px);line-height:1.15;margin:0;color:var(--navy);text-wrap:balance}
+h1 b{color:var(--red);font-weight:400}
+.lead{font-size:15px;line-height:1.85;max-width:66ch;margin:10px 0 14px}
+a{color:var(--blue);font-weight:700}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 18px}
+.flow div{background:var(--sheet);border:2px solid var(--navy);padding:5px 10px;font-weight:900;font-size:13px;display:flex;gap:6px;align-items:center}
+.flow div b{background:var(--red);color:#fff;width:20px;height:20px;display:inline-grid;place-items:center;font-size:12px}
+.flow i{font-style:normal;color:var(--red);font-weight:900}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.case{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px 12px;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.case:hover{background:var(--soft)}
+.case .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.case .fg svg{display:block;width:100%;height:auto;max-height:90px;border:1px solid var(--line)}
+.case b{font-size:17px;font-weight:900}
+.case .ds{font-size:12px;color:var(--muted)}
+.case .st,.stars{color:var(--red);letter-spacing:.1em;font-size:16px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;border-top:2px solid var(--navy);padding-top:12px;font-size:14px}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:14px}
+.chead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
+.chead .no{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.chead h2{font-family:var(--f-disp);font-weight:400;font-size:clamp(22px,4vw,32px);margin:0;color:var(--navy)}
+section{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px 14px;margin-bottom:14px;min-width:0}
+section h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+section h3 span{background:var(--red);color:#fff;width:22px;height:22px;display:inline-grid;place-items:center;font-size:13px}
+.req p{font-size:15px;line-height:1.85;margin:0 0 6px}
+.req .cl{font-size:12px;color:var(--muted);font-weight:700}
+.req ul{margin:4px 0 0;padding-left:20px;font-size:14px;line-height:1.85;background:var(--soft);padding:6px 10px 6px 28px;border-left:4px solid var(--blue)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px;align-items:start}
+.cols section{margin-bottom:14px}
+@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+.drw{position:sticky;top:56px}
+@media (max-width:820px){.drw{position:static}}
+.hint{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.6}
+.ip{display:block;margin-bottom:12px}
+.ip>b{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}
+.ip small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.tg{font-size:10px;font-weight:900;padding:1px 6px;border:1.5px solid currentColor}
+.tg.d{color:#fff;background:var(--red);border-color:var(--red)} .tg.c{color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opts button{font-family:var(--f-body);font-weight:700;font-size:13px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:5px 10px;cursor:pointer;min-height:34px}
+.opts button.on{background:var(--navy);color:var(--paper)}
+#fig svg{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.calc table{width:100%;border-collapse:collapse;font-size:14px}
+.calc td{border-bottom:1px solid var(--line);padding:6px 4px;vertical-align:top}
+.calc td.f{color:var(--muted)}
+.calc td.v{text-align:right;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--navy)}
+.mm{font-family:"Times New Roman",Times,serif;font-style:italic;font-size:1.05em}
+@media (max-width:560px){.calc tr{display:grid;grid-template-columns:1fr auto auto;column-gap:6px;border-bottom:1px solid var(--line);padding:5px 0}.calc td{border:0;padding:1px 2px}.calc td:first-child{grid-column:1/-1;font-weight:700}.calc td.f{grid-column:1}}
+.ck{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 44px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+@media (max-width:560px){.ck{grid-template-columns:minmax(0,1fr) 44px}.ck .gauge{grid-column:1/-1;grid-row:2}}
+.ckl b{display:block;font-size:14px}.ckl span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:14px;background:var(--soft);border:1.5px solid var(--navy)}
+.gauge i{position:absolute;left:0;top:0;bottom:0;background:var(--blue)}
+.ck.ng .gauge i{background:var(--red)}
+.gauge em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy)}
+.ckv{font-weight:900;font-size:15px;text-align:center;padding:3px 0;color:#fff;background:var(--blue)}
+.ck.ng .ckv{background:var(--red)}
+.verdict{margin-top:10px;font-weight:900;font-size:15px;padding:8px 10px;border:2px solid var(--blue);color:var(--blue)}
+.verdict.ng{border-color:var(--red);color:var(--red);background:#fdf0ef}
+.cbox{display:flex;flex-wrap:wrap;gap:10px 30px}
+.cbox small{display:block;font-size:12px;color:var(--muted)}.cbox b{font-size:17px}
+.cost p{font-size:14px;line-height:1.8;margin:8px 0 0}
+.ans summary{cursor:pointer;font-weight:700;color:var(--blue);font-size:14px;margin-top:8px}
+.ans p{background:var(--soft);padding:6px 10px}
+.ulinks{display:flex;flex-wrap:wrap;gap:8px}
+.ulinks a{border:2px solid var(--blue);padding:4px 10px;text-decoration:none;font-size:13px;background:var(--sheet)}
+.real{font-size:14px;line-height:1.8;margin:10px 0 0;background:var(--paper);padding:8px 10px;border-left:4px solid var(--red)}
+.nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 14px;cursor:pointer}
+.b.main{background:var(--red);border-color:var(--red);color:#fff}
+</style></head><body>
+<header><button class="logo" id="logo" title="案件の一覧へ">構造力学<b>実践ラボ</b></button><div id="crumb"></div><div id="prog"></div></header>
+<main id="main"></main>
+<script>
+const URLS={"kozo": "../kozo/", "jiban": "../jiban/", "suiri": "../suiri/", "kozoR": "../kozo-riron/", "jibanR": "../jiban-riron/", "suiriR": "../suiri-riron/"};
+const DC={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#93BCD6',s:'#D8CFBE',g:'#5E6B86',w:'#fff'};
+const dg={
+ S:(w,h,...p)=>`<svg viewBox="0 0 ${w} ${h}" class="dfig" role="img"><rect width="${w}" height="${h}" fill="#fff"/>${p.join('')}</svg>`,
+ L:(x1,y1,x2,y2,c=DC.n,w=2,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`,
+ A:(x1,y1,x2,y2,c=DC.r,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=9; const p1=[x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)], p2=[x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)];
+   return `<line x1="${x1}" y1="${y1}" x2="${x2-6*Math.cos(a)}" y2="${y2-6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${p1} ${p2}" fill="${c}"/>`; },
+ T:(x,y,s,c=DC.n,fs=13,an='middle',b=700)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="${b}" text-anchor="${an}" font-family="'Zen Kaku Gothic New',sans-serif">${s}</text>`,
+ M:(x,y,s,c=DC.n,fs=15,an='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-style="italic" font-weight="700" text-anchor="${an}" font-family="'Times New Roman',serif">${s}</text>`,
+ R:(x,y,w,h,f=DC.m,st=DC.n,sw=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" stroke="${st}" stroke-width="${sw}"/>`,
+ P:(d,f='none',st=DC.n,w=2,da='')=>`<path d="${d}" fill="${f}" stroke="${st}" stroke-width="${w}"${da?` stroke-dasharray="${da}"`:''}/>`,
+ C:(x,y,r,f=DC.w,st=DC.n,w=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${st}" stroke-width="${w}"/>`,
+ B:(x1,x2,y,c=DC.n,w=6)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,
+ G:(x1,x2,y)=>{ let s=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${DC.n}" stroke-width="2"/>`; for(let x=x1+4;x<=x2;x+=7) s+=`<line x1="${x}" y1="${y}" x2="${x-6}" y2="${y+7}" stroke="${DC.n}" stroke-width="1"/>`; return s; },
+ Pin:(x,y)=>dg.P(`M${x},${y} l-11,18 h22z`,DC.w)+dg.G(x-16,x+16,y+18),
+ Rol:(x,y)=>dg.P(`M${x},${y} l-11,14 h22z`,DC.w)+dg.C(x-6,y+18,3.5)+dg.C(x+6,y+18,3.5)+dg.G(x-16,x+16,y+22),
+ Fix:(x,y1,y2,side=-1)=>{ let s=dg.L(x,y1,x,y2,DC.n,3); for(let y=y1+3;y<=y2;y+=7) s+=dg.L(x,y,x+side*7,y+6,DC.n,1); return s; },
+ W:(x1,x2,y,c=DC.r,n,lab)=>{ n=n||Math.max(3,Math.round((x2-x1)/22)); let s=dg.L(x1,y-28,x2,y-28,c,2); for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=dg.A(x,y-28,x,y-2,c,1.6);} return s+(lab?dg.M((x1+x2)/2,y-34,lab,c,14):''); },
+ Dim:(x1,x2,y,lab,c=DC.n)=>dg.L(x1,y,x2,y,c,1.2)+dg.L(x1,y-6,x1,y+6,c,1.2)+dg.L(x2,y-6,x2,y+6,c,1.2)+`<rect x="${(x1+x2)/2-String(lab).length*4-4}" y="${y-9}" width="${String(lab).length*8+8}" height="16" fill="#fff"/>`+dg.M((x1+x2)/2,y+5,lab,c,14),
+ Mo:(x,y,r,lab,ccw=false,c=DC.b)=>{ const s=ccw?0:1; const a0=-2.4,a1=1.4; const x0=x+r*Math.cos(a0),y0=y+r*Math.sin(a0),xe=x+r*Math.cos(a1),ye=y+r*Math.sin(a1);
+   const [sx,sy,ex,ey]=ccw?[xe,ye,x0,y0]:[x0,y0,xe,ye]; const t=ccw?a0:a1; const tx=ccw?Math.sin(t):-Math.sin(t), ty=ccw?-Math.cos(t):Math.cos(t);
+   return `<path d="M${sx},${sy} A${r},${r} 0 1 ${s} ${ex},${ey}" fill="none" stroke="${c}" stroke-width="2.2"/>`+dg.A(ex-tx*6,ey-ty*6,ex+tx*2,ey+ty*2,c,2.2)+(lab?dg.M(x+r+8,y-r+4,lab,c,14,'start'):''); },
+};
+
+const LAB={key:'kozo-jissen',h1:'構造力学を、<b>本物の設計</b>で使う。',
+ lead:'実際の設計は、教科書の問題を1つ解いて終わりではありません。条件を決め、計算し、安全かどうかを確かめ（照査）、だめなら部材を変えてやり直し、最後にいちばん経済的な案を選びます。この流れを、本物の案件で体験します。',
+ note:'数値は学習用に簡略化しています（許容応力度・荷重は代表値）。実際の設計は、道路橋示方書・建築基準法などの基準に従います。',
+ links:[['構造力学ラボ（謎と問題）',URLS.kozo],['構造力学 理論ラボ（体系図と導出）',URLS.kozoR]]};
+const H_SEC=[['H-400×200',400,200,1190,23700,66.0],['H-500×200',500,200,1910,47800,89.6],['H-600×200',600,200,2590,77600,106],['H-700×300',700,300,5640,197000,185],['H-800×300',800,300,7160,286000,210],['H-900×300',900,300,8990,404000,243]];
+const CASES=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim}=dg; const n=DC.n,r=DC.r,b=DC.b;
+const ratioTxt=(v,lim,u)=>`${nf(v)} ${u} ／ 上限 ${nf(lim)} ${u}`;
+return [
+{id:'bridge',title:'商店街の歩道橋の桁',client:'○○市 道路課',
+ thumb:S(160,70,L(10,60,150,60,DC.g,1),B(30,130,30,n,5),P('M30,30 l-18,28 M130,30 l18,28','none',b,3),...[50,65,80,95,110].map(x=>C(x,22,3,r,r))),
+ story:'駅前の商店街に、道路をまたぐ歩道橋をかけたい。お祭りの日は人でぎっしりになる。2本の鋼の桁（H形鋼）で床を支える計画です。どの太さの桁にすればいい？',
+ req:['群集荷重 5 kN/m²、床版などの重さ 2 kN/m²（どちらも床の面積あたり）','桁は2本。それぞれが床の半分を受け持つ','曲げ応力度は 140 N/mm² 以下（鋼材 SS400 の許容値）','人が歩いたときのたわみは スパンの 1/600 以下（揺れて怖くないように）'],
+ inputs:[{k:'L',label:'スパン（道路の幅）',opts:[[15,'15 m'],[20,'20 m'],[25,'25 m']],def:20},{k:'B',label:'歩道の幅',opts:[[2,'2 m'],[3,'3 m'],[4,'4 m']],def:3},{d:1,k:'h',label:'桁の断面（H形鋼）',help:'高さ×幅 mm。大きいほど強いが、重くて高い。',opts:H_SEC.map((x,i)=>[i,x[0]]),def:1}],
+ calc(s){ const [nm,H,Bf,Z,I,kg]=H_SEC[s.h]; const g=kg*9.81/1000; const wl=5*s.B/2, wd=2*s.B/2+g, w=wl+wd; const Lm=s.L;
+   const Mx=w*Lm*Lm/8, sig=Mx*1e6/(Z*1e3); const d=5*wl*(Lm*1000)**4/(384*2.05e5*I*1e4), dl=Lm*1000/600;
+   const cost=kg*Lm*2*0.35; // 千円（加工・架設込み 350円/kg の目安）
+   return {rows:[['桁1本が受ける群集の重さ',mm('w<sub>L</sub>＝5×B/2'),nf(wl),'kN/m'],['床版と桁の重さ',mm('w<sub>D</sub>＝2×B/2＋自重'),nf(wd),'kN/m'],['真ん中の曲げモーメント',mm('M＝wL²/8'),nf(Mx),'kN·m'],['曲げ応力度',mm('σ＝M/Z'),nf(sig),'N/mm²'],['群集によるたわみ',mm('δ＝5w<sub>L</sub>L⁴/(384EI)'),nf(d),'mm']],
+     checks:[['曲げ（折れないか）',sig/140,140,sig<=140,ratioTxt(sig,140,'N/mm²')],['たわみ（揺れないか）',d/dl,dl,d<=dl,ratioTxt(d,dl,'mm')]],
+     cost, costTxt:`鋼材 ${nf(kg*Lm*2/1000,2)} t ／ 約 ${nf(cost,0)} 千円`, sig, d, M:Mx};
+ },
+ fig(s,q){ const [nm,H,Bf]=H_SEC[s.h]; const okS=q.sig<=140, okD=q.d<=s.L*1000/600; const sc=0.12; const hh=H*sc, bw=Bf*sc;
+   const ex=Math.min(26,q.d/ (s.L*1000/600)*12);
+   return S(340,250,T(80,18,'側面図',n,12),L(10,120,170,120,DC.g,1),P(`M20,70 Q90,${70+ex} 160,70`,'none',okD?n:r,6),Pin(20,74),Rol(160,74),...[40,60,80,100,120,140].map(x=>C(x,58,3,r,r)),Dim(20,160,100,`L＝${s.L} m`),T(150,240,'',n),
+     T(255,18,'桁の断面',n,12),R(255-bw/2,40,bw,7,okS?DC.m:'#f6c9c7'),R(255-3,47,6,hh-14,okS?DC.m:'#f6c9c7'),R(255-bw/2,40+hh-7,bw,7,okS?DC.m:'#f6c9c7'),L(210,40,210,40+hh,n,1),M(204,40+hh/2,`${H}`,n,12,'end'),T(255,52+hh,nm,okS?n:r,12),
+     T(80,160,'M図',r,12),P(`M20,170 Q90,${170+60} 160,170Z`,'#fbe3e2',r,1.5),T(90,215,`最大 ${nf(q.M)} kN·m`,r,12));
+ },
+ links:[['静定梁の反力と断面力（M＝wL²/8）',URLS.kozoR+'#d-beam'],['曲げ応力（σ＝M/Z）',URLS.kozoR+'#d-stress'],['たわみ（5wL⁴/384EI）',URLS.kozoR+'#d-defl'],['断面二次モーメント',URLS.kozoR+'#d-section']],
+ real:'道路橋では、群集荷重のほかに風や地震、温度の変化、疲労（何万回も人が通る）も照査します。たわみの制限は、歩く人が揺れを怖がらないためのもので、強さとは別の大事な条件です。'},
+{id:'balcony',title:'マンションのベランダ',client:'△△建設 設計部',
+ thumb:S(160,70,Fix(30,10,66),R(30,40,110,10,DC.s),L(130,20,130,40,n,2),L(30,20,130,20,n,2),...[60,90].map(x=>C(x,32,3,r,r))),
+ story:'鉄筋コンクリートのマンションに、壁から突き出たベランダ（片持ちスラブ）をつける。根元だけで支えるので、上側に鉄筋を入れる。厚さと鉄筋を決めよう。',
+ req:['幅1 m あたりで考える。コンクリートの重さ 24 kN/m³、仕上げ 1 kN/m²、人や物（積載荷重）1.8 kN/m²','鉄筋（SD295）の引張は 195 N/mm² 以下','必要な鉄筋の量 ≦ 入れた鉄筋の量','厚さは 出の長さの 1/10 以上（たわみ・ひび割れを防ぐ目安）'],
+ inputs:[{k:'L',label:'ベランダの出',opts:[[1.0,'1.0 m'],[1.5,'1.5 m'],[2.0,'2.0 m']],def:1.5},{d:1,k:'t',label:'スラブの厚さ',opts:[[120,'120 mm'],[150,'150 mm'],[180,'180 mm'],[200,'200 mm']],def:120},{d:1,k:'bar',label:'上側の鉄筋',help:'D は太さ、@ は間隔。',opts:[['D10@200','D10@200'],['D10@150','D10@150'],['D13@200','D13@200'],['D13@150','D13@150'],['D13@100','D13@100']],def:'D10@200'}],
+ calc(s){ const w=24*s.t/1000+1+1.8; const Mx=w*s.L*s.L/2; const d=s.t-40, j=7/8*d; const Areq=Mx*1e6/(195*j);
+   const [dia,sp]=s.bar.replace('D','').split('@').map(Number); const a1=dia===10?71.3:126.7; const Aprov=a1*1000/sp; const tmin=s.L*1000/10;
+   const cost=(s.t/1000*s.L*24*0+s.t/1000*s.L)*45+Aprov*s.L*7.85e-3*0.15; // 千円/m
+   return {rows:[['1 m 幅あたりの重さ',mm('w＝24t＋1＋1.8'),nf(w),'kN/m'],['根元の曲げモーメント',mm('M＝wL²/2'),nf(Mx),'kN·m'],['有効せい（鉄筋の中心まで）',mm('d＝t − 40'),nf(d),'mm'],['応力中心間距離',mm('j＝7d/8'),nf(j),'mm'],['必要な鉄筋の量',mm('a<sub>t</sub>＝M/(f<sub>t</sub> j)'),nf(Areq),'mm²/m'],['入れた鉄筋の量',mm(`${s.bar}`),nf(Aprov),'mm²/m']],
+     checks:[['鉄筋の量（引張に耐えるか）',Areq/Aprov,Aprov,Areq<=Aprov,`必要 ${nf(Areq)} ／ 入れた量 ${nf(Aprov)} mm²/m`],['厚さ（たわまないか）',tmin/s.t,tmin,s.t>=tmin,`最小 ${nf(tmin)} ／ 厚さ ${s.t} mm`]],
+     cost, costTxt:`幅1 m あたり 約 ${nf(cost,1)} 千円`, M:Mx, ok1:Areq<=Aprov, ok2:s.t>=tmin, Areq, Aprov};
+ },
+ fig(s,q){ const Lp=Math.min(200,s.L*100), tp=s.t*0.2; const [dia,sp]=s.bar.replace('D','').split('@').map(Number);
+   return S(340,240,T(120,18,'断面図（側面）',n,12),Fix(40,40,200),R(40,90,Lp,tp,q.ok2?DC.s:'#f6c9c7'),L(40,90+6,40+Lp-6,90+6,q.ok1?r:'#C62422',dia===13?3.5:2.2),...[...Array(Math.max(2,Math.round(Lp/ (sp/10))))].map((_,i)=>C(46+i*(sp/10),90+6,dia===13?2.4:1.8,q.ok1?r:'#f00',r)),T(40+Lp/2,90+tp+16,'上側の鉄筋が引張を受ける',r,11),Dim(40,40+Lp,160,`${s.L} m`),L(40+Lp+12,90,40+Lp+12,90+tp,n,1),M(40+Lp+16,94+tp/2,`${s.t}`,n,12,'start'),
+     W(40,40+Lp,88,r,8),P(`M40,215 L40,${215-Math.max(12,Math.min(35,q.M*2))} L${40+Lp},215Z`,'#fbe3e2',r,1.5),T(60,232,`M図（根元で最大 ${nf(q.M)} kN·m、上が引張）`,r,11,'start'));
+ },
+ links:[['片持ち梁（M＝wL²/2）',URLS.kozoR+'#d-beam-3'],['曲げ応力と鉄筋（偶力）',URLS.kozoR+'#d-stress'],['構造力学ラボ「応力度」',URLS.kozo+'#u7']],
+ real:'鉄筋コンクリートでは、コンクリートは引張に弱いので、引っ張られる側（片持ちなら上側）に鉄筋を入れます。鉄筋を下に入れ間違えると、根元から折れる大事故になります。工事中の「配筋検査」で必ず確かめます。'},
+{id:'column',title:'倉庫の鋼の柱',client:'□□物流',
+ thumb:S(160,70,L(10,64,150,64,DC.g,1),L(50,10,50,64,n,4),L(110,10,110,64,n,4),L(40,10,120,10,n,5)),
+ story:'広い倉庫の屋根を、細い鋼管の柱で支える。屋根が重いと、柱は押しつぶされる前に、ぐにゃっと曲がって（座屈して）しまう。柱の太さを決めよう。',
+ req:['1本の柱が支える屋根の重さ（雪を含む）を P とする','両端ピンとみなし、座屈長さ＝柱の高さ','オイラーの座屈荷重 P<sub>cr</sub> に対して、安全率 2.5 以上','押しつぶし（圧縮応力度）は 140 N/mm² 以下'],
+ inputs:[{k:'P',label:'柱1本の荷重',opts:[[150,'150 kN'],[250,'250 kN'],[400,'400 kN']],def:250},{k:'h',label:'柱の高さ',opts:[[4,'4 m'],[6,'6 m'],[8,'8 m']],def:6},{d:1,k:'d',label:'鋼管（外径×厚さ）',opts:[[0,'φ114×4.5'],[1,'φ139×4.5'],[2,'φ165×5.0'],[3,'φ216×6.0'],[4,'φ267×6.0']],def:1}],
+ calc(s){ const T_=[[114.3,4.5],[139.8,4.5],[165.2,5.0],[216.3,6.0],[267.4,6.0]][s.d]; const D=T_[0],t=T_[1]; const A=Math.PI*(D*D-(D-2*t)**2)/4, I=Math.PI*(D**4-(D-2*t)**4)/64; const i=Math.sqrt(I/A), lam=s.h*1000/i;
+   const Pcr=Math.PI**2*2.05e5*I/(s.h*1000)**2/1000; const sf=Pcr/s.P; const sig=s.P*1000/A; const kg=A*7.85e-3; const cost=kg*s.h*0.4;
+   return {rows:[['断面積',mm('A＝π(D²−d²)/4'),nf(A),'mm²'],['断面二次モーメント',mm('I＝π(D⁴−d⁴)/64'),nf(I/1e4),'cm⁴'],['細長比',mm('λ＝l<sub>k</sub>/i'),nf(lam),''],['座屈荷重',mm('P<sub>cr</sub>＝π²EI/l<sub>k</sub>²'),nf(Pcr),'kN'],['座屈の安全率',mm('P<sub>cr</sub>/P'),nf(sf),''],['圧縮応力度',mm('σ＝P/A'),nf(sig),'N/mm²']],
+     checks:[['座屈（ぐにゃっと曲がらないか）',2.5/sf,2.5,sf>=2.5,`安全率 ${nf(sf)} ／ 必要 2.5`],['押しつぶし',sig/140,140,sig<=140,ratioTxt(sig,140,'N/mm²')]],
+     cost, costTxt:`柱1本 ${nf(kg*s.h,0)} kg ／ 約 ${nf(cost,0)} 千円`, sf, D, h:s.h};
+ },
+ fig(s,q){ const hp=s.h*22, w=Math.max(4,q.D/20); const ok=q.sf>=2.5; const bow=ok?0:22;
+   return S(340,240,L(20,220,320,220,n,2),A(110,14,110,220-hp-6,r),M(124,26,`P＝${s.P} kN`,r,13,'start'),P(`M110,${220-hp} Q${110+bow*2},${220-hp/2} 110,220`,'none',ok?n:r,w),Pin(110,220-hp+0),L(80,220-hp,80,220,n,1),M(74,220-hp/2,`${s.h} m`,n,13,'end'),
+     C(250,120,q.D/5,DC.m,n,2),C(250,120,q.D/5-3,'#fff',n,1),T(250,120+q.D/5+18,'断面',n,12),T(250,30,ok?'座屈しない':'座屈する！',ok?b:r,16));
+ },
+ links:[['オイラーの座屈荷重',URLS.kozoR+'#d-buckle'],['座屈長さ',URLS.kozoR+'#d-buckle-1'],['構造力学ラボ「座屈」',URLS.kozo+'#u10']],
+ real:'実際の鋼構造の設計では、細長比に応じて許容圧縮応力度を下げる式（座屈を考えた許容応力度）を使います。細長い柱ほど、材料の強さを使い切れません。'},
+{id:'renzoku',title:'高速道路の高架橋（連続桁）',client:'□□高速道路株式会社',
+ thumb:S(160,70,B(10,150,22,n,5),...[10,57,103,150].map(x=>R(x-4,24,8,40,DC.s,n,1.5)),L(5,64,155,64,DC.g,1)),
+ story:'3つの径間をもつ鋼の高架橋をつくる。桁を径間ごとに切った「単純桁」にするか、1本につないだ「連続桁」（不静定）にするか。形式と桁の高さを決めよう。',
+ req:['桁1本が受ける荷重：床版などの重さ 35 kN/m、車（活荷重）20 kN/m','桁は鋼のI形（フランジ 600×40 mm を上下に、腹板の厚さ 12 mm）','曲げ応力度は 140 N/mm² 以下','車によるたわみは スパンの 1/500 以下','連続桁は、車が1径間おきにのる「最も厳しい並び方」で照査する（影響線の考え方）'],
+ inputs:[{k:'L',label:'1径間の長さ',opts:[[30,'30 m'],[40,'40 m'],[50,'50 m']],def:40},{d:1,k:'type',label:'桁の形式',help:'単純桁は静定、連続桁は不静定（3径間で不静定2次）。',opts:[['s','単純桁 ×3'],['c','3径間連続桁']],def:'s'},{d:1,k:'h',label:'桁の高さ',opts:[[1.5,'1.5 m'],[2.0,'2.0 m'],[2.5,'2.5 m'],[3.0,'3.0 m'],[3.5,'3.5 m']],def:2.0}],
+ calc(s){ const Af=0.6*0.04, tw=0.012, h=s.h, L_=s.L; const I=2*Af*(h/2)**2+tw*h**3/12, Z=I/(h/2); const wd=35, wl=20, E=2.0e8;
+   let Mx,d,form,nJ; if(s.type==='s'){ Mx=(wd+wl)*L_*L_/8; d=5*wl*L_**4/(384*E*I); form='M＝(w<sub>D</sub>＋w<sub>L</sub>)L²/8'; nJ=4; }
+   else { Mx=0.100*wd*L_*L_+0.117*wl*L_*L_; d=0.0099*wl*L_**4/(E*I); form='M＝0.100w<sub>D</sub>L²＋0.117w<sub>L</sub>L²（中間支点）'; nJ=2; }
+   const sig=Mx/Z/1000, dl=L_/500; const kg=(2*Af+tw*h)*7850; const cost=kg*L_*3*0.45/1000+nJ*8; // 百万円（桁1本分＋伸縮装置）
+   return {rows:[['断面二次モーメント',mm('I＝2A<sub>f</sub>(h/2)²＋t h³/12'),nf(I,4),'m⁴'],['断面係数',mm('Z＝I/(h/2)'),nf(Z,4),'m³'],['最大の曲げモーメント',mm(form),nf(Mx,0),'kN·m'],['曲げ応力度',mm('σ＝M/Z'),nf(sig),'N/mm²'],['車によるたわみ',mm(s.type==='s'?'δ＝5w<sub>L</sub>L⁴/(384EI)':'δ＝0.0099w<sub>L</sub>L⁴/(EI)'),nf(d*1000,0),'mm'],['伸縮装置（継ぎ目）の数',mm(s.type==='s'?'両端＋径間の間2か所':'両端だけ'),nJ,'か所']],
+     checks:[['曲げ（折れないか）',sig/140,140,sig<=140,ratioTxt(sig,140,'N/mm²')],['たわみ（揺れないか）',d/dl,dl,d<=dl,ratioTxt(d*1000,dl*1000,'mm')]],
+     cost, costTxt:`鋼材 ${nf(kg*L_*3/1000,0)} t＋継ぎ目 ${nJ} か所 ／ 約 ${nf(cost,0)} 百万円（桁1本分）`, sig, M:Mx};
+ },
+ fig(s,q){ const x0=20, sp=100, yb=70, c=s.type==='c'; const hh=Math.max(5,s.h*4); const ok=q.sig<=140;
+   let g='';
+   for(let i=0;i<3;i++){ const a=x0+i*sp; g+=R(a+(c?0:2),yb-hh,sp-(c?0:4),hh,ok?DC.m:'#f6c9c7',n,1.5); }
+   for(let i=0;i<4;i++){ const x=x0+i*sp; g+=R(x-5,yb,10,50,DC.s,n,1.5); if(!c||i===0||i===3) g+=L(x,yb-hh-8,x,yb-hh-2,r,3); }
+   let md='';
+   if(!c){ for(let i=0;i<3;i++){ const a=x0+i*sp; md+=P(`M${a},180 Q${a+sp/2},${180+60} ${a+sp},180`,'#fbe3e2',r,1.5); } }
+   else { md=P(`M${x0},180 Q${x0+40},228 ${x0+75},205 Q${x0+92},185 ${x0+sp},150 Q${x0+sp+30},205 ${x0+sp+50},207 Q${x0+sp+70},205 ${x0+2*sp},150 Q${x0+2*sp+8},185 ${x0+2*sp+25},205 Q${x0+2*sp+60},228 ${x0+3*sp},180`,'#fbe3e2',r,1.5); }
+   return S(340,250,L(0,yb+50,340,yb+50,DC.g,1),g,T(170,22,c?'1本につながった連続桁（継ぎ目は両端だけ）':'径間ごとに切れた単純桁（赤＝継ぎ目）',n,12),
+     L(x0,180,x0+3*sp,180,n,1),md,T(170,142,'M図（引張側に描く）',r,11),T(170,246,`最大 ${nf(q.M,0)} kN·m`,ok?b:r,13));
+ },
+ links:[['三連モーメント式（連続梁）',URLS.kozoR+'#d-indet-4'],['応力法（余分な支点を外す）',URLS.kozoR+'#d-indet-1'],['重ね合わせの原理',URLS.kozoR+'#d-indet-0'],['影響線',URLS.kozoR+'#d-il'],['構造力学ラボ「不静定構造」',URLS.kozo+'#u12']],
+ real:'高速道路の高架橋の多くは連続桁です。継ぎ目（伸縮装置）は車が通るたびにたたかれて傷みやすく、取り替えの工事で通行止めも必要になります。連続にすると継ぎ目が減り、地震で桁が落ちにくくもなります。一方で、不静定なので、支点が沈むと桁に余計な力が生まれます。地盤の良い場所を選ぶのはそのためです。'},
+]; })();
+
+// ---- 実践ラボ：本物を設計する流れ（依頼 → 条件 → 計算 → 照査 → 図面 → コスト） ----
+const $=s=>document.querySelector(s);
+const nf=(x,d=2)=>{ if(!isFinite(x)) return '—'; const a=Math.abs(x); const dd=a>=1000?0:a>=100?1:a>=10?d-1<0?0:Math.max(0,d-1):d; return (Math.round(x*10**dd)/10**dd).toLocaleString('ja-JP'); };
+const mm=s=>`<span class="mm">${s}</span>`;
+let JS={}; try{ JS=JSON.parse(localStorage.getItem(LAB.key)||'{}'); }catch(e){ JS={}; }
+const jsave=()=>{ try{ localStorage.setItem(LAB.key,JSON.stringify(JS)); }catch(e){} };
+function combos(c,base){ let out=[Object.assign({},base)]; c.inputs.filter(x=>x.d).forEach(inp=>{ const n=[]; out.forEach(o=>inp.opts.forEach(v=>n.push(Object.assign({},o,{[inp.k]:v[0]})))); out=n; }); return out; }
+// 条件（d なし）は固定したまま、設計で決める項目（d:1）だけを総当たりして、最も安い安全な案を探す
+function best(c,s){ const base={}; c.inputs.filter(x=>!x.d).forEach(x=>base[x.k]=s[x.k]); const key=JSON.stringify(base); c._best=c._best||{}; if(key in c._best) return c._best[key]; let bc=null; combos(c,base).forEach(t=>{ const r=c.calc(t); if(r.checks.every(x=>x[3])&&(!bc||r.cost<bc.cost)) bc={s:t,cost:r.cost}; }); return c._best[key]=bc; }
+function stars(c){ return (JS[c.id]||{}).st||0; }
+function home(){
+  location.hash=''; const tot=CASES.reduce((a,c)=>a+stars(c),0);
+  $('#crumb').textContent=''; $('#prog').textContent=`★ ${tot} / ${CASES.length*3}`;
+  $('#main').innerHTML=`<h1>${LAB.h1}</h1><p class="lead">${LAB.lead}</p>
+   <div class="flow">${['依頼を読む','条件を決める','計算する','照査する（安全か）','図面を見る','コストを比べる'].map((x,i)=>`<div><b>${i+1}</b>${x}</div>`).join('<i>→</i>')}</div>
+   <div class="cgrid">${CASES.map((c,i)=>`<button class="case" data-c="${i}"><span class="no">案件 ${String(i+1).padStart(2,'0')}</span><span class="fg">${c.thumb||''}</span><b>${c.title}</b><span class="ds">${c.client}</span><span class="st">${'★'.repeat(stars(c))}${'☆'.repeat(3-stars(c))}</span></button>`).join('')}</div>
+   <div class="links">${LAB.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t} →</a>`).join('')}</div>
+   <p class="foot">${LAB.note}</p>`;
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>openCase(+b.dataset.c));
+  window.scrollTo(0,0);
+}
+function openCase(i){
+  const c=CASES[i]; location.hash='c'+(i+1); $('#crumb').textContent=c.title;
+  const s=Object.assign({},...c.inputs.map(x=>({[x.k]:x.def!=null?x.def:x.opts[0][0]})), (JS[c.id]||{}).s||{});
+  $('#main').innerHTML=`<div class="chead"><span class="no">案件 ${String(i+1).padStart(2,'0')}</span><h2>${c.title}</h2></div>
+   <section class="req"><h3><span>1</span>依頼</h3><p class="cl">依頼主：${c.client}</p><p>${c.story}</p><ul>${c.req.map(x=>`<li>${x}</li>`).join('')}</ul></section>
+   <div class="cols"><section class="inp"><h3><span>2</span>条件を決める</h3><p class="hint">「条件」は現場で決まっていること。いろいろ変えて試せます。「設計で決める」が、あなたが選ぶ部材や寸法です。</p>${c.inputs.map(x=>`<label class="ip"><b><span class="tg ${x.d?'d':'c'}">${x.d?'設計で決める':'条件'}</span>${x.label}</b>${x.help?`<small>${x.help}</small>`:''}<div class="opts" data-k="${x.k}">${x.opts.map(o=>`<button data-v="${o[0]}" class="${s[x.k]==o[0]?'on':''}">${o[1]}</button>`).join('')}</div></label>`).join('')}</section>
+   <section class="drw"><h3><span>5</span>図面</h3><div id="fig"></div></section></div>
+   <section class="calc"><h3><span>3</span>計算する</h3><div id="rows"></div></section>
+   <section class="chk"><h3><span>4</span>照査する（安全か）</h3><div id="checks"></div></section>
+   <section class="cost"><h3><span>6</span>コストを比べる</h3><div id="cost"></div></section>
+   <section class="why"><h3>この設計で使った勉強</h3><div class="ulinks">${c.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>${c.real?`<p class="real"><b>本物では：</b>${c.real}</p>`:''}</section>
+   <div class="nav">${i>0?`<button class="b" id="pv">← 前の案件</button>`:''}<button class="b" id="hm">案件の一覧</button>${i<CASES.length-1?`<button class="b main" id="nx">次の案件 →</button>`:''}</div>`;
+  const upd=()=>{ const r=c.calc(s); const ok=r.checks.every(x=>x[3]); const bc=best(c,s);
+    $('#fig').innerHTML=c.fig(s,r);
+    $('#rows').innerHTML=`<table>${r.rows.map(([l,f,v,u])=>`<tr><td>${l}</td><td class="f">${f}</td><td class="v">${v}</td><td>${u||''}</td></tr>`).join('')}</table>`;
+    $('#checks').innerHTML=r.checks.map(([l,v,lim,okk,txt])=>{ const ratio=Math.max(0,Math.min(1.6,v)); return `<div class="ck ${okk?'ok':'ng'}"><div class="ckl"><b>${l}</b><span>${txt}</span></div><div class="gauge"><i style="width:${ratio/1.6*100}%"></i><em style="left:${1/1.6*100}%"></em></div><div class="ckv">${okk?'OK':'NG'}</div></div>`; }).join('')+`<div class="verdict ${ok?'ok':'ng'}">${ok?'すべて OK。この設計で安全です。':'NG があります。条件を変えて、全部 OK にしよう。'}</div>`;
+    let st=0; if(ok){ st=2; if(bc&&r.cost<=bc.cost*1.0001) st=3; }
+    else st=1;
+    const prev=stars(c); JS[c.id]={s:Object.assign({},s),st:Math.max(prev,st)}; jsave(); $('#prog').textContent=`★ ${CASES.reduce((a,x)=>a+stars(x),0)} / ${CASES.length*3}`;
+    $('#cost').innerHTML=`<div class="cbox"><div><small>この設計</small><b>${r.costTxt}</b></div><div><small>評価</small><b class="stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</b></div></div><p>${ok?(st===3?'<b>最も安い安全な設計です。</b>実務でも、安全を満たす中でいちばん経済的な案を選びます。':'安全ですが、もっと安くできる組み合わせがあります（★3は最安の安全な設計）。'):(bc?'まずは全部の照査を OK にしよう（★2）。':'<b>この条件では、どの部材を選んでも安全になりません。</b>実務なら、構造の形式そのものを見直します。条件を変えてみよう。')}</p>${bc&&!(ok&&st===3)?`<details class="ans"><summary>降参：最も安い安全な案を見る</summary><p>${c.inputs.filter(x=>x.d).map(x=>`${x.label}：<b>${(x.opts.find(o=>o[0]==bc.s[x.k])||[])[1]}</b>`).join('　')}</p></details>`:''}`;
+  };
+  document.querySelectorAll('.opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
+  upd();
+  $('#hm').onclick=home; const pv=$('#pv'); if(pv) pv.onclick=()=>openCase(i-1); const nx=$('#nx'); if(nx) nx.onclick=()=>openCase(i+1);
+  window.scrollTo(0,0);
+}
+$('#logo').onclick=()=>home();
+function route(){ const mt=location.hash.match(/^#c(\d+)$/); if(mt&&CASES[+mt[1]-1]) openCase(+mt[1]-1); else home(); }
+window.addEventListener('hashchange',()=>{ const mt=location.hash.match(/^#c(\d+)$/); if(mt){ const i=+mt[1]-1; if($('#crumb').textContent!==CASES[i].title) openCase(i);} });
+route();
+
+</script></body></html>

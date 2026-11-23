@@ -854,6 +854,8 @@ document.getElementById('logo').onclick=home;
 function route(){ const m=location.hash.match(/^#u(\d+)$/); if(m&&U[+m[1]-1]) openUnit(+m[1]-1); else home(); }
 window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#u(\d+)$/); if(m){ if(cur!==+m[1]-1) openUnit(+m[1]-1); } else if(cur!=null) home(); });
 // ==NAZO==
+const THEORY_URL='../jiban-riron/';
+const JISSEN_URL='../jiban-jissen/';
 const NAZO={
  phase:{q:'土をバケツに入れたとき、土の粒そのものが占めている体積はどれくらい？',o:['9割以上','6割くらい','3割以下'],a:1,w:'土は、粒（固体）・水・空気の3つでできています。ふつうの土は間隙比 e が0.6〜1くらいなので、粒が占めるのは全体の5〜6割。残りのすき間に水や空気が入っています。'},
  class:{q:'同じ「土」でも、砂と粘土で、水を含んだときのふるまいが全く違う。いちばんの理由は？',o:['粒の大きさが違うから','色が違うから','重さが違うから'],a:0,w:'粘土の粒は砂の千分の一以下と細かく、水と強く結びつきます。だから水の量でかたい→ねばねば→どろどろと変わり（コンシステンシー）、その境目が液性限界・塑性限界です。'},
@@ -932,6 +934,327 @@ function nzCard(i){
   const _check=check; check=function(){ _check.apply(this,arguments); const c=document.getElementById('nzcard'); if(c&&c._r) c._r(); }; }
 { const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>home(); }
 { const _h=home; home=function(){ _h.apply(this,arguments); const h=$main.querySelector('h1'); if(h){ const nm=document.title.replace(/ラボ$/,''); h.innerHTML=`${nm}の謎を、<b>予想して</b>解き明かす。`; } }; }
+// ---- もう一歩の謎（NAZO2）：単元のおまけの謎。予想 → 答えと理由 ----
+function nzExtra(i){
+  if(typeof NAZO2==='undefined') return; const u=U[i], L=NAZO2[u.id]; if(!L||!L.length) return;
+  const anchor=document.getElementById('nzcard'); if(!anchor) return;
+  L.forEach((z,k)=>{ const id='nzx-'+k; const old=document.getElementById(id); if(old) old.remove();
+    const c=document.createElement('section'); c.className='nzcard nzx'; c.id=id; c.style.borderWidth='3px';
+    (k===0?anchor:document.getElementById('nzx-'+(k-1))).after(c); const key=u.id+'#'+k;
+    const r=()=>{ const zz=NZ[key]||{};
+      c.innerHTML=`<span class="lb" style="background:#3286BE">もう一歩の謎 ${k+1}</span><h3>${z.q}</h3>
+       <div class="nzopts">${z.o.map((o,j)=>`<button data-k="${j}" class="${zz.p===j?'on':''} ${zz.p!=null&&j===z.a?'ans':''}">${o}</button>`).join('')}</div>
+       <div class="nzmsg">${zz.p==null?'予想してから、答えを見よう。':`<span class="hit">${zz.p===z.a?'予想どおり！':'予想が外れた！ だから面白い。'}</span>　答え：<b>${z.o[z.a]}</b><br>${z.w}${z.link?`<br><a href="${(typeof THEORY_URL!=='undefined'&&/^#d/.test(z.link[1]))?THEORY_URL+z.link[1]:z.link[1]}" target="_blank" rel="noopener">${z.link[0]} →</a>`:''}`}</div>`;
+      c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ if((NZ[key]||{}).p!=null) return; NZ[key]={p:+b.dataset.k}; nzSave(); r(); });
+    }; r(); });
+}
+{ const _open=openUnit; openUnit=function(i,g){ _open.apply(this,arguments); nzExtra(i); }; }
+
+// ---- 導出ノート：基本原理から、図と式で一歩ずつ導く ----
+const DC={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#93BCD6',s:'#D8CFBE',g:'#5E6B86',w:'#fff'};
+const dg={
+ S:(w,h,...p)=>`<svg viewBox="0 0 ${w} ${h}" class="dfig" role="img"><rect width="${w}" height="${h}" fill="#fff"/>${p.join('')}</svg>`,
+ L:(x1,y1,x2,y2,c=DC.n,w=2,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`,
+ A:(x1,y1,x2,y2,c=DC.r,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=9; const p1=[x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)], p2=[x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)];
+   return `<line x1="${x1}" y1="${y1}" x2="${x2-6*Math.cos(a)}" y2="${y2-6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${p1} ${p2}" fill="${c}"/>`; },
+ T:(x,y,s,c=DC.n,fs=13,an='middle',b=700)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="${b}" text-anchor="${an}" font-family="'Zen Kaku Gothic New',sans-serif">${s}</text>`,
+ M:(x,y,s,c=DC.n,fs=15,an='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-style="italic" font-weight="700" text-anchor="${an}" font-family="'Times New Roman',serif">${s}</text>`,
+ R:(x,y,w,h,f=DC.m,st=DC.n,sw=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" stroke="${st}" stroke-width="${sw}"/>`,
+ P:(d,f='none',st=DC.n,w=2,da='')=>`<path d="${d}" fill="${f}" stroke="${st}" stroke-width="${w}"${da?` stroke-dasharray="${da}"`:''}/>`,
+ C:(x,y,r,f=DC.w,st=DC.n,w=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${st}" stroke-width="${w}"/>`,
+ B:(x1,x2,y,c=DC.n,w=6)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,
+ G:(x1,x2,y)=>{ let s=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${DC.n}" stroke-width="2"/>`; for(let x=x1+4;x<=x2;x+=7) s+=`<line x1="${x}" y1="${y}" x2="${x-6}" y2="${y+7}" stroke="${DC.n}" stroke-width="1"/>`; return s; },
+ Pin:(x,y)=>dg.P(`M${x},${y} l-11,18 h22z`,DC.w)+dg.G(x-16,x+16,y+18),
+ Rol:(x,y)=>dg.P(`M${x},${y} l-11,14 h22z`,DC.w)+dg.C(x-6,y+18,3.5)+dg.C(x+6,y+18,3.5)+dg.G(x-16,x+16,y+22),
+ Fix:(x,y1,y2,side=-1)=>{ let s=dg.L(x,y1,x,y2,DC.n,3); for(let y=y1+3;y<=y2;y+=7) s+=dg.L(x,y,x+side*7,y+6,DC.n,1); return s; },
+ W:(x1,x2,y,c=DC.r,n,lab)=>{ n=n||Math.max(3,Math.round((x2-x1)/22)); let s=dg.L(x1,y-28,x2,y-28,c,2); for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=dg.A(x,y-28,x,y-2,c,1.6);} return s+(lab?dg.M((x1+x2)/2,y-34,lab,c,14):''); },
+ Dim:(x1,x2,y,lab,c=DC.n)=>dg.L(x1,y,x2,y,c,1.2)+dg.L(x1,y-6,x1,y+6,c,1.2)+dg.L(x2,y-6,x2,y+6,c,1.2)+`<rect x="${(x1+x2)/2-String(lab).length*4-4}" y="${y-9}" width="${String(lab).length*8+8}" height="16" fill="#fff"/>`+dg.M((x1+x2)/2,y+5,lab,c,14),
+ Mo:(x,y,r,lab,ccw=false,c=DC.b)=>{ const s=ccw?0:1; const a0=-2.4,a1=1.4; const x0=x+r*Math.cos(a0),y0=y+r*Math.sin(a0),xe=x+r*Math.cos(a1),ye=y+r*Math.sin(a1);
+   const [sx,sy,ex,ey]=ccw?[xe,ye,x0,y0]:[x0,y0,xe,ye]; const t=ccw?a0:a1; const tx=ccw?Math.sin(t):-Math.sin(t), ty=ccw?-Math.cos(t):Math.cos(t);
+   return `<path d="M${sx},${sy} A${r},${r} 0 1 ${s} ${ex},${ey}" fill="none" stroke="${c}" stroke-width="2.2"/>`+dg.A(ex-tx*6,ey-ty*6,ex+tx*2,ey+ty*2,c,2.2)+(lab?dg.M(x+r+8,y-r+4,lab,c,14,'start'):''); },
+};
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const m=s=>`<span class="mm">${s}</span>`;
+(function(){ const s=document.createElement('style'); s.textContent=`
+.pfd{display:block;margin:6px 0 8px;padding:8px 10px;background:#12286B;color:#fff!important;font-weight:900;text-decoration:none;font-size:14px}
+.pfd:hover{background:#C62422}.pfdi{display:inline-block;margin-top:6px;font-weight:700;font-size:13px;color:#C62422}
+.dv h1{font-family:"Dela Gothic One";font-weight:400;font-size:clamp(26px,5vw,40px);color:#12286B;margin:6px 0 8px;line-height:1.3}.dv h1 b{color:#C62422;font-weight:400}
+.dv .lead{max-width:760px}
+.dprin{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0 20px}
+.dprin div{background:#fff;border:3px solid #12286B;padding:10px 12px}.dprin b{display:block;color:#C62422;font-size:16px}.dprin .mm{font-size:16px;white-space:normal}
+.dprin small{display:block;margin-top:6px;font-size:12px;line-height:1.6;color:#5E6B86}.dprin small a{color:#12286B}
+.dtoc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 20px}.dtoc a{border:2px solid #12286B;padding:3px 10px;font-weight:700;font-size:13px;color:#12286B;text-decoration:none;background:#fff}.dtoc a:hover{background:#12286B;color:#fff}
+.dch{background:#fff;border:3px solid #12286B;padding:14px 16px 16px;margin:0 0 22px;scroll-margin-top:70px}
+.dch>h2{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;color:#12286B;font-size:24px}
+.dch .from{font-size:13px;font-weight:700;margin:0 0 10px}.dch .from span{display:inline-block;background:#C62422;color:#fff;padding:1px 8px;margin:2px 4px 2px 0}
+.dit{border-top:2px dashed #93BCD6;padding:14px 0 4px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:start;scroll-margin-top:70px}
+.dit h3{grid-column:1/-1;margin:0;font-size:19px;color:#12286B}.dit h3 em{font-style:normal;color:#C62422}
+.dfig{width:100%;height:auto;border:2px solid #12286B;background:#fff;display:block}
+.dfcap{font-size:12px;color:#5E6B86;margin:4px 0 0;line-height:1.5}
+.dst{margin:0;padding:0;list-style:none;counter-reset:s}
+.dst li{counter-increment:s;position:relative;padding:6px 0 8px 36px;line-height:1.8;border-bottom:1px solid #eceae3}
+.dst li::before{content:counter(s);position:absolute;left:0;top:7px;width:26px;height:26px;border-radius:50%;background:#12286B;color:#fff;font-weight:900;text-align:center;line-height:26px;font-size:14px}
+.dst li.q{color:#C62422;font-weight:700}.dst li.q::before{content:"？";background:#C62422}
+.dst li.hide{display:none}
+.dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
+.mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
+.dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
+.tk{background:#fff;border:4px solid #12286B;padding:14px 16px 16px;margin:14px 0 20px;scroll-margin-top:70px}
+.tkh{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;font-size:22px;color:#12286B}.tkh b{color:#C62422;font-weight:400}
+.tkl{margin:0 0 10px;font-size:13px;color:#5E6B86}
+.tkp{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.tkpc{font:inherit;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;cursor:pointer;background:#fff;border:2px solid var(--c);border-top:8px solid var(--c);padding:8px 10px;color:#12286B}
+.tkpc b{display:block;color:var(--c);font-size:14px}.tkpc .mm{font-size:14px;white-space:normal}.tkpc small{display:block;font-size:11px;line-height:1.5;color:#5E6B86;margin-top:4px}
+.tkpc.on{background:var(--c);color:#fff}.tkpc.on b,.tkpc.on small{color:#fff}
+.tka{text-align:center;font-weight:900;color:#12286B;margin:10px 0;font-size:14px;letter-spacing:.1em}
+.tkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.tkgb{border:2px solid #12286B;padding:10px;background:#F4F3EF;display:flex;flex-direction:column}.tkgb h3{margin:0;font-size:17px;color:#12286B}.tkgb>p{margin:2px 0 8px;font-size:12px;color:#5E6B86;line-height:1.5}
+.tku{display:flex;flex-direction:column;gap:5px}
+.tkuc{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1.5px solid #93BCD6;padding:5px 8px;font-size:13px;font-weight:700;color:#12286B;text-decoration:none;transition:.2s}
+.tkuc:hover{border-color:#C62422}.tkuc span{display:flex;gap:3px;flex:none}.tkuc i{width:10px;height:10px;border-radius:50%;display:block}
+.tk.hl .tkuc{opacity:.25}.tk.hl .tkuc.lit{opacity:1;border-color:#C62422;box-shadow:0 0 0 2px #C62422 inset}
+.tka2{margin:10px 0 4px;font-size:12px;font-weight:900;color:#C62422;margin-top:auto;padding-top:10px}
+.tkuse{margin:0;padding-left:1.2em;font-size:13px;line-height:1.6}
+.tksh{margin-top:12px;border-top:2px dashed #93BCD6;padding-top:8px}.tksh summary{cursor:pointer;font-weight:900;color:#12286B}
+.tksh table{border-collapse:collapse;margin-top:8px;font-size:13px;width:100%}.tksh td,.tksh th{border:1px solid #93BCD6;padding:4px 8px;text-align:left}.tksh th{background:#12286B;color:#fff}
+@media(max-width:700px){.dit{grid-template-columns:1fr}}`; document.head.appendChild(s); })();
+const TH=typeof THEORY!=='undefined'?THEORY:null;
+const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
+const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
+function taikei(byP){
+  const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
+  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
+   <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
+   <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
+   <div class="tka">▼ 原理を組み合わせると ▼</div>
+   <div class="tkg">${(DPR.groups||[]).map(([gn,gd,ids,uses])=>`<div class="tkgb"><h3>${gn}</h3><p>${gd}</p><div class="tku">${ids.filter(id=>DER[id]).map(id=>`<a href="#d-${id}" class="tkuc" data-ps="${DER[id].p.join(' ')}">${uname(id)}<span>${DER[id].p.map(k=>`<i style="background:${col(k)}"></i>`).join('')}</span></a>`).join('')}</div>
+     <div class="tka2">▼ 使う場面</div><ul class="tkuse">${uses.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}</div>
+   ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
+   <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
+}
+function deriveView(){
+  if(typeof DER==='undefined') return;
+  cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
+  const nm=TH?TH.name:document.title.replace(/ラボ$/,'');
+  const byP={}; U.forEach(u=>{ const d=DER[u.id]; if(d) d.p.forEach(k=>{ (byP[k]=byP[k]||[]).push(u); }); });
+  $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
+   <p class="lead">${DPR.lead}</p>
+   ${taikei(byP)}
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
+   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+     <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
+     ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
+       <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
+       <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
+     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+  const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
+  $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
+  $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
+  $main.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>step(b.dataset.all,true));
+  const id=location.hash.slice(1); const el=id&&id!=='d'?document.getElementById(id):null;
+  if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),30); else window.scrollTo(0,0);
+}
+{ const _h=home; home=function(){ if(TH||/^#d(-|$)/.test(location.hash)) return deriveView(); return _h.apply(this,arguments); };
+  const _o=openUnit; openUnit=function(i,g){ _o.apply(this,arguments); const u=U[i]; if(typeof DER==='undefined'||!DER[u.id]) return; const pf=$main.querySelector('.pf h3');
+    const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; const tg=TU?' target="_blank" rel="noopener"':'';
+    if(pf){ pf.insertAdjacentHTML('afterend',`<a class="pfd" href="${TU}#d-${u.id}"${tg}>理論ラボ：基本原理から、図と式で一歩ずつ導く →</a>`);
+      $main.querySelectorAll('.pf details .pfb').forEach(b=>b.insertAdjacentHTML('beforeend',`<a class="pfdi" href="${TU}#d-${u.id}"${tg}>理論ラボで、図つきの導出を見る →</a>`)); } };
+  window.addEventListener('hashchange',()=>{ if((TH||/^#d(-|$)/.test(location.hash)) && cur==null) deriveView(); });
+  const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>{ if(location.hash) history.replaceState(null,'',location.pathname+location.search); home(); };
+  const _hm=home; home=function(){ _hm.apply(this,arguments); if(/^#d/.test(location.hash)) return; const f=$main.querySelector('.nzintro')||$main.querySelector('.filters'); if(f&&typeof DER!=='undefined'&&!TH){ const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; f.insertAdjacentHTML('beforebegin',`<a class="pfd" href="${TU}#taikei"${TU?' target="_blank" rel="noopener"':''} style="margin:0 0 12px">理論ラボ：${document.title.replace(/ラボ$/,'')}の体系図と、基本原理からの導出（図つき）→</a>`+(typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:0 0 12px">実践ラボ：本物の案件を、依頼から図面・コストまで設計してみる →</a>`:'')); } };
+}
+
+const DPR={title:'6つの基本原理',lead:'地盤力学の式は、たくさんあるように見えて、出発点は6つだけです。土を「粒・水・空気」に分けて考え、水の流れと、粒どうしの押し合い・すべりを組み合わせると、圧密も土圧も液状化も全部説明できます。「次の一歩」で1行ずつ進み、次の行を読む前に自分で考えてみてください。',
+groups:[
+ ['土を知る','土の状態を、数で表す',['phase','class','compact'],['盛土の品質管理','土の名前を決める']],
+ ['水と土','水が流れ、土が縮む',['perm','eff','stressdist','consol'],['山留めの排水','埋立地の沈下の予測']],
+ ['土の強さ','すべる・押す・支える',['shear','earthp','bearing','slope'],['擁壁の設計','基礎の大きさ','がけの安全']],
+ ['地震と土','揺れで土が液体になる',['nliq'],['液状化の判定と対策']],
+],
+list:[
+ ['def','① 三相の定義','V＝V<sub>s</sub>＋V<sub>w</sub>＋V<sub>a</sub>','土は、粒（固体）・水・空気の3つでできている。状態は、その体積と質量の比で表す。'],
+ ['darcy','② ダルシーの法則','v＝k i','水は、水頭の傾き（動水勾配）に比例して、土の中を流れる（実験からわかった法則）。'],
+ ['eff','③ 有効応力の原理','σ′＝σ − u','土の強さと縮み方を決めるのは、粒どうしが押し合う力 σ′ だけ（テルツァギ）。'],
+ ['eq','④ 力のつりあい','ΣF＝0, ΣM＝0','土のかたまりも、動いていなければつりあっている。'],
+ ['mc','⑤ モール・クーロンの規準','τ＝c＋σ′ tanφ','すべる面では、せん断応力が「粘着力＋摩擦」に達する（実験からわかった法則）。'],
+ ['mass','⑥ 質量保存','抜けた水＝縮んだ体積','粒は縮まない。粘土が縮むのは、すき間の水が抜けた分だけ。'],
+]};
+const DER=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim,Mo}=dg; const n=DC.n,r=DC.r,b=DC.b,soil=DC.s,wt='#cfe2f1';
+const phase=(x,y,h1,h2,h3,l1,l2,l3)=>R(x,y,90,h1,'#fff')+R(x,y+h1,90,h2,DC.m)+R(x,y+h1+h2,90,h3,soil)+T(x+45,y+h1/2+5,l1,n,12)+T(x+45,y+h1+h2/2+5,l2,n,12)+T(x+45,y+h1+h2+h3/2+5,l3,n,12);
+return {
+phase:{p:['def'],it:[
+ {t:'三相図と間隙比',goal:'n＝e/(1＋e)',fig:S(320,190,phase(110,20,40,50,70,'空気','水','土粒子'),L(220,20,220,110,n,1.2),L(214,20,226,20,n,1.2),L(214,110,226,110,n,1.2),M(232,70,'V<tspan font-size="10">v</tspan>＝e',n,14,'start'),L(220,110,220,180,n,1.2),L(214,180,226,180,n,1.2),M(232,150,'V<tspan font-size="10">s</tspan>＝1',n,14,'start'),L(80,20,80,180,r,1.2),M(72,104,'1＋e',r,14,'end')),cap:'土を、空気・水・粒に分けて積み重ねた「三相図」。',
+  s:['土の中で、粒はばらばら、水と空気はすき間に入っている。計算しやすいように、3つを分けて積み重ねて描く。',
+   {q:'何を「1」とおくと、いちばん楽？'},
+   '粒（土粒子）の体積を 1 とおく。粒は縮まないので、どんなに締め固めても、この 1 は変わらない。',
+   `すき間（間隙）の体積を e とする。これが間隙比：<span class="eq">${m('e＝V<sub>v</sub> / V<sub>s</sub>')}</span>`,
+   `全体の体積は ${m('1＋e')}。すき間が全体に占める割合（間隙率）は<span class="eq">${m('n＝e / (1＋e)')}</span>`],key:'粒の体積を1とおく。地盤の計算は全部ここから始まる。'},
+ {t:'乾燥密度と間隙比',goal:'ρ<sub>d</sub>＝ρ<sub>t</sub>/(1＋w)',fig:S(320,190,phase(110,20,40,50,70,'空気','水','土粒子'),M(240,50,'m<tspan font-size="10">a</tspan>＝0',DC.g,13,'start'),M(240,90,'m<tspan font-size="10">w</tspan>＝w m<tspan font-size="10">s</tspan>',b,13,'start'),M(240,150,'m<tspan font-size="10">s</tspan>＝ρ<tspan font-size="10">s</tspan>×1',n,13,'start'),T(60,105,'質量',n,12)),
+  s:[`含水比は、粒の質量に対する水の質量：${m('w＝m<sub>w</sub> / m<sub>s</sub>')}。だから ${m('m<sub>w</sub>＝w m<sub>s</sub>')}。`,
+   `湿った土の密度：${m('ρ<sub>t</sub>＝(m<sub>s</sub>＋m<sub>w</sub>) / V＝m<sub>s</sub>(1＋w) / V')}`,
+   {q:'水を除いた「乾燥密度」は？'},
+   `${m('ρ<sub>d</sub>＝m<sub>s</sub> / V')} なので、上の式を (1＋w) で割ればよい<span class="eq">${m('ρ<sub>d</sub>＝ρ<sub>t</sub> / (1＋w)')}</span>`,
+   `三相図で V<sub>s</sub>＝1 なら、${m('m<sub>s</sub>＝ρ<sub>s</sub>')}、${m('V＝1＋e')}。だから ${m('ρ<sub>d</sub>＝ρ<sub>s</sub> / (1＋e)')}、つまり ${m('e＝ρ<sub>s</sub>/ρ<sub>d</sub> − 1')}。`]},
+ {t:'飽和度の関係式',goal:'S<sub>r</sub>e＝wG<sub>s</sub>',fig:S(320,170,phase(110,20,30,60,70,'空気','水','土粒子'),L(220,20,220,110,n,1.2),M(228,70,'e',n,14,'start'),L(240,50,240,110,b,1.2),M(248,85,'V<tspan font-size="10">w</tspan>',b,14,'start')),
+  s:['飽和度は、すき間のうち水が占める割合：${m("S<sub>r</sub>＝V<sub>w</sub> / V<sub>v</sub>")}。'.replace('${m("S<sub>r</sub>＝V<sub>w</sub> / V<sub>v</sub>")}',m('S<sub>r</sub>＝V<sub>w</sub> / V<sub>v</sub>')),
+   `V<sub>s</sub>＝1 のとき、粒の質量は ${m('G<sub>s</sub>ρ<sub>w</sub>')}（G<sub>s</sub> は土粒子の比重）。水の質量は ${m('w G<sub>s</sub> ρ<sub>w</sub>')}、水の体積は ${m('V<sub>w</sub>＝w G<sub>s</sub>')}。`,
+   `${m('S<sub>r</sub>＝wG<sub>s</sub> / e')}<span class="eq">${m('S<sub>r</sub> e＝w G<sub>s</sub>')}</span>3つのうち2つがわかれば、残りが出る。地下水位より下（S<sub>r</sub>＝1）なら ${m('e＝wG<sub>s</sub>')}。`]},
+ {t:'水中単位体積重量',goal:'γ′＝γ<sub>sat</sub>−γ<sub>w</sub>',fig:S(320,170,R(40,20,240,140,wt,'none'),R(110,60,100,70,soil),A(160,170,160,134,b),M(172,160,'浮力 γ<tspan font-size="10">w</tspan>V',b,13,'start'),A(160,60,160,100,r),M(172,82,'重さ γ<tspan font-size="10">sat</tspan>V',r,13,'start'),T(80,40,'地下水',b,12)),
+  s:['地下水位より下の土は、水の中に沈んでいる。',
+   {q:'水の中の物は、何を受ける？'},
+   `浮力（アルキメデスの原理）。体積 V の土は、${m('γ<sub>w</sub>V')} だけ上向きに押される。`,
+   `粒どうしの押し合いに効く、実質の重さは<span class="eq">${m('γ′＝γ<sub>sat</sub> − γ<sub>w</sub>')}</span>約半分。地下水位より下では、有効応力の計算にこの γ′ を使う。`]},
+]},
+class:{p:['def'],it:[
+ {t:'粒径加積曲線と均等係数',goal:'U<sub>c</sub>＝D<sub>60</sub>/D<sub>10</sub>',fig:S(320,180,L(40,150,300,150,n,1.5),L(40,150,40,20,n,1.5),P('M50,145 C110,140 120,40 180,32 S260,25 290,24','none',r,3),L(40,132,96,132,DC.g,1,'4 3'),L(96,132,96,150,DC.g,1,'4 3'),L(40,68,138,68,DC.g,1,'4 3'),L(138,68,138,150,DC.g,1,'4 3'),M(96,166,'D₁₀',n,13),M(138,166,'D₆₀',n,13),T(30,136,'10%',n,10,'end'),T(30,72,'60%',n,10,'end'),T(260,170,'粒の大きさ（対数）',n,11),T(70,16,'通過質量',n,11)),
+  s:['ふるいにかけて、ある大きさより小さい粒が何％あるかをグラフにする（粒径加積曲線）。',
+   '10％が通る大きさを D<sub>10</sub>、60％が通る大きさを D<sub>60</sub> とよぶ。',
+   {q:'曲線が「なだらか」と「急」では、何が違う？'},
+   `なだらか＝大小の粒が混ざっている。急＝粒がそろっている。これを数で表すのが<span class="eq">${m('U<sub>c</sub>＝D<sub>60</sub> / D<sub>10</sub>')}</span>大きいほど、小さい粒が大きい粒のすき間を埋めて、よく締まる（粒度がよい）。`]},
+ {t:'コンシステンシー限界',goal:'I<sub>p</sub>＝w<sub>L</sub>−w<sub>P</sub>',fig:S(320,130,L(20,70,300,70,n,2),...[[60,'w<tspan font-size="10">S</tspan>'],[150,'w<tspan font-size="10">P</tspan>'],[240,'w<tspan font-size="10">L</tspan>']].map(([x,t])=>L(x,60,x,80,r,2)+M(x,100,t,r,14)),T(40,50,'固体',n,12),T(105,50,'半固体',n,12),T(195,50,'塑性',n,12),T(275,50,'液性',n,12),L(150,115,240,115,b,2),T(195,128,'I<tspan font-size="9">p</tspan>（こねて形が保てる幅）',b,11),T(300,90,'含水比 →',n,11,'end')),
+  s:['粘土は、水の量で性質が変わる。乾いていると固く、水を足すとねばねば（塑性）、さらに足すとどろどろ（液性）。',
+   'その境目の含水比に名前がある：塑性限界 w<sub>P</sub>、液性限界 w<sub>L</sub>。',
+   {q:'「扱いやすい粘土」かどうかを、どう表す？'},
+   `ねばねばでいられる幅：<span class="eq">${m('I<sub>p</sub>＝w<sub>L</sub> − w<sub>P</sub>')}</span>今の含水比 w が液性限界にどれだけ近いかは ${m('I<sub>c</sub>＝(w<sub>L</sub> − w) / I<sub>p</sub>')}。I<sub>c</sub> が 0 に近い粘土は、少しの水や揺れで流れやすい。`]},
+]},
+compact:{p:['def'],it:[
+ {t:'締固め曲線とゼロ空気間隙曲線',goal:'ρ<sub>d</sub>＝ρ<sub>w</sub>/(w＋1/G<sub>s</sub>)',fig:S(320,190,L(40,160,300,160,n,1.5),L(40,160,40,20,n,1.5),P('M60,140 Q150,30 260,120','none',r,3),P('M70,30 Q170,50 290,140','none',b,2,'6 4'),L(150,60,150,160,DC.g,1,'4 3'),M(150,176,'w<tspan font-size="10">opt</tspan>',r,13),T(230,48,'空気0（上限）',b,11),T(270,178,'含水比 w',n,11),T(70,16,'乾燥密度',n,11)),
+  s:['同じ力で突き固めても、水の量で固まり方が変わる。',
+   {q:'水が少なすぎると？多すぎると？'},
+   '少ないと、粒どうしの摩擦が大きく、動かない。少し水があると、粒がすべり合って詰まる。でも多すぎると、水がすき間を占めて、粒が詰められない。山の頂上が最適含水比 w<sub>opt</sub>。',
+   `どんなに締めても、空気が0（S<sub>r</sub>＝1）以上には詰まらない。${m('e＝wG<sub>s</sub>')} を ${m('ρ<sub>d</sub>＝ρ<sub>s</sub>/(1＋e)')} に入れると<span class="eq">${m('ρ<sub>d</sub>＝ρ<sub>w</sub> / (w＋1/G<sub>s</sub>)')}</span>これがゼロ空気間隙曲線（青の点線）。締固め曲線は必ずこの下にある。`,
+   `現場の管理は、締固め度 ${m('D<sub>c</sub>＝ρ<sub>d</sub> / ρ<sub>d max</sub>')}（90％以上など）で行う。`]},
+]},
+perm:{p:['darcy','mass'],it:[
+ {t:'ダルシーの法則',goal:'Q＝kiA',fig:S(320,180,R(80,70,160,50,soil),L(60,40,60,95,b,2),L(260,70,260,95,b,2),P('M50,40 h20 M250,70 h20','none',b,2),L(40,40,40,70,r,1.2),M(32,60,'Δh',r,14,'end'),Dim(80,240,140,'L'),A(120,95,200,95,b),T(160,170,'水が土を通って流れる',n,12)),
+  s:['土の筒の両側で、水面の高さが Δh だけ違うと、水は高い方から低い方へ流れる。',
+   `水頭の差を、流れる距離で割ったものが動水勾配 ${m('i＝Δh / L')}（坂の急さ）。`,
+   `ダルシーは実験で、流速が i に比例することを見つけた：<span class="eq">${m('v＝k i')}</span>k は透水係数（土の水の通しやすさ）。`,
+   `流量は ${m('Q＝vA＝k i A')}。砂は k＝10<sup>−4</sup>〜10<sup>−2</sup> m/s、粘土は 10<sup>−9</sup> m/s 以下。1万倍以上違う。`]},
+ {t:'変水位透水試験',goal:'k＝(aL/AT) ln(h₁/h₂)',fig:S(320,190,R(140,20,16,90,wt),R(110,110,76,50,soil),A(166,40,166,70,r,1.5),M(174,56,'dh',r,13,'start'),M(148,14,'a',n,13),M(200,140,'A',n,13,'start'),Dim(110,186,178,''),L(100,110,100,160,n,1.2),M(92,140,'L',n,14,'end')),
+  s:['粘土は水が少ししか流れないので、細い管（断面 a）の水位が下がる速さを測る。',
+   `管の水が dt の間に dh 下がる。その水が試料を通った（質量保存）：${m('−a dh＝k (h/L) A dt')}`,
+   {q:'h と t の関係は？'},
+   `${m('−dh/h＝(kA/(aL)) dt')} を積分すると ${m('ln(h₁/h₂)＝kAT/(aL)')}<span class="eq">${m('k＝(aL / AT) ln(h₁/h₂)')}</span>`]},
+ {t:'成層地盤の平均透水係数',fig:S(320,170,R(40,30,240,30,DC.m),R(40,60,240,40,soil),R(40,100,240,30,'#e7dcc8'),A(20,80,60,80,b),T(70,25,'横の流れ：並列',b,12,'start'),A(250,10,250,160,r),T(250,170,'縦の流れ：直列',r,12)),
+  s:['地層が何枚も重なっていると、横と縦で水の通しやすさが違う。',
+   `横に流れるとき：どの層も同じ i（同じ坂）。流量が足される<span class="eq">${m('k<sub>h</sub>＝Σk<sub>i</sub>H<sub>i</sub> / ΣH<sub>i</sub>')}</span>`,
+   {q:'縦に流れるときは？'},
+   `全部の層を同じ流量が通る（同じ v）。水頭の損失が足される<span class="eq">${m('k<sub>v</sub>＝ΣH<sub>i</sub> / Σ(H<sub>i</sub>/k<sub>i</sub>)')}</span>水を通しにくい層が1枚あると、縦の流れはそこで止まる。`]},
+]},
+eff:{p:['eff','eq'],it:[
+ {t:'有効応力',goal:'σ′＝σ−u',fig:S(320,200,R(80,20,160,60,'#e7dcc8'),R(80,80,160,100,soil),R(80,80,160,100,wt,'none'),L(70,80,250,80,b,2),T(262,84,'▽地下水位',b,11,'start'),C(160,150,5,r,r),L(60,20,60,150,n,1),M(52,52,'z₁',n,14,'end'),M(52,120,'z₂',n,14,'end'),T(200,155,'深さ z の点',r,12,'start')),
+  s:['深さ z の点を、上にのっている土と水の重さが押している。全部の重さが全応力 σ：',
+   `${m('σ＝γ<sub>t</sub> z₁＋γ<sub>sat</sub> z₂')}`,
+   `すき間の水には水圧がある：${m('u＝γ<sub>w</sub> z₂')}`,
+   {q:'土の強さに効くのは、どっち？'},
+   '水圧は、粒を四方から同じように押すだけで、粒どうしを押しつけない。粒どうしの摩擦に効くのは、全体から水圧を引いた残り。',
+   `<span class="eq">${m('σ′＝σ − u＝γ<sub>t</sub> z₁＋γ′ z₂')}</span>地下水をくみ上げて u が下がると、σ′ が増えて粘土が縮む（地盤沈下）。`],key:'「全体の重さ − 水圧」。これが地盤の全ての問題のカギ。'},
+ {t:'上向きの浸透とボイリング',goal:'i<sub>c</sub>＝γ′/γ<sub>w</sub>',fig:S(320,180,R(100,40,120,110,soil),...[130,160,190].map(x=>A(x,140,x,60,b,2)),T(160,30,'下から水が押し上げる',b,12),A(160,165,160,152,r),T(250,100,'σ′ → 0 で',r,12),T(250,118,'砂が浮く',r,12)),
+  s:['掘った穴の底などで、下から上へ水が流れると、水が粒を押し上げる（浸透力）。',
+   `深さ z での有効応力：${m('σ′＝γ′z − iγ<sub>w</sub>z')}（浸透力の分だけ減る）`,
+   {q:'σ′＝0 になると、何が起きる？'},
+   `粒どうしの押し合いがなくなり、砂が水に浮いて沸き立つ（ボイリング）。そのときの動水勾配<span class="eq">${m('i<sub>c</sub>＝γ′ / γ<sub>w</sub>＝(G<sub>s</sub> − 1) / (1＋e)')}</span>だいたい 1。山留めの設計では、i をこれより十分小さくする。`]},
+]},
+stressdist:{p:['eq'],it:[
+ {t:'2：1分布法',goal:'Δσ＝qBL/((B＋z)(L＋z))',fig:S(320,190,R(120,30,80,16,n,n),A(160,6,160,28,r),M(172,16,'q',r,14,'start'),L(120,46,80,166,DC.g,1.5,'5 4'),L(200,46,240,166,DC.g,1.5,'5 4'),L(80,166,240,166,r,3),Dim(120,200,60,'B'),L(260,46,260,166,n,1),M(268,110,'z',n,14,'start'),T(160,184,'B＋z の幅に広がる',r,12)),
+  s:['基礎（幅 B、奥行き L）が、圧力 q で地面を押す。全体の力は qBL。',
+   '力は、深くなるほど斜めに広がる。簡単にするため、深さ z ごとに、縦2：横1の傾きで広がると考える。',
+   {q:'深さ z での広さは？'},
+   `幅も奥行きも、両側に z/2 ずつ広がって ${m('(B＋z)(L＋z)')}。力の合計は変わらない（つりあい）<span class="eq">${m('Δσ＝qBL / ((B＋z)(L＋z))')}</span>`]},
+ {t:'ブーシネスクの式',goal:'Δσ<sub>z</sub>＝3Qz³/(2πR⁵)',fig:S(320,190,L(20,40,300,40,n,2),A(160,6,160,38,r),M(172,18,'Q',r,14,'start'),C(220,140,5,b,b),L(160,40,220,140,DC.g,1.2,'4 3'),M(196,86,'R',DC.g,14,'start'),L(160,40,160,140,n,1,'4 3'),M(150,96,'z',n,14,'end'),P('M60,170 Q160,60 260,170','none',r,1.5,'6 4'),T(160,182,'同じ Δσ の線（圧力球根）',r,11)),
+  s:['地面を、どこまでも続く弾性体（つりあい＋適合＋フックの法則が成り立つ物）と考え、1点に Q を加える。',
+   '弾性体の式を解いた結果（ブーシネスク、1885年）、深さ z、距離 R の点の鉛直応力は',
+   `<span class="eq">${m('Δσ<sub>z</sub>＝3Q z³ / (2π R⁵)')}</span>`,
+   {q:'真下（R＝z）では、深さでどう変わる？'},
+   `${m('Δσ<sub>z</sub>＝3Q / (2π z²)')}。深さの2乗に反比例して、急に小さくなる。同じ大きさの線をつなぐと、球根の形（圧力球根）になる。`]},
+]},
+consol:{p:['mass','eff','darcy'],it:[
+ {t:'圧密沈下量',goal:'S＝HΔe/(1＋e₀)',fig:S(320,190,phase(50,20,0,70,60,'','水','土粒子'),phase(190,50,0,40,60,'','水','土粒子'),A(150,90,180,90,r),T(165,80,'σ′ 増',r,11),L(40,20,40,150,n,1),M(32,90,'1＋e₀',n,13,'end'),L(290,50,290,150,n,1),M(298,104,'1＋e₁',n,13,'start'),T(160,180,'粒は縮まない。水が抜けた分だけ縮む',n,12)),
+  s:['粘土の上に盛土をすると、有効応力 σ′ が増えて、粘土が押し縮められる。',
+   {q:'縮むのは、粒？すき間？'},
+   '粒は縮まない（質量保存）。抜けた水の分だけ、すき間が縮む。間隙比が e₀ から e₁ になる。',
+   `三相図で、全体の高さは ${m('1＋e')} に比例する。だから縮む割合は<span class="eq">${m('S / H＝(e₀ − e₁) / (1＋e₀)')}</span>`,
+   `e の減り方を、圧縮指数 C<sub>c</sub> で表すと ${m('Δe＝C<sub>c</sub> log(p₁/p₀)')}。体積圧縮係数 m<sub>v</sub> を使うと ${m('S＝m<sub>v</sub> Δσ′ H')}。`]},
+ {t:'圧密にかかる時間',goal:'t＝T<sub>v</sub>H²/c<sub>v</sub>',fig:S(320,190,R(40,20,240,20,'#f1e9c9'),R(40,40,240,110,soil),R(40,150,240,20,'#f1e9c9'),...[90,160,230].map(x=>A(x,95,x,46,b,1.5)+A(x,95,x,144,b,1.5)),T(160,34,'砂（水が抜ける）',n,11),T(160,166,'砂（水が抜ける）',n,11),L(296,40,296,95,r,1.5),M(302,72,'H',r,14,'start'),T(160,100,'粘土',n,12)),
+  s:['粘土の中の余分な水圧 u が、砂の層へ抜けていく。水圧が抜けた分だけ、有効応力が増えて縮む（有効応力の原理）。',
+   `水の流れはダルシーの法則（水圧の傾きに比例）。出ていった水＝縮んだ体積（質量保存）。2つを合わせると<span class="eq">${m('∂u/∂t＝c<sub>v</sub> ∂²u/∂z²')}</span>熱が伝わるのと同じ形の式（圧密方程式）。`,
+   {q:'層の厚さが2倍になると、時間は？'},
+   `式の形から、時間は「水が抜ける距離の2乗」に比例する。距離を H（両面から抜けるなら層厚の半分）として<span class="eq">${m('t＝T<sub>v</sub> H² / c<sub>v</sub>')}</span>2倍の厚さなら4倍の時間。砂の柱（ドレーン）を打って距離を短くすると、ぐっと早く沈む。`],key:'水が抜けるのに時間がかかる。だから埋立地は何年も沈み続ける。'},
+]},
+shear:{p:['mc','eff'],it:[
+ {t:'モール・クーロンの破壊規準',goal:'τ＝c＋σ′tanφ',fig:S(320,190,L(30,160,300,160,n,1.5),L(40,170,40,20,n,1.5),L(40,120,290,30,r,2.5),C(190,160,62,'#eef3f8',b,2),C(226,108,4,r,r),M(296,176,'σ′',n,14),M(50,24,'τ',n,14,'start'),M(30,124,'c',r,14,'end'),T(270,26,'破壊線',r,12),M(90,110,'φ',r,14)),
+  s:['土の箱を上下に押しながら（σ′）、横にずらす（τ）実験をする。',
+   {q:'押す力を大きくすると、ずらすのに必要な力は？'},
+   `大きくなる。押すほど摩擦が効くから。実験の結果は直線になる<span class="eq">${m('τ<sub>f</sub>＝c＋σ′ tanφ')}</span>c は粘着力、φ は内部摩擦角。`,
+   'ある点の応力をモールの円で描く。円が破壊線に触れたとき、その向きの面ですべる。',
+   '砂は c≒0、φ＝30〜40°。粘土を急に押すときは φ≒0 で、強さは c だけ。']},
+ {t:'一軸圧縮強さ',goal:'q<sub>u</sub>＝2c',fig:S(320,170,L(30,140,300,140,n,1.5),L(40,150,40,20,n,1.5),L(40,80,290,80,r,2.5),C(100,140,60,'#eef3f8',b,2),M(160,156,'q<tspan font-size="10">u</tspan>',n,13),M(30,84,'c',r,14,'end'),T(250,74,'φ＝0',r,12)),
+  s:['粘土の円柱を、横から押さえずに上から押していく（一軸圧縮試験）。こわれたときの力が q<sub>u</sub>。',
+   '横の応力は 0、縦が q<sub>u</sub>。モールの円は 0 から q<sub>u</sub> まで、半径 q<sub>u</sub>/2。',
+   `粘土（φ＝0）の破壊線は水平で、高さ c。円が触れるので<span class="eq">${m('c＝q<sub>u</sub> / 2')}</span>`]},
+ {t:'すべり面の角度',goal:'θ＝45°＋φ/2',fig:S(320,170,R(130,30,60,110,soil),L(130,120,190,50,r,2.5),A(160,4,160,28,n),A(160,166,160,142,n),T(220,90,'45°＋φ/2',r,13,'start')),
+  s:['モールの円で、破壊線に触れる点は、円の中心から見て横軸から (90°＋φ) の位置。',
+   '円の上の角度は、実際の面の角度の2倍になっている。',
+   `だから、最大主応力の面から測ったすべり面の角度は<span class="eq">${m('θ＝45° ＋ φ/2')}</span>砂の試料は、斜め約60°の面でずれてこわれる。`]},
+]},
+earthp:{p:['mc','eq','eff'],it:[
+ {t:'ランキンの主働土圧係数',goal:'K<sub>a</sub>＝tan²(45°−φ/2)',fig:S(320,180,L(30,150,300,150,n,1.5),L(40,160,40,20,n,1.5),L(40,150,290,40,r,2.5),C(210,150,70,'none',DC.g,1.5),C(180,150,40,'#eef3f8',b,2),C(140,150,4,b,b),C(220,150,4,n,n),M(140,168,'σ<tspan font-size="10">h</tspan>',b,13),M(220,168,'σ<tspan font-size="10">v</tspan>',n,13),T(280,36,'破壊線',r,12)),
+  s:['壁の裏の土。深さ z では、上の土の重さで縦の応力 ${m("σ<sub>v</sub>＝γz")} が決まっている。'.replace('${m("σ<sub>v</sub>＝γz")}',m('σ<sub>v</sub>＝γz')),
+   '壁が少し前に動くと、横の応力 σ<sub>h</sub> が下がっていく。モールの円がだんだん大きくなる。',
+   {q:'σ<sub>h</sub> はどこまで下がれる？'},
+   `円が破壊線に触れるまで。そのとき ${m('sinφ＝(σ<sub>v</sub> − σ<sub>h</sub>) / (σ<sub>v</sub>＋σ<sub>h</sub>)')}（c＝0 の砂）`,
+   `σ<sub>h</sub>/σ<sub>v</sub> を解くと<span class="eq">${m('K<sub>a</sub>＝(1 − sinφ) / (1＋sinφ)＝tan²(45° − φ/2)')}</span>φ＝30° なら 1/3。`]},
+ {t:'土圧の合力と作用点',goal:'P<sub>a</sub>＝½K<sub>a</sub>γH²',fig:S(320,190,R(100,20,20,150,'#ccc'),R(120,20,160,150,soil),P('M100,20 L100,170 L40,170Z','#fbe3e2',r,2),A(80,130,98,130,r,3),T(54,124,'P<tspan font-size="9">a</tspan>',r,13),L(30,130,30,170,n,1),M(24,154,'H/3',n,12,'end'),L(300,20,300,170,n,1),M(306,100,'H',n,14,'start')),
+  s:[`深さ z の土圧は ${m('p＝K<sub>a</sub> γ z')}。深さに比例するので、三角形の分布。`,
+   `全体の力は三角形の面積<span class="eq">${m('P<sub>a</sub>＝½ K<sub>a</sub> γ H²')}</span>`,
+   {q:'どこを押していると考えればいい？'},
+   '三角形の重心、下から H/3 の高さ。擁壁が倒れないか（転倒）は、この点のまわりのモーメントで調べる。',
+   `壁が土の方へ押し込まれるときは、逆に σ<sub>h</sub> が上がって受働土圧：${m('K<sub>p</sub>＝tan²(45°＋φ/2)＝1 / K<sub>a</sub>')}。`]},
+]},
+bearing:{p:['mc','eq'],it:[
+ {t:'テルツァギの支持力式',goal:'q<sub>u</sub>＝cN<sub>c</sub>＋γD<sub>f</sub>N<sub>q</sub>＋½γBN<sub>γ</sub>',fig:S(320,190,L(10,50,310,50,n,2),R(120,40,80,30,'#ccc'),A(160,6,160,38,r),P('M120,70 L160,110 L200,70','#fbe3e2',r,2),P('M120,70 Q100,140 60,120 L20,50','none',b,2),P('M200,70 Q220,140 260,120 L300,50','none',b,2),T(160,98,'Ⅰ',r,13),T(80,100,'Ⅱ',b,13),T(240,100,'Ⅱ',b,13),T(30,74,'Ⅲ',b,13),T(290,74,'Ⅲ',b,13),Dim(120,200,180,'B'),L(212,50,212,70,n,1),M(218,64,'D<tspan font-size="9">f</tspan>',n,12,'start')),
+  s:['基礎を押し続けると、真下の土のくさび（Ⅰ）が押し込まれ、横の土（Ⅱ、Ⅲ）を押しのけて、地面が盛り上がってこわれる。',
+   {q:'こわれるのを止めている力は、何と何と何？'},
+   'すべり面の粘着力 c、横で押さえている根入れ部分の土の重さ γD<sub>f</sub>、すべる土そのものの重さによる摩擦 γB。',
+   `すべり面に沿ったつりあい（モール・クーロン）を計算した結果を、3つの項にまとめたもの：<span class="eq">${m('q<sub>u</sub>＝c N<sub>c</sub>＋γ₁ D<sub>f</sub> N<sub>q</sub>＋½ γ₂ B N<sub>γ</sub>')}</span>N は φ だけで決まる数（支持力係数）。`,
+   `安全率3で割って許容支持力 ${m('q<sub>a</sub>＝q<sub>u</sub> / 3')}。粘土（φ＝0）なら ${m('N<sub>c</sub>≒5.1')}、${m('q<sub>u</sub>≒5.1c＋γD<sub>f</sub>')}。`]},
+]},
+slope:{p:['eq','mc','eff'],it:[
+ {t:'無限斜面（乾いた砂）',goal:'F<sub>s</sub>＝tanφ/tanβ',fig:S(320,190,P('M20,170 L300,40 L300,190 L20,190Z',soil,n,2),R(150,94,50,26,'#e7dcc8',n,1.5),A(175,107,175,160,r),M(184,150,'W',r,14,'start'),A(175,107,128,129,b),T(110,138,'W sinβ',b,12),T(60,184,'β',n,14)),
+  s:['長く続く斜面の上の、土のかたまり（重さ W）を考える。',
+   `重さを、斜面に沿う向きと直角の向きに分ける。すべらせる力：${m('W sinβ')}、斜面を押す力：${m('W cosβ')}`,
+   `止める力は摩擦：${m('W cosβ tanφ')}`,
+   {q:'安全率（止める力 ÷ すべらせる力）は？'},
+   `<span class="eq">${m('F<sub>s</sub>＝tanφ / tanβ')}</span>W が消える。高さに関係なく、斜面の角度が φ を超えるとすべる。砂山の角度が φ になる理由。`]},
+ {t:'水がしみ込んだ斜面',goal:'F<sub>s</sub>≒(γ′/γ<sub>sat</sub>)·tanφ/tanβ',fig:S(320,190,P('M20,170 L300,40 L300,190 L20,190Z',soil,n,2),P('M20,170 L300,40 L300,190 L20,190Z',wt,'none',0),...[100,170,240].map(x=>A(x-30,170-(x-20)*130/280+50,x+10,170-(x-20)*130/280+31,b,1.5)),T(220,170,'斜面に平行な浸透',b,12)),
+  s:['大雨で斜面が水で満たされ、斜面に沿って水が流れる。',
+   `すべらせる力は、水を含んだ重さで ${m('γ<sub>sat</sub> sinβ')} に増える。`,
+   `止める摩擦は、水圧の分だけ減った有効応力で ${m('γ′ cosβ tanφ')}（有効応力の原理）。`,
+   `<span class="eq">${m('F<sub>s</sub>＝(γ′/γ<sub>sat</sub>) tanφ / tanβ')}</span>γ′/γ<sub>sat</sub>≒1/2。乾いているときの半分。大雨で崩れる理由。`]},
+ {t:'円弧すべり（分割法）',goal:'F<sub>s</sub>＝Σ(cl＋W cosα tanφ)/ΣW sinα',fig:S(320,190,P('M10,160 L120,160 L220,60 L310,60','none',n,2),P('M90,160 A140,140 0 0 0 250,60','none',r,2.5,'6 4'),C(200,10,4,r,r),...[[130,150,158],[160,120,170],[190,90,168],[220,60,150]].map(([x,y1,y2])=>L(x,y1,x,y2,DC.g,1.2)),T(200,26,'中心 O',r,12),T(150,184,'土を縦の短冊に分ける',n,12)),
+  s:['斜面全体が、円弧の面に沿って回るようにすべると考える。',
+   '土を縦の短冊に分ける。短冊ごとに、重さ W をすべり面の向き（角度 α）に分ける。',
+   `円の中心まわりのモーメント：すべらせる ${m('ΣW sinα')}、止める ${m('Σ(c l＋W cosα tanφ)')}（l は短冊の底の長さ）`,
+   `<span class="eq">${m('F<sub>s</sub>＝Σ(c l＋W cosα tanφ) / ΣW sinα')}</span>円の中心と半径を変えて、いちばん小さい F<sub>s</sub> を探す。`]},
+]},
+nliq:{p:['eff','mc'],it:[
+ {t:'液状化のしくみ',goal:'σ′→0 で τ→0',fig:S(320,170,...[[60,60],[90,60],[75,86],[105,86],[60,112],[90,112]].map(([x,y])=>C(x,y,13,soil)),R(180,25,120,130,wt,'none'),...[[210,50],[250,70],[225,100],[265,125],[205,135],[245,40]].map(([x,y])=>C(x,y,13,soil)),A(130,90,170,90,r),T(82,155,'粒が支え合う',n,12),T(240,165,'水に浮く（σ′＝0）',b,12)),
+  s:['ゆるく詰まった砂は、粒どうしが支え合って立っている。すき間は水で満たされている。',
+   {q:'地震で揺すられると、粒はどうなる？'},
+   '詰まろうとして下に動く。でも水がすぐには抜けないので、粒の重さが水にかかり、水圧 u が上がる。',
+   `有効応力 ${m('σ′＝σ − u')} が下がり、0 になると、強さ ${m('τ＝σ′ tanφ')} も 0。砂は泥水のように流れる（液状化）。`,
+   '水の抜け道ができると、水と砂が地面に噴き出す（噴砂）。マンホールが浮き、建物が傾く。']},
+ {t:'液状化の判定',goal:'F<sub>L</sub>＝R/L',fig:S(320,170,L(40,20,40,150,n,1.5),R(40,20,200,130,soil),C(140,100,5,r,r),A(80,100,130,100,b),A(200,100,150,100,b),T(140,80,'地震のせん断 τ',b,12),T(140,140,'深さ z',n,12)),
+  s:['深さ z の砂に、地震がどれだけの「ずらす力」をかけるかを考える。',
+   `地表の加速度が a なら、上の土の重さに a/g をかけた力：${m('τ＝(a/g) σ<sub>v</sub> r<sub>d</sub>')}（r<sub>d</sub> は深さで減る係数）`,
+   `これを有効応力で割った ${m('L＝τ / σ′<sub>v</sub>')} が、地震の強さ。砂の液状化しにくさ R は、室内試験や N値から決める。`,
+   `<span class="eq">${m('F<sub>L</sub>＝R / L')}</span>1 以下なら液状化する。地下水位が浅く（σ′ が小さい）、ゆるい（R が小さい）砂ほど危ない。`]},
+]},
+}; })();
 
 // ==/NAZO==
 route();

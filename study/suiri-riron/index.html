@@ -1,0 +1,1184 @@
+<title>水理学 理論ラボ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* Layout: a study hub. Home = syllabus grid of 16 units; unit view = key points (left) + generated problem card (right). Shared risograph palette of the lab series. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86; --soft:#EAF2F8;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+body{-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;gap:12px;padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#crumb{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#prog{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+main{max-width:1080px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(30px,6vw,54px);line-height:1.1;margin:0;color:var(--navy);text-wrap:balance}
+h1 b{color:var(--red);font-weight:400}
+.lead{font-size:15px;line-height:1.8;max-width:64ch;margin:10px 0 14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px}
+.chip{font-family:var(--f-body);font-weight:900;font-size:13px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:5px 12px;cursor:pointer}
+.chip.on{background:var(--navy);color:var(--paper)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.unit{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px 12px;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.unit .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em;display:flex;justify-content:space-between;gap:6px}
+.unit .nm{font-weight:900;font-size:17px}
+.unit .ds{font-size:12px;color:var(--muted);line-height:1.6}
+.unit .bar{height:5px;background:var(--line);margin-top:6px}
+.unit .bar i{display:block;height:100%;background:var(--blue)}
+.tag{font-size:10px;font-weight:900;padding:0 5px;border:1.5px solid currentColor;letter-spacing:0}
+.tag.k{color:var(--red)} .tag.d{color:var(--blue)} .tag.c{color:var(--muted)}
+.games{margin-top:22px;border-top:2px solid var(--navy);padding-top:12px}
+.games h2{font-family:var(--f-disp);font-weight:400;font-size:18px;margin:0 0 8px;color:var(--navy)}
+.games ul{margin:0;padding-left:18px;line-height:1.9;font-size:14px}
+a{color:var(--blue);font-weight:700}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:16px}
+/* unit view */
+.uhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
+.uhead h2{font-family:var(--f-disp);font-weight:400;font-size:clamp(22px,4vw,32px);margin:0;color:var(--navy)}
+.ucols{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:18px;align-items:start}
+@media (max-width:820px){.ucols{grid-template-columns:minmax(0,1fr)}.pcard{order:-1}}
+.points{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px}
+.points h3,.pcard h3{font-size:13px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 6px}
+.points ul{margin:0;padding-left:18px;font-size:14px;line-height:1.85}
+.points li{margin-bottom:2px}
+.f{font-family:"Times New Roman",Times,serif;font-style:italic;font-weight:700;font-size:1.08em;white-space:nowrap}
+.life{margin-top:10px;border-top:2px solid var(--navy);padding-top:6px}
+.life h3{margin:6px 0 4px!important}
+.life p{margin:0;font-size:14px;line-height:1.8;background:var(--soft);padding:6px 9px;border-left:4px solid var(--blue)}
+.points .game{margin-top:8px;font-size:13px;font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.pcard{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px 14px}
+.types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.types .chip{font-size:12px;padding:3px 9px}
+.fig{background:var(--paper);border:1.5px solid var(--line);margin:4px 0 8px}
+.fig svg{display:block;width:100%;height:auto;max-height:300px}
+.q{font-size:15px;line-height:1.8;margin:0 0 8px}
+.ansrow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:6px 0}
+.ansrow label{display:flex;align-items:center;gap:6px;font-weight:900;font-size:14px}
+.ansrow input{font-family:var(--f-body);font-size:17px;font-weight:700;width:110px;padding:5px 8px;border:2px solid var(--navy);background:var(--paper);color:var(--ink)}
+.ansrow input.ok{border-color:var(--red);background:#FBEDEC}
+.ansrow input.ng{border-color:var(--muted);background:#EEEFF3}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:7px 14px;cursor:pointer;min-height:38px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button:focus-visible,input:focus-visible,.unit:focus-visible,.chip:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.res{font-family:var(--f-disp);font-size:20px;margin-top:8px}
+.res.ok{color:var(--red)} .res.ng{color:var(--muted)}
+.sol{margin-top:8px;border-left:4px solid var(--blue);padding:4px 0 4px 10px;font-size:14px;line-height:1.85}
+.sol b{color:var(--navy)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+@media (max-width:520px){.logo{font-size:15px}}
+.nqmwrap{margin-top:12px;border-top:2px solid var(--navy);padding-top:8px}
+.nqmwrap h3{font-size:13px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 4px}
+.nqm{display:grid;gap:6px}
+.dgm{background:var(--paper);border:1.5px solid var(--line);padding:4px 6px}
+.dgt{font-weight:900;font-size:13px}.dgt small{font-weight:700;color:var(--muted);font-size:11px;margin-left:4px}
+.dgm svg{display:block;width:100%;height:auto;max-height:320px}
+.dgm.flat svg{max-height:60px}
+.pf{margin-top:10px;border-top:2px solid var(--navy);padding-top:6px}
+.pf h3{margin:6px 0 2px!important}.pf .pfl{margin:0 0 6px;font-size:12px;color:#5E6B86}
+.pf details{border:1.5px solid var(--navy);background:#fff;margin:5px 0}
+.pf summary{cursor:pointer;padding:6px 9px;font-weight:700;font-size:14px;color:var(--navy)}
+.pf details[open] summary{background:var(--soft);border-bottom:1px solid var(--mid)}
+.pf .pfb .f{white-space:normal;font-style:normal}
+.pf .pfb{padding:8px 10px;font-size:14px;line-height:1.9}
+.pf .pff svg{display:block;width:100%;max-width:320px;margin:0 auto 6px;border:1px solid var(--mid)}
+.miss{border:3px solid var(--red);background:#fdf3f2;padding:8px 10px;margin-bottom:10px}
+.miss h3{margin:0 0 4px!important;color:var(--red)!important;font-size:14px}
+.mlink{display:block;text-decoration:none;color:var(--ink);padding:5px 0;border-top:1px dashed #e3b5b3}
+.mlink:first-of-type{border-top:0}.mlink b{display:block;color:var(--navy);font-size:14px}.mlink span{font-size:12.5px;line-height:1.6;display:block}
+.mlink:hover b{text-decoration:underline}
+.rcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+.xcard{background:var(--sheet);border:2px solid var(--red);padding:10px 14px 12px}
+.xw h3{font-size:16px!important;font-weight:900;color:var(--navy)!important;margin:0 0 4px!important;letter-spacing:0!important}
+.xw h3::before{content:"体験";font-size:11px;color:#fff;background:var(--red);padding:1px 6px;margin-right:8px;vertical-align:2px}
+.xlead{font-size:13px;line-height:1.75;margin:0 0 6px;color:var(--ink)}
+.xfig{background:var(--paper);border:1.5px solid var(--line)}
+.xfig svg{display:block;width:100%;height:auto;max-height:340px}
+.xfig .two{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:4px}
+.xctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 14px;margin:8px 0 4px}
+.xs{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 8px;font-size:12px;font-weight:700}
+.xs span{grid-column:1/-1;color:var(--muted)}
+.xs input[type=range]{width:100%;accent-color:var(--red);min-width:0}
+.xs b{font-size:13px;color:var(--navy);white-space:nowrap;font-variant-numeric:tabular-nums;min-width:70px;text-align:right}
+.xs select{grid-column:1/-1;font-family:var(--f-body);font-weight:700;font-size:13px;border:1.5px solid var(--navy);background:var(--sheet);color:var(--ink);padding:3px}
+.xctl .b{align-self:end;justify-self:start}
+.kv{display:grid;grid-template-columns:auto auto;justify-content:start;gap:2px 14px;font-size:13px;margin:6px 0;font-variant-numeric:tabular-nums}
+.kv span{color:var(--muted);font-weight:700}.kv b{color:var(--navy)}.kv b.ng{color:var(--red)}
+.xnote{font-size:13px;line-height:1.8;margin:4px 0 0;background:var(--soft);padding:6px 9px;border-left:4px solid var(--blue)}
+.warn{font-size:13px;font-weight:700;color:var(--red);margin:6px 0}
+@media (max-width:820px){.rcol{order:-1}}
+
+</style>
+
+<header>
+  <button class="logo" id="logo" title="目次へ">水理学<b>理論ラボ</b></button>
+  <div id="crumb"></div>
+  <div id="prog"></div>
+</header>
+<main id="main"></main>
+
+<script>
+"use strict";
+// ================= helpers =================
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function nf(x,dd){ if(!isFinite(x)) return '—'; if(x===0) return '0'; const a=Math.abs(x); let d= dd!=null? dd : (a>=1000?0: a>=100?1: a>=1?2: 3); let s=(Math.round(x*10**d)/10**d).toString(); if(s==='-0') s='0'; return s; }
+const F=s=>`<span class="f">${String(s).replace(/_([A-Za-z0-9\u4e00-\u9fff]+)/g,'<sub>$1</sub>')}</span>`;
+const sq=x=>x*x, cube=x=>x*x*x;
+const PI=Math.PI;
+
+// ================= SVG figure builder (world coords, y up) =================
+function Fig(x0,y0,x1,y1,W=520){
+  const s=W/(x1-x0), H=Math.round((y1-y0)*s); const out=[];
+  const X=x=>((x-x0)*s).toFixed(1), Y=y=>((y1-y)*s).toFixed(1);
+  const col={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#5E6B86',g:'#B9AD95',e:'#D8CFBE'};
+  const o={
+    s,
+    line(a,b,c,d,w=5,cl='n',dash){ out.push(`<line x1="${X(a)}" y1="${Y(b)}" x2="${X(c)}" y2="${Y(d)}" stroke="${col[cl]||cl}" stroke-width="${w}" stroke-linecap="round" ${dash?`stroke-dasharray="${dash}"`:''}/>`); return o; },
+    poly(pts,cl='n',w=5,fill='none'){ out.push(`<polyline points="${pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="${fill}" stroke="${col[cl]||cl}" stroke-width="${w}" stroke-linejoin="round"/>`); return o; },
+    rect(x,y,w,h,fill='#12286B',stroke='none'){ out.push(`<rect x="${X(x)}" y="${Y(y+h)}" width="${(w*s).toFixed(1)}" height="${(h*s).toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`); return o; },
+    circ(x,y,r,fill='#fff',cl='n',w=2.5){ out.push(`<circle cx="${X(x)}" cy="${Y(y)}" r="${r}" fill="${fill}" stroke="${col[cl]||cl}" stroke-width="${w}"/>`); return o; },
+    text(x,y,t,cl='n',size=14,anchor='middle',dy=0){ out.push(`<text x="${X(x)}" y="${(+Y(y)+dy).toFixed(1)}" fill="${col[cl]||cl}" font-size="${size}" font-weight="900" text-anchor="${anchor}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${t}</text>`); return o; },
+    // support at (x,y): pin, roller, fixedL/fixedR (wall), fixedB (ground)
+    sup(t,x,y){ const px=+X(x), py=+Y(y), u=13;
+      if(t==='pin'||t==='roller'){ out.push(`<path d="M${px},${py+3} L${px-u},${py+u*1.5} L${px+u},${py+u*1.5}Z" fill="#12286B"/>`);
+        if(t==='roller') out.push(`<circle cx="${px-u*.55}" cy="${py+u*1.5+4}" r="3.5" fill="#12286B"/><circle cx="${px+u*.55}" cy="${py+u*1.5+4}" r="3.5" fill="#12286B"/>`);
+        const yb=py+u*1.5+(t==='roller'?8:0); out.push(`<line x1="${px-u*1.4}" y1="${yb+1}" x2="${px+u*1.4}" y2="${yb+1}" stroke="#12286B" stroke-width="3"/>`); for(let i=-3;i<=2;i++) out.push(`<line x1="${px+i*8}" y1="${yb+3}" x2="${px+i*8+6}" y2="${yb+9}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      else if(t==='fixedL'||t==='fixedR'){ const d=t==='fixedL'?-1:1; out.push(`<line x1="${px}" y1="${py-22}" x2="${px}" y2="${py+22}" stroke="#12286B" stroke-width="3.5"/>`); for(let i=-22;i<20;i+=7) out.push(`<line x1="${px}" y1="${py+i}" x2="${px+d*9}" y2="${py+i+7}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      else if(t==='fixedB'){ out.push(`<line x1="${px-20}" y1="${py}" x2="${px+20}" y2="${py}" stroke="#12286B" stroke-width="3.5"/>`); for(let i=-20;i<18;i+=7) out.push(`<line x1="${px+i}" y1="${py+2}" x2="${px+i+7}" y2="${py+10}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      return o; },
+    hinge(x,y){ return o.circ(x,y,5.5,'#fff','n',2.5); },
+    node(x,y){ return o.circ(x,y,4,'#12286B','n',1); },
+    // arrow ending at (x,y) with direction (dx,dy) world; length in px
+    P(x,y,dx,dy,label,cl='r',len=46,lp='tail'){ const px=+X(x),py=+Y(y), d=Math.hypot(dx,dy), ux=dx/d, uy=-dy/d; const tx=px-ux*len, ty=py-uy*len;
+      out.push(`<line x1="${tx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(px-ux*7).toFixed(1)}" y2="${(py-uy*7).toFixed(1)}" stroke="${col[cl]}" stroke-width="3"/>`);
+      const a=Math.atan2(uy,ux); out.push(`<path d="M${px},${py} L${(px-11*Math.cos(a-.42)).toFixed(1)},${(py-11*Math.sin(a-.42)).toFixed(1)} L${(px-11*Math.cos(a+.42)).toFixed(1)},${(py-11*Math.sin(a+.42)).toFixed(1)}Z" fill="${col[cl]}"/>`);
+      if(label){ const lx=tx-ux*12, ly=ty-uy*12; out.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="${col[cl]}" font-size="14" font-weight="900" text-anchor="${Math.abs(ux)>.5?(ux>0?'end':'start'):'middle'}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); }
+      return o; },
+    W(xa,xb,y,label,h=.9,cl='r',tri=false){ const n=Math.max(4,Math.round((xb-xa)*s/34)); const top=[]; for(let i=0;i<=n;i++){ const x=xa+(xb-xa)*i/n, hh= tri? h*i/n : h; if(hh*s>8) o.P(x,y,0,-1,null,cl,hh*s,'tail'); top.push([x,y+hh]); }
+      o.poly(top,cl,2); if(label) o.text((xa+xb)/2+(tri?(xb-xa)*.12:0),y+h+(16/s),label,cl,14); return o; },
+    M(x,y,cw,label,cl='r'){ const px=+X(x),py=+Y(y),r=20; const a0=cw?200:-20, a1=cw?-20:200; const p=a=>[px+r*Math.cos(a*PI/180),py-r*Math.sin(a*PI/180)];
+      const [sx,sy]=p(cw?160:20),[ex,ey]=p(cw?20:160); out.push(`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${r},${r} 0 0 ${cw?1:0} ${ex.toFixed(1)},${ey.toFixed(1)}" fill="none" stroke="${col[cl]}" stroke-width="3"/>`);
+      const tx= cw? 1:-1; out.push(`<path d="M${ex.toFixed(1)},${ey.toFixed(1)} l${(-7*tx).toFixed(1)},-9 l${(9*tx).toFixed(1)},-1Z" fill="${col[cl]}"/>`);
+      if(label) out.push(`<text x="${px}" y="${py-r-12}" fill="${col[cl]}" font-size="14" font-weight="900" text-anchor="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    dim(xa,xb,y,label){ const a=+X(xa),b=+X(xb),yy=+Y(y); out.push(`<line x1="${a}" y1="${yy}" x2="${b}" y2="${yy}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${a}" y1="${yy-6}" x2="${a}" y2="${yy+6}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${b}" y1="${yy-6}" x2="${b}" y2="${yy+6}" stroke="#5E6B86" stroke-width="1.2"/>`);
+      out.push(`<text x="${(a+b)/2}" y="${yy-8}" fill="#5E6B86" font-size="13" font-weight="700" text-anchor="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    dimV(x,ya,yb,label){ const xx=+X(x),a=+Y(ya),b=+Y(yb); out.push(`<line x1="${xx}" y1="${a}" x2="${xx}" y2="${b}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${xx-6}" y1="${a}" x2="${xx+6}" y2="${a}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${xx-6}" y1="${b}" x2="${xx+6}" y2="${b}" stroke="#5E6B86" stroke-width="1.2"/>`);
+      out.push(`<text x="${xx-8}" y="${(a+b)/2}" fill="#5E6B86" font-size="13" font-weight="700" text-anchor="end" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    raw(sv){ out.push(sv); return o; },
+    svg(){ return `<svg viewBox="-30 -30 ${W+60} ${H+60}" xmlns="http://www.w3.org/2000/svg" role="img">${out.join('')}</svg>`; },
+    X,Y
+  };
+  return o;
+}
+// common beam figure: supports [{x,t}], loads, dims
+let lastBeam=null;
+function beamDia(L,sups,loads,opt){ const ext=opt.ext||0; if((opt.dims||[]).some(d=>String(d[2]).includes('k='))) return null;
+  const st={pts:[[0,0],[L+ext,0]],sup:[],hinges:[],loads:[]};
+  for(const s of sups){ if(s.t==='hinge') st.hinges.push(s.x); else st.sup.push({s:s.x,t:s.t.startsWith('fixed')?'fixed':s.t,lab:s.lab||''}); }
+  for(const l of loads){ const v=parseFloat(String(l.label).replace(/^[^0-9.\-]*/,'')); if(!isFinite(v)||l.tri) return null;
+    if(l.t==='P') st.loads.push({k:'P',s:l.x,v,dir:'down'}); else if(l.t==='w') st.loads.push({k:'w',s0:l.x0,s1:l.x1,v,dir:'down'}); else if(l.t==='M') st.loads.push({k:'M',s:l.x,v:l.cw?v:-v}); }
+  const ok=[...st.sup.map(x=>x.s),...st.hinges,...st.loads.flatMap(l=>l.k==='w'?[l.s0,l.s1]:[l.s])].every(x=>Math.abs(x*4-Math.round(x*4))<1e-9); return ok?st:null; }
+function beamFig(L,sups,loads,opt={}){
+  lastBeam=beamDia(L,sups,loads,opt);
+  const ext=opt.ext||0; const f=Fig(-.6,-1.6,L+ext+.6,2.4);
+  f.line(0,0,L+ext,0,7);
+  for(const s of sups){ if(s.t==='hinge') f.hinge(s.x,0); else f.sup(s.t,s.x,0); if(s.lab) f.text(s.x,0,s.lab,'n',14,'middle',s.t==='fixedL'?-30:44); }
+  for(const l of loads){ if(l.t==='P') f.P(l.x,0,0,-1,l.label); else if(l.t==='w') f.W(l.x0,l.x1,0,l.label,.9,'r',l.tri); else if(l.t==='M') f.M(l.x,0,l.cw,l.label); }
+  (opt.dims||[]).forEach(d=>f.dim(d[0],d[1],-1.25,d[2]));
+  return f.svg();
+}
+
+
+// ================= 断面力図エンジン（断面力図ラボと共通） =================
+const NQM=(function(){
+const PI=Math.PI;
+function nf(x,d){ if(!isFinite(x)) return '—'; if(Math.abs(x)<5e-7) return '0'; const a=Math.abs(x); if(d==null) d=a>=100?1:a>=10?2:2; let s=(Math.round(x*10**d)/10**d).toString(); if(s==='-0') s='0'; return s; }
+const F=s=>`<span class="f">${String(s).replace(/_([A-Za-z0-9]+)/g,'<sub>$1</sub>')}</span>`;
+const COL={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#5E6B86',g:'#B9AD95',e:'#D8CFBE',mid:'#93BCD6'};
+// ================= geometry =================
+function mkGeom(pts){ const seg=[]; let S=0; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i],[x1,y1]=pts[i+1]; const L=Math.hypot(x1-x0,y1-y0); seg.push({x0,y0,x1,y1,L,s0:S,tx:(x1-x0)/L,ty:(y1-y0)/L}); S+=L; }
+  function at(s){ s=Math.max(0,Math.min(S,s)); let g=seg[seg.length-1]; for(const q of seg){ if(s<=q.s0+q.L+1e-9){ g=q; break; } } const u=s-g.s0; return {x:g.x0+g.tx*u,y:g.y0+g.ty*u,tx:g.tx,ty:g.ty,seg:g}; }
+  function atR(s){ for(const q of seg){ if(s<q.s0+q.L-1e-9 && s>=q.s0-1e-9){ const u=s-q.s0; return {x:q.x0+q.tx*u,y:q.y0+q.ty*u,tx:q.tx,ty:q.ty,seg:q}; } } return at(s); }
+  const corners=[0]; seg.forEach(q=>corners.push(q.s0+q.L));
+  return {seg,S,at,atR,corners}; }
+
+// ================= FEM solver (2D frame, EA large) =================
+const H=0.25; // mesh step & snap
+function gdir(dir){ return dir==='down'?[0,-1]:dir==='up'?[0,1]:dir==='right'?[1,0]:[-1,0]; }
+function solve(st,EI=1){
+  const G=mkGeom(st.pts), S=G.S, n=Math.round(S/H)+1; const sv=[]; for(let k=0;k<n;k++) sv.push(k*H);
+  const nodes=sv.map(s=>G.at(s)); const hinge=new Set((st.hinges||[]).map(s=>Math.round(s/H)));
+  let nd=3*n; const extra={}; hinge.forEach(k=>{ extra[k]=nd++; });
+  const EA=EI*1e5; const K=Array.from({length:nd},()=>new Float64Array(nd)); const Fv=new Float64Array(nd);
+  const els=[];
+  for(let e=0;e<n-1;e++){ const a=nodes[e],b=nodes[e+1]; const L=Math.hypot(b.x-a.x,b.y-a.y), c=(b.x-a.x)/L, s=(b.y-a.y)/L;
+    const dof=[3*e,3*e+1,(hinge.has(e)&&e>0)?extra[e]:3*e+2, 3*(e+1),3*(e+1)+1,3*(e+1)+2];
+    const k1=EA/L,k2=12*EI/L**3,k3=6*EI/L**2,k4=4*EI/L,k5=2*EI/L;
+    const kl=[[k1,0,0,-k1,0,0],[0,k2,k3,0,-k2,k3],[0,k3,k4,0,-k3,k5],[-k1,0,0,k1,0,0],[0,-k2,-k3,0,k2,-k3],[0,k3,k5,0,-k3,k4]];
+    const T=[[c,s,0,0,0,0],[-s,c,0,0,0,0],[0,0,1,0,0,0],[0,0,0,c,s,0],[0,0,0,-s,c,0],[0,0,0,0,0,1]];
+    // distributed load on this element
+    let qt=0,qn=0; const sm=(sv[e]+sv[e+1])/2;
+    for(const l of st.loads) if(l.k==='w' && sm>Math.min(l.s0,l.s1) && sm<Math.max(l.s0,l.s1)){ const [gx,gy]=gdir(l.dir); qt+=l.v*(gx*c+gy*s); qn+=l.v*(-gx*s+gy*c); }
+    const fe=[qt*L/2,qn*L/2,qn*L*L/12,qt*L/2,qn*L/2,-qn*L*L/12];
+    // global
+    const kg=Array.from({length:6},()=>new Float64Array(6)); for(let i=0;i<6;i++)for(let j=0;j<6;j++){ let v=0; for(let p=0;p<6;p++)for(let q=0;q<6;q++) v+=T[p][i]*kl[p][q]*T[q][j]; kg[i][j]=v; }
+    const fg=new Float64Array(6); for(let i=0;i<6;i++){ let v=0; for(let p=0;p<6;p++) v+=T[p][i]*fe[p]; fg[i]=v; }
+    for(let i=0;i<6;i++){ Fv[dof[i]]+=fg[i]; for(let j=0;j<6;j++) K[dof[i]][dof[j]]+=kg[i][j]; }
+    els.push({e,a,b,L,c,s,dof,kl,T,fe,qt,qn,s0:sv[e],s1:sv[e+1]}); }
+  for(const l of st.loads){ if(l.k==='P'){ const k=Math.round(l.s/H); const [gx,gy]=gdir(l.dir); Fv[3*k]+=l.v*gx; Fv[3*k+1]+=l.v*gy; } else if(l.k==='M'){ const k=Math.round(l.s/H); Fv[3*k+2]+=-l.v; } }
+  // constraints
+  const fix=new Set(); const reac=[];
+  for(const sp of st.sup){ const k=Math.round(sp.s/H); const p=nodes[k];
+    const dofs= sp.t==='fixed'?[3*k,3*k+1,3*k+2]: sp.t==='pin'?[3*k,3*k+1]:[3*k+1]; dofs.forEach(d=>fix.add(d)); reac.push({sp,k,p,dofs}); }
+  const free=[]; for(let i=0;i<nd;i++) if(!fix.has(i)) free.push(i);
+  // solve reduced
+  const m=free.length; const A=free.map(i=>{ const r=new Float64Array(m+1); free.forEach((j,jj)=>r[jj]=K[i][j]); r[m]=Fv[i]; return r; });
+  let maxd=0; for(let i=0;i<m;i++) maxd=Math.max(maxd,Math.abs(A[i][i]));
+  let unstable=false;
+  for(let col=0;col<m;col++){ let piv=col,best=Math.abs(A[col][col]); for(let r=col+1;r<m;r++){ const v=Math.abs(A[r][col]); if(v>best){best=v;piv=r;} }
+    if(best<maxd*1e-11){ unstable=true; break; } if(piv!==col){ const t=A[piv];A[piv]=A[col];A[col]=t; }
+    const d=A[col][col]; for(let r=col+1;r<m;r++){ const f=A[r][col]/d; if(f===0) continue; const Ar=A[r],Ac=A[col]; for(let j=col;j<=m;j++) Ar[j]-=f*Ac[j]; } }
+  const D=new Float64Array(nd);
+  if(!unstable){ const x=new Float64Array(m); for(let i=m-1;i>=0;i--){ let v=A[i][m]; for(let j=i+1;j<m;j++) v-=A[i][j]*x[j]; x[i]=v/A[i][i]; } free.forEach((i,ii)=>D[i]=x[ii]); }
+  // element end forces
+  for(const el of els){ const dg=el.dof.map(i=>D[i]); const dl=el.T.map(r=>r.reduce((a,v,j)=>a+v*dg[j],0)); const f=el.kl.map((r,i)=>r.reduce((a,v,j)=>a+v*dl[j],0)-el.fe[i]);
+    el.Ni=-f[0]; el.Qi=f[1]; el.Mi=-f[2]; el.Nj=f[3]; el.Qj=-f[4]; el.Mj=f[5]; }
+  // reactions: K D - F at fixed dofs
+  for(const r of reac){ r.val=r.dofs.map(d=>{ let v=0; for(let j=0;j<nd;j++) v+=K[d][j]*D[j]; return v-Fv[d]; }); r.Rx=0;r.Ry=0;r.Mz=0; r.dofs.forEach((d,i)=>{ const t=d%3; if(t===0) r.Rx=r.val[i]; else if(t===1) r.Ry=r.val[i]; else r.Mz=r.val[i]; }); }
+  // determinacy (open chain): reactions - 3 - hinges
+  const nr=reac.reduce((a,r)=>a+r.dofs.length,0); const deg=nr-3-hinge.size;
+  const disp=nodes.map((p,k)=>({x:p.x,y:p.y,ux:D[3*k],uy:D[3*k+1],rz:D[3*k+2]}));
+  return {G,S,nodes,els,reac,unstable,deg,disp,D,sv};
+}
+function valAt(el,u,kind){ if(kind==='N') return el.Ni-el.qt*u; if(kind==='Q') return el.Qi+el.qn*u; return el.Mi+el.Qi*u+el.qn*u*u/2; }
+function valS(R,s,kind,side){ // side: -1 just before, +1 just after
+  let el=R.els.find(e=> side<0? (s>e.s0+1e-9 && s<=e.s1+1e-9) : (s>=e.s0-1e-9 && s<e.s1-1e-9)); if(!el) el= side<0? R.els[0]:R.els[R.els.length-1];
+  return valAt(el,Math.max(0,Math.min(el.L,s-el.s0)),kind); }
+
+// ================= SVG helpers =================
+function view(G,pad,W){ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; for(const q of G.seg){ x0=Math.min(x0,q.x0,q.x1); x1=Math.max(x1,q.x0,q.x1); y0=Math.min(y0,q.y0,q.y1); y1=Math.max(y1,q.y0,q.y1); }
+  x0-=pad[3]; x1+=pad[1]; y0-=pad[2]; y1+=pad[0]; const sc=W/(x1-x0); const Hh=(y1-y0)*sc; return {x0,x1,y0,y1,sc,W,H:Hh,X:x=>((x-x0)*sc),Y:y=>((y1-y)*sc),inv:(px,py)=>[px/sc+x0, y1-py/sc]}; }
+const fx=v=>v.toFixed(1);
+function arrowSvg(px,py,ux,uy,len,cl,label,lw=3){ // arrow ends at (px,py) screen, pointing along (ux,uy) screen
+  const tx=px-ux*len,ty=py-uy*len; const a=Math.atan2(uy,ux); let s=`<line x1="${fx(tx)}" y1="${fx(ty)}" x2="${fx(px-ux*8)}" y2="${fx(py-uy*8)}" stroke="${cl}" stroke-width="${lw}"/>`;
+  s+=`<path d="M${fx(px)},${fx(py)} L${fx(px-12*Math.cos(a-.42))},${fx(py-12*Math.sin(a-.42))} L${fx(px-12*Math.cos(a+.42))},${fx(py-12*Math.sin(a+.42))}Z" fill="${cl}"/>`;
+  if(label){ const lx=tx-ux*12,ly=ty-uy*12; s+=txt(lx,ly,label,cl,13,Math.abs(ux)>.5?(ux>0?'end':'start'):'middle'); } return s; }
+function txt(x,y,t,cl='#12286B',size=13,anchor='middle',w=900,halo=true){ return `<text x="${fx(x)}" y="${fx(y)}" fill="${cl}" font-size="${size}" font-weight="${w}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif" ${halo?'paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"':''}>${t}</text>`; }
+function momArc(px,py,cw,cl,label,r=18){ const p=a=>[px+r*Math.cos(a*PI/180),py-r*Math.sin(a*PI/180)]; const [sx,sy]=p(cw?150:30),[ex,ey]=p(cw?30:150);
+  let s=`<path d="M${fx(sx)},${fx(sy)} A${r},${r} 0 1 ${cw?1:0} ${fx(ex)},${fx(ey)}" fill="none" stroke="${cl}" stroke-width="3"/>`;
+  // arrow head at end, tangent direction
+  const ang=(cw?30:150)*PI/180; const tdx=cw? Math.sin(ang):-Math.sin(ang), tdy=cw? Math.cos(ang):Math.cos(ang); // screen tangent approx
+  const hx=ex,hy=ey; const dx=cw?-1:1; s+=`<path d="M${fx(hx+dx*0)},${fx(hy)} l${fx(dx*-1+ (cw?-9:9))},${fx(-4)} l${fx(cw?4:-4)},${fx(10)}Z" fill="${cl}"/>`;
+  if(label) s+=txt(px,py-r-12,label,cl,13); return s; }
+function supSvg(t,px,py,orient){ const u=12; let s='';
+  if(t==='pin'||t==='roller'){ s+=`<path d="M${fx(px)},${fx(py+3)} L${fx(px-u)},${fx(py+u*1.5)} L${fx(px+u)},${fx(py+u*1.5)}Z" fill="#12286B"/>`;
+    if(t==='roller') s+=`<circle cx="${fx(px-u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/><circle cx="${fx(px+u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/>`;
+    const yb=py+u*1.5+(t==='roller'?8:0); s+=`<line x1="${fx(px-u*1.5)}" y1="${fx(yb+1)}" x2="${fx(px+u*1.5)}" y2="${fx(yb+1)}" stroke="#12286B" stroke-width="3"/>`; for(let i=-3;i<=2;i++) s+=`<line x1="${fx(px+i*8)}" y1="${fx(yb+3)}" x2="${fx(px+i*8+6)}" y2="${fx(yb+9)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else if(orient==='L'||orient==='R'){ const d=orient==='L'?-1:1; s+=`<line x1="${fx(px)}" y1="${fx(py-22)}" x2="${fx(px)}" y2="${fx(py+22)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px)}" y1="${fx(py+i)}" x2="${fx(px+d*10)}" y2="${fx(py+i+7)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else { s+=`<line x1="${fx(px-22)}" y1="${fx(py)}" x2="${fx(px+22)}" y2="${fx(py)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px+i)}" y1="${fx(py+2)}" x2="${fx(px+i+7)}" y2="${fx(py+11)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  return s; }
+function fixedOrient(G,s){ const p=G.at(s); const end= s<1e-9?-1:1; if(Math.abs(p.ty)>.5) return 'B'; return (p.tx*end)<0?'L':'R'; }
+function structSvg(G,st,V,opt={}){ let s='';
+  const dim=opt.dimAfter; // dim part after cut
+  for(const q of G.seg){ s+=`<line x1="${fx(V.X(q.x0))}" y1="${fx(V.Y(q.y0))}" x2="${fx(V.X(q.x1))}" y2="${fx(V.Y(q.y1))}" stroke="${opt.thin?'#B9AD95':'#12286B'}" stroke-width="${opt.thin?3:7}" stroke-linecap="round"/>`; }
+  if(!opt.thin){ for(const sp of st.sup){ const p=G.at(sp.s); s+=supSvg(sp.t,V.X(p.x),V.Y(p.y),sp.t==='fixed'?fixedOrient(G,sp.s):null); }
+    for(const h of (st.hinges||[])){ const p=G.at(h); s+=`<circle cx="${fx(V.X(p.x))}" cy="${fx(V.Y(p.y))}" r="6" fill="#fff" stroke="#12286B" stroke-width="2.5"/>`; } }
+  return s; }
+
+function vw(){ return 560; }
+function sidePad(G){ return G.seg.length>1?2.6:1.4; }
+let R=null; const S={st:null,cut:null};
+function diagSvg(kind,opt={}){ const G=R.G; const sp=sidePad(G); const flat=!R.unstable&&R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,kind))<1e-6)); let vt=flat?1.1:2.3, vb=flat?0.4:vt; if(!flat&&G.seg.length===1&&!R.unstable){ const sg2= kind==='M'?-1:1; let up=0,dn=0; for(const e of R.els) for(const u of [0,e.L/2,e.L]){ const v=valAt(e,u,kind)*sg2; if(v>1e-6) up=1; if(v<-1e-6) dn=1; } vt=up?2.3:0.6; vb=dn?2.3:0.6; }
+  const Vd=view(G,[vt,sp,vb,sp],vw()); let s=structSvg(G,S.st,Vd,{thin:true});
+  if(R.unstable){ return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}${txt(Vd.W/2,Vd.H/2,'不安定','#C62422',16)}</svg>`; }
+  let mx=0; for(const el of R.els){ for(const u of [0,el.L/2,el.L]) mx=Math.max(mx,Math.abs(valAt(el,u,kind))); }
+  const span=Math.max(Vd.x1-Vd.x0,Vd.y1-Vd.y0); const k= mx>1e-6? (G.seg.length>1?1.3:1.5)/mx:0;
+  const sideSign= kind==='M'?-1:1; const fill= kind==='M'?'rgba(198,36,34,.22)':kind==='Q'?'rgba(50,134,190,.24)':'rgba(18,40,107,.18)'; const st= kind==='M'?'#C62422':kind==='Q'?'#3286BE':'#12286B';
+  const lim= opt.upto!=null? opt.upto : 1e9;
+  let path='';
+  for(const el of R.els){ if(el.s0>=lim-1e-9) break; const L=Math.min(el.L,lim-el.s0); const nx=-el.s,ny=el.c; const us=[0,L/4,L/2,3*L/4,L]; const base=us.map(u=>[el.a.x+el.c*u,el.a.y+el.s*u]); const off=us.map((u,i)=>{ const v=valAt(el,u,kind)*k*sideSign; return [base[i][0]+nx*v,base[i][1]+ny*v]; });
+    const poly=[...base,...off.slice().reverse()]; s+=`<polygon points="${poly.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="${fill}" stroke="none"/>`;
+    path+=`<polyline points="${off.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="none" stroke="${st}" stroke-width="2.2"/>`;
+    // vertical connectors at ends
+    path+=`<line x1="${fx(Vd.X(base[0][0]))}" y1="${fx(Vd.Y(base[0][1]))}" x2="${fx(Vd.X(off[0][0]))}" y2="${fx(Vd.Y(off[0][1]))}" stroke="${st}" stroke-width="0.8" stroke-opacity=".7"/>`; }
+  s+=path;
+  // labels
+  if(mx>1e-6 && opt.upto==null){ const keys=new Set([0,R.S]); R.G.corners.forEach(c=>keys.add(c)); S.st.sup.forEach(p=>keys.add(p.s)); (S.st.hinges||[]).forEach(h=>keys.add(h)); S.st.loads.forEach(l=>{ if(l.k==='w'){ keys.add(l.s0); keys.add(l.s1);} else keys.add(l.s); });
+    const cand=[]; [...keys].sort((a,b)=>a-b).forEach(sk=>{ for(const side of [-1,1]){ if((side<0&&sk<1e-9)||(side>0&&sk>R.S-1e-9)) continue; const v=valS(R,sk,kind,side); cand.push({s:sk,v,side}); } });
+    // local extrema inside elements (Q=0 for M)
+    if(kind==='M') for(const el of R.els){ if(Math.abs(el.qn)>1e-9){ const u=-el.Qi/el.qn; if(u>1e-6&&u<el.L-1e-6) cand.push({s:el.s0+u,v:valAt(el,u,'M'),side:0,ext:true}); } }
+    const placed=[]; cand.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+    for(const c of cand){ if(Math.abs(c.v)<mx*0.03) continue; const g= c.side<0? G.at(c.s): G.atR(c.s); const nx=-g.ty,ny=g.tx; const vv=c.v*k*sideSign; const sh=c.side*0.0; const ux=g.x+g.tx*(c.side*0.28)+nx*(vv+Math.sign(vv||1)*0.42), uy=g.y+g.ty*(c.side*0.28)+ny*(vv+Math.sign(vv||1)*0.42); const px=Vd.X(ux),py=Vd.Y(uy);
+      if(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<30 || (Math.abs(q[2]-c.v)<1e-6 && Math.hypot(q[0]-px,q[1]-py)<70))) continue; placed.push([px,py,c.v]);
+      s+=txt(px,py,(kind==='M'?nf(Math.abs(c.v)):(c.v>0?'+':'−')+nf(Math.abs(c.v))),st,G.seg.length>1?22:14); }
+  }
+  if(mx<=1e-6) s+=txt(Vd.W/2,Vd.Y(R.G.seg[0].y0)-16,`${kind}＝0（どこでも）`,st,14);
+  if(S.cut!=null && opt.upto==null){ const g=G.at(S.cut); const v=valS(R,S.cut,kind,1)*k*sideSign; const nx=-g.ty,ny=g.tx; s+=`<line x1="${fx(Vd.X(g.x))}" y1="${fx(Vd.Y(g.y))}" x2="${fx(Vd.X(g.x+nx*v))}" y2="${fx(Vd.Y(g.y+ny*v))}" stroke="#C62422" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="${fx(Vd.X(g.x+nx*v))}" cy="${fx(Vd.Y(g.y+ny*v))}" r="4.5" fill="#C62422"/>`; }
+  if(opt.upto!=null){ const g=G.at(Math.min(lim,R.S)); s+=`<circle cx="${fx(Vd.X(g.x))}" cy="${fx(Vd.Y(g.y))}" r="6" fill="#C62422"/>`; }
+  return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}</svg>`; }
+return function(st){ S.st={pts:st.pts,sup:st.sup,hinges:st.hinges||[],loads:st.loads}; R=solve(S.st); if(R.unstable) return '';
+  const dg=k=>{ const flat=R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,k))<1e-6)); return `<div class="dgm${flat?' flat':''}"><div class="dgt">${k}図<small>${k==='N'?'（軸方向力・引張＋）':k==='Q'?'（せん断力）':'（曲げモーメント・引張側に描く）'}</small></div>${diagSvg(k)}</div>`; };
+  return `<div class="nqm">${dg('N')}${dg('Q')}${dg('M')}</div>`; };
+})();
+
+// ================= problem generators =================
+// each: {t:title, tag:'c'|'k'|'d', g:()=>({fig,q,ans:[{l,u,v}],sol})}
+const U=[];
+function unit(o){ U.push(o); }
+
+// ================= 体験ウィジェット共通 =================
+const XW={};
+function xwBase(root,title,lead){ root.innerHTML=`<div class="xw"><h3>${title}</h3>${lead?`<p class="xlead">${lead}</p>`:''}<div class="xfig"></div><div class="xctl"></div><div class="xout"></div></div>`;
+  return {fig:root.querySelector('.xfig'),ctl:root.querySelector('.xctl'),out:root.querySelector('.xout')}; }
+function xwSliders(el,defs,on){ const st={}; el.innerHTML=defs.map(d=>{ st[d.k]=d.v; return d.opts? `<label class="xs"><span>${d.l}</span><select data-k="${d.k}">${d.opts.map(o=>`<option value="${o[0]}" ${o[0]===d.v?'selected':''}>${o[1]}</option>`).join('')}</select></label>`
+   : `<label class="xs"><span>${d.l}</span><input type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${d.v}" data-k="${d.k}"><b data-o="${d.k}"></b></label>`; }).join('');
+  const fmt=d=>{ const v=st[d.k]; return (d.f?d.f(v):nf(v))+(d.u?' '+d.u:''); };
+  const upd=()=>{ defs.forEach(d=>{ const o=el.querySelector(`[data-o="${d.k}"]`); if(o) o.textContent=fmt(d); }); on(st); };
+  el.querySelectorAll('[data-k]').forEach(inp=>inp.addEventListener('input',()=>{ const d=defs.find(x=>x.k===inp.dataset.k); st[d.k]= d.opts? (isNaN(+inp.value)?inp.value:+inp.value) : +inp.value; upd(); }));
+  queueMicrotask(upd); return st; }
+function axes(o){ // {W,H,x0,x1,y0,y1,xl,yl,ml,mb,mt,mr,yDown,xt,yt}
+  const ml=o.ml??48, mr=o.mr??14, mt=o.mt??14, mb=o.mb??34; const W=o.W||520,H=o.H||300;
+  const X=x=>ml+(x-o.x0)/(o.x1-o.x0)*(W-ml-mr); const Y= o.yDown? (y=>mt+(y-o.y0)/(o.y1-o.y0)*(H-mt-mb)) : (y=>H-mb-(y-o.y0)/(o.y1-o.y0)*(H-mt-mb));
+  let s=`<rect x="${ml}" y="${mt}" width="${W-ml-mr}" height="${H-mt-mb}" fill="#fff" stroke="#D9D6CC"/>`;
+  (o.xt||[]).forEach(t=>{ s+=`<line x1="${X(t)}" y1="${mt}" x2="${X(t)}" y2="${H-mb}" stroke="#EEE" /><text x="${X(t)}" y="${H-mb+14}" font-size="11" fill="#5E6B86" text-anchor="middle">${t}</text>`; });
+  (o.yt||[]).forEach(t=>{ s+=`<line x1="${ml}" y1="${Y(t)}" x2="${W-mr}" y2="${Y(t)}" stroke="#EEE" /><text x="${ml-5}" y="${Y(t)+4}" font-size="11" fill="#5E6B86" text-anchor="end">${t}</text>`; });
+  if(o.xl) s+=`<text x="${(ml+W-mr)/2}" y="${H-4}" font-size="12" font-weight="700" fill="#5E6B86" text-anchor="middle">${o.xl}</text>`;
+  if(o.yl) s+=`<text x="12" y="${(mt+H-mb)/2}" font-size="12" font-weight="700" fill="#5E6B86" text-anchor="middle" transform="rotate(-90 12 ${(mt+H-mb)/2})">${o.yl}</text>`;
+  return {X,Y,s,W,H,ml,mr,mt,mb}; }
+const svgWrap=(W,H,s)=>`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-family="Zen Kaku Gothic New, sans-serif">${s}</svg>`;
+const pl=(pts,X,Y,cl='#12286B',w=2.5,dash)=>`<polyline points="${pts.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="${cl}" stroke-width="${w}" ${dash?`stroke-dasharray="${dash}"`:''} stroke-linejoin="round"/>`;
+const tx=(x,y,t,cl='#12286B',sz=12,an='middle',w=900)=>`<text x="${(+x).toFixed(1)}" y="${(+y).toFixed(1)}" fill="${cl}" font-size="${sz}" font-weight="${w}" text-anchor="${an}" dominant-baseline="middle" paint-order="stroke" stroke="#fff" stroke-width="3">${t}</text>`;
+const ar=(x1,y1,x2,y2,cl='#C62422',w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1); return `<line x1="${x1}" y1="${y1}" x2="${x2-8*Math.cos(a)}" y2="${y2-8*Math.sin(a)}" stroke="${cl}" stroke-width="${w}"/><path d="M${x2},${y2} L${x2-11*Math.cos(a-.4)},${y2-11*Math.sin(a-.4)} L${x2-11*Math.cos(a+.4)},${y2-11*Math.sin(a+.4)}Z" fill="${cl}"/>`; };
+const D2R=Math.PI/180;
+// 水面記号：▽（頂点が水面）と水面下の短い2本線
+const wsm=(x,y,c='#3286BE')=>`<g class="wsm"><path d="M${(x-8).toFixed(1)},${(y-13).toFixed(1)} L${(x+8).toFixed(1)},${(y-13).toFixed(1)} L${(+x).toFixed(1)},${(y-1).toFixed(1)}Z" fill="#fff" stroke="${c}" stroke-width="1.8"/><line x1="${(x-9).toFixed(1)}" y1="${(y+4).toFixed(1)}" x2="${(x+9).toFixed(1)}" y2="${(y+4).toFixed(1)}" stroke="${c}" stroke-width="1.6"/><line x1="${(x-5).toFixed(1)}" y1="${(y+8).toFixed(1)}" x2="${(x+5).toFixed(1)}" y2="${(y+8).toFixed(1)}" stroke="${c}" stroke-width="1.6"/></g>`;
+// 地盤記号：線と、土の側（side=1：進行方向の右）への斜線
+const gnd=(x1,y1,x2,y2,side=1,c='#12286B',step=9)=>{ const L=Math.hypot(x2-x1,y2-y1)||1, ux=(x2-x1)/L, uy=(y2-y1)/L; const nx=-uy*side, ny=ux*side; let s=`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="2.2"/>`;
+  for(let d=5;d<L-1;d+=step){ const px=x1+ux*d, py=y1+uy*d; s+=`<line x1="${px.toFixed(1)}" y1="${py.toFixed(1)}" x2="${(px+nx*6-ux*6).toFixed(1)}" y2="${(py+ny*6-uy*6).toFixed(1)}" stroke="${c}" stroke-width="1.1"/>`; } return s; };
+
+// ================= 水理学 体験 =================
+XW.hydrostatic=root=>{ const b=xwBase(root,'深さと水圧','水槽の中の点◯を動かすと、その点の水圧が出ます。壁の青い三角形は、深さごとの水圧の大きさです。');
+  xwSliders(b.ctl,[{k:'H',l:'水深 H',min:1,max:10,step:.5,v:6,u:'m'},{k:'z',l:'点の深さ',min:0,max:10,step:.25,v:3,u:'m'},{k:'liq',l:'液体',v:1,opts:[[1,'水（比重1.0）'],[.8,'油（比重0.8）'],[1.03,'海水（比重1.03）'],[13.6,'水銀（比重13.6）']]}],st=>{
+   const z=Math.min(st.z,st.H), W=520,H=300, sc=250/10, x0=150,y0=20+(10-st.H)*sc; let s=`<rect x="${x0}" y="20" width="260" height="${250}" fill="none" stroke="#12286B" stroke-width="3"/><rect x="${x0}" y="${y0}" width="260" height="${st.H*sc}" fill="${st.liq>10?'#C0C4CC':'#93BCD6'}"/>`;
+   const pm=st.liq*9.8*st.H, wmax=110; s+=`<polygon points="${x0},${y0} ${x0-wmax},${y0+st.H*sc} ${x0},${y0+st.H*sc}" fill="rgba(50,134,190,.3)" stroke="#3286BE" stroke-width="2"/>`;
+   for(let k=1;k<=5;k++){ const yy=y0+st.H*sc*k/5; s+=ar(x0-wmax*k/5-2,yy,x0,yy,'#3286BE',1.5); }
+   const pz=st.liq*9.8*z; s+=`<circle cx="${x0+150}" cy="${y0+z*sc}" r="7" fill="#fff" stroke="#C62422" stroke-width="3"/>`+tx(x0+165,y0+z*sc,`p＝${nf(pz)} kN/m²`,'#C62422',13,'start');
+   [[1,0],[-1,0],[0,1],[0,-1]].forEach(d=>s+=ar(x0+150-d[0]*30,y0+z*sc-d[1]*30,x0+150-d[0]*10,y0+z*sc-d[1]*10,'#C62422',2));
+   s+=tx(x0-wmax/2,y0+st.H*sc+14,`底 ${nf(pm)} kN/m²`,'#3286BE',12);
+   s+=wsm(x0+225,y0); b.fig.innerHTML=svgWrap(W,H+10,s);
+   b.out.innerHTML=`<p class="xnote">水圧は深さに比例し、どの向きにも同じ大きさで押す（赤い矢印）。水深10 m で約98 kN/m²、1 m² の面に約10トンの重さに相当する力。ダムや水門、地下室の壁はこの三角形の圧力で設計する。潜水で耳が痛くなるのも同じ。</p>`; }); };
+
+XW.force=root=>{ const b=xwBase(root,'水門にかかる力と作用点','水深を変えると、全水圧の大きさと作用点（赤い矢印）が変わります。下流側にも水があると差し引きになります。');
+  xwSliders(b.ctl,[{k:'H1',l:'上流の水深',min:1,max:8,step:.25,v:5,u:'m'},{k:'H2',l:'下流の水深',min:0,max:8,step:.25,v:0,u:'m'},{k:'B',l:'水門の幅',min:1,max:10,step:.5,v:3,u:'m'}],st=>{
+   const H2=Math.min(st.H2,st.H1), P1=.5*9.8*st.H1**2*st.B, P2=.5*9.8*H2**2*st.B, P=P1-P2; const y=(P1*st.H1/3-P2*H2/3)/(P||1);
+   const W=520,H=290,sc=30,gx=260,gy=270; let s=`<rect x="${gx-120}" y="${gy-st.H1*sc}" width="120" height="${st.H1*sc}" fill="#93BCD6"/><rect x="${gx+10}" y="${gy-H2*sc}" width="150" height="${H2*sc}" fill="#93BCD6"/><rect x="${gx}" y="${gy-8.5*sc}" width="10" height="${8.5*sc}" fill="#12286B"/><line x1="40" y1="${gy}" x2="480" y2="${gy}" stroke="#12286B" stroke-width="2"/>`;
+   const k=10; s+=`<polygon points="${gx},${gy-st.H1*sc} ${gx-st.H1*k},${gy} ${gx},${gy}" fill="rgba(198,36,34,.2)" stroke="#C62422"/>`; if(H2>0) s+=`<polygon points="${gx+10},${gy-H2*sc} ${gx+10+H2*k},${gy} ${gx+10},${gy}" fill="rgba(198,36,34,.2)" stroke="#C62422"/>`;
+   if(P>1e-6) s+=ar(gx-110,gy-y*sc,gx-2,gy-y*sc,'#C62422',4)+tx(gx-114,gy-y*sc,`${nf(P)} kN`,'#C62422',14,'end');
+   s+=tx(gx+30,gy-y*sc,`底から ${nf(y)} m`,'#C62422',12,'start');
+   s+=wsm(gx-60,gy-st.H1*sc); if(H2>0.1) s+=wsm(gx+120,gy-H2*sc); s+=gnd(40,gy,gx,gy)+gnd(gx+10,gy,480,gy); b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<div class="kv"><span>上流側 ½ρgH₁²B</span><b>${nf(P1)} kN</b><span>下流側</span><b>${nf(P2)} kN</b><span>正味の力</span><b>${nf(P)} kN</b></div><p class="xnote">水深が2倍になると力は4倍（${F('H²')} に比例）。作用点は底から H/3 で、水門の下の方ほど強く押される。洪水時に水門を開け閉めするのが重いのも、ダムの下ほど分厚いのもこのため。</p>`; }); };
+
+XW.buoy=root=>{ const b=xwBase(root,'浮かんだ箱は、傾いても戻る？','箱を傾けると、沈んだ部分の中心（浮心 B）が移動します。重心 G より上にメタセンタ M があれば元に戻ります。');
+  xwSliders(b.ctl,[{k:'Bw',l:'箱の幅',min:2,max:8,step:.25,v:5,u:'m'},{k:'r',l:'箱の比重（重さ）',min:.2,max:.8,step:.02,v:.5},{k:'KG',l:'重心の高さ（底から）',min:.5,max:4,step:.1,v:1.5,u:'m'},{k:'th',l:'傾ける角度',min:0,max:20,step:1,v:10,u:'°'}],st=>{
+   const Hh=4, d=st.r*Hh, KB=d/2, BM=st.Bw**2/(12*d), GM=KB+BM-st.KG; const th=st.th*D2R; const ok=GM>0;
+   const W=520,H=300,sc=28, cx=260, wl=170;    // box in body coords: x in [-B/2,B/2], y from 0 (bottom) to H; place so that bottom at depth d (approx)
+   const P=(x,y)=>{ const yy=y-d; const X=x*Math.cos(th)-yy*Math.sin(th), Y=x*Math.sin(th)+yy*Math.cos(th); return [cx+X*sc, wl-Y*sc]; };
+   let s=`<rect x="0" y="${wl}" width="${W}" height="${H-wl}" fill="#93BCD6"/>`; const c=[P(-st.Bw/2,0),P(st.Bw/2,0),P(st.Bw/2,Hh),P(-st.Bw/2,Hh)];
+   s+=`<polygon points="${c.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ')}" fill="rgba(216,207,190,.9)" stroke="#12286B" stroke-width="3"/>`;
+   const G=P(0,st.KG); const Bu=P(0,KB); const Mw=P(0,KB+BM); const Bx=Mw[0], By=Bu[1];
+   s+=`<line x1="${Bx}" y1="${By}" x2="${Bx}" y2="${By-120}" stroke="#3286BE" stroke-dasharray="5 4"/>`;
+   s+=ar(G[0],G[1]-2,G[0],G[1]+50,'#C62422',3)+tx(G[0]-10,G[1],'G','#C62422',14,'end')+`<circle cx="${G[0]}" cy="${G[1]}" r="5" fill="#C62422"/>`;
+   s+=ar(Bx,By+50,Bx,By+2,'#3286BE',3)+`<circle cx="${Bx}" cy="${By}" r="5" fill="#3286BE"/>`+tx(Bx+10,By+8,'B','#3286BE',14,'start');
+   s+=`<circle cx="${Mw[0]}" cy="${Mw[1]}" r="5" fill="#12286B"/>`+tx(Mw[0]+10,Mw[1],'M','#12286B',14,'start');
+   s+=tx(W-10,24,ok?'元に戻る（安定）':'ひっくり返る（不安定）',ok?'#12286B':'#C62422',16,'end');
+   s+=wsm(60,wl); b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<div class="kv"><span>喫水 d</span><b>${nf(d)} m</b><span>KB＝d/2</span><b>${nf(KB)} m</b><span>BM＝B²/(12d)</span><b>${nf(BM,3)} m</b><span>GM</span><b class="${ok?'':'ng'}">${nf(GM,3)} m</b></div><p class="xnote">幅を広げると BM が大きくなり安定する。重心を上げる（荷物を高く積む）と不安定になる。船の設計、ケーソン（港の防波堤に使う大きなコンクリートの箱）を海に浮かべて運ぶときの安全確認に使う。</p>`; }); };
+
+XW.bern=root=>{ const b=xwBase(root,'細い管で、水は速く・圧力は低く','途中が細くなった管（ベンチュリ管）です。立てた細い管（ピエゾメータ）の水位が、その場所の圧力水頭を表します。');
+  xwSliders(b.ctl,[{k:'Q',l:'流量',min:0,max:60,step:1,v:25,u:'L/s'},{k:'d2',l:'くびれの直径',min:5,max:20,step:.5,v:10,u:'cm'},{k:'loss',l:'摩擦損失',v:0,opts:[[0,'なし（理想）'],[1,'あり']]}],st=>{
+   const D1=.2, Q=st.Q/1000; const xs=[]; for(let i=0;i<=60;i++) xs.push(i/60);
+   const dia=x=> x<.35||x>.75? D1 : (x<.5? D1+(st.d2/100-D1)*(x-.35)/.15 : x<.6? st.d2/100 : st.d2/100+(D1-st.d2/100)*(x-.6)/.15);
+   const E0=3.0; const v=x=>Q/(Math.PI*dia(x)**2/4); const hl=x=>st.loss?0.5*x*(v(0)**2/(2*9.8))*3+ (x>.6? .15*(v(.55)**2/(2*9.8))*Math.min(1,(x-.6)/.15):0):0;
+   const W=520,H=300, X=x=>40+x*440, Y=h=>250-h*55;
+   let s=`<line x1="${X(0)}" y1="${Y(E0)}" x2="${X(1)}" y2="${Y(E0-hl(1))}" stroke="#C62422" stroke-width="2" stroke-dasharray="7 4"/>`+tx(X(1),Y(E0-hl(1))-10,'エネルギー線','#C62422',11,'end');
+   const hgl=xs.map(x=>[x,E0-hl(x)-v(x)**2/(2*9.8)]); s+=`<polyline points="${hgl.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')}" fill="none" stroke="#3286BE" stroke-width="2"/>`+tx(X(.02),Y(hgl[0][1])-10,'動水勾配線（ピエゾ水位）','#3286BE',11,'start');
+   const top=xs.map(x=>[X(x),Y(0)-dia(x)*120]), bot=xs.map(x=>[X(x),Y(0)+dia(x)*120]); s+=`<polygon points="${[...top,...bot.reverse()].map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="#93BCD6" stroke="#12286B" stroke-width="2.5"/>`;
+   [.15,.55,.9].forEach((x,i)=>{ const hp=E0-hl(x)-v(x)**2/(2*9.8); const yt=Y(0)-dia(x)*120; s+=`<rect x="${X(x)-5}" y="${Math.min(yt,Y(hp))}" width="10" height="${Math.abs(yt-Y(hp))}" fill="#3286BE"/><rect x="${X(x)-6}" y="${Y(E0)-6}" width="12" height="${yt-Y(E0)+6}" fill="none" stroke="#12286B" stroke-width="1.5"/>`+tx(X(x),Y(0)+48,`v＝${nf(v(x))} m/s`,'#12286B',11)+tx(X(x),Y(0)+64,`p/ρg＝${nf(hp)} m`,'#3286BE',11); });
+   const vt=v(.55); const cav= E0-vt*vt/19.6 < -10.3+0.25;
+   b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<p class="xnote">${F('z + p/ρg + v²/2g = 一定')}。くびれで速度水頭 v²/2g が増えた分だけ、圧力水頭が下がる。2か所の圧力差から流量を測るのがベンチュリ流量計。圧力が下がりすぎると水が沸騰したように泡立ち（キャビテーション）、ポンプや水門を傷める。${cav?'<b style="color:#C62422">この条件ではくびれの圧力が真空に近く、キャビテーションが起きる。</b>':''}${st.loss?' 損失ありでは、エネルギー線が下流へ向かって下がる。':''}</p>`; }); };
+
+XW.momentum=root=>{ const b=xwBase(root,'水の流れが押す力','噴流が板に当たると、水の運動量が変わった分だけ板を押します。板の角度（はね返し方）を変えてみてください。');
+  xwSliders(b.ctl,[{k:'v',l:'噴流の速さ',min:2,max:30,step:1,v:15,u:'m/s'},{k:'d',l:'噴流の直径',min:2,max:15,step:.5,v:5,u:'cm'},{k:'a',l:'水が曲げられる角度',min:0,max:180,step:5,v:90,u:'°'}],st=>{
+   const A=Math.PI*(st.d/100)**2/4, Q=A*st.v, Fv=1000*Q*st.v*(1-Math.cos(st.a*D2R))/1000; const W=520,H=260, px=330,py=130;
+   let s=`<rect x="20" y="${py-st.d*1.2}" width="${px-30}" height="${st.d*2.4}" fill="#93BCD6"/>`+ar(40,py,px-30,py,'#12286B',2);
+   const a=st.a*D2R; for(const sgn of [1,-1]){ const ex=px-10+Math.cos(Math.PI-a)*-1*0, dx=-Math.cos(a), dy=Math.sin(a)*sgn; s+=`<line x1="${px-12}" y1="${py}" x2="${px-12+dx*120}" y2="${py-dy*120}" stroke="#93BCD6" stroke-width="${st.d*1.2}" stroke-linecap="round"/>`; }
+   s+=`<rect x="${px-10}" y="${py-70}" width="14" height="140" fill="#12286B"/>`+ar(px+4,py,px+4+Math.min(160,Fv*2+20),py,'#C62422',4)+tx(px+10+Math.min(160,Fv*2+20),py-16,`${nf(Fv,3)} kN`,'#C62422',14,'end');
+   b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<div class="kv"><span>流量 Q</span><b>${nf(Q*1000)} L/s</b><span>板を押す力 ρQv(1−cosθ)</span><b>${nf(Fv,3)} kN</b></div><p class="xnote">90°に曲げると ${F('ρQv')}、180°はね返すと2倍。水車（ペルトン水車）のバケットが水をはね返す形なのはこのため。消防ホースの反動、曲がった水道管を固定するコンクリート（スラストブロック）の設計にも使う。</p>`; }); };
+
+XW.pipe=root=>{ const b=xwBase(root,'2つの水槽を管でつなぐ','水位差がそのまま「入口・摩擦・出口」の損失に使われます。管を長く・細くすると流量がどう変わるか見てください。');
+  xwSliders(b.ctl,[{k:'H',l:'水位差 H',min:1,max:30,step:.5,v:10,u:'m'},{k:'L',l:'管の長さ L',min:10,max:1000,step:10,v:200,u:'m'},{k:'D',l:'管の直径 D',min:5,max:60,step:1,v:20,u:'cm'},{k:'f',l:'摩擦損失係数 f',min:.01,max:.05,step:.001,v:.025}],st=>{
+   const D=st.D/100, k=.5+st.f*st.L/D+1, v=Math.sqrt(2*9.8*st.H/k), Q=Math.PI*D*D/4*v, hv=v*v/19.6; const Re=v*D/1e-6;
+   const W=520,H=280, x1=110,x2=410, top=40, sc=200/30, y1=top, y2=top+st.H*sc; let s=`<rect x="20" y="${y1}" width="90" height="230" fill="#93BCD6" stroke="#12286B" stroke-width="2"/><rect x="${x2}" y="${y2}" width="90" height="${270-y2}" fill="#93BCD6" stroke="#12286B" stroke-width="2"/>`;
+   s+=`<rect x="${x1}" y="255" width="${x2-x1}" height="${Math.max(4,st.D/3)}" fill="#93BCD6" stroke="#12286B"/>`;
+   const e1=y1+.5*hv*sc, e2=y2-1*hv*sc; s+=`<line x1="${x1}" y1="${e1}" x2="${x2}" y2="${e2}" stroke="#C62422" stroke-width="2" stroke-dasharray="7 4"/>`+`<line x1="${x1}" y1="${e1+hv*sc}" x2="${x2}" y2="${e2+hv*sc}" stroke="#3286BE" stroke-width="2"/>`;
+   s+=tx(x1+6,e1-10,'エネルギー線','#C62422',11,'start')+tx(x2-6,e2+hv*sc+12,'動水勾配線','#3286BE',11,'end')+`<line x1="${x2+100}" y1="${y1}" x2="${x2+100}" y2="${y2}" stroke="#12286B"/>`+tx(x2+96,(y1+y2)/2,`H＝${st.H}m`,'#12286B',12,'end');
+   s+=wsm(70,y1)+wsm(x2+50,y2)+gnd(0,270,W,270); b.fig.innerHTML=svgWrap(W,H,s); const parts=[.5,st.f*st.L/D,1].map(c=>c*hv);
+   b.out.innerHTML=`<div class="kv"><span>流速 v</span><b>${nf(v,3)} m/s</b><span>流量 Q</span><b>${nf(Q*1000)} L/s</b><span>損失の内訳（入口/摩擦/出口）</span><b>${parts.map(p=>nf(p)).join(' / ')} m</b><span>Re</span><b>${nf(Re,0)}（${Re>4000?'乱流':Re<2000?'層流':'遷移'}）</b></div><p class="xnote">長い管では摩擦損失がほとんどを占める。直径を少し太くするだけで流量が大きく増える（摩擦損失は D に反比例、断面積は D² に比例）。水道の配水管や、ダムから発電所へ水を送る管の太さを決める計算。</p>`; }); };
+
+XW.manning=root=>{ const b=xwBase(root,'水路の形と流れやすさ','長方形水路の幅と水深を変えます。同じ断面積でも、水に接する長さ（潤辺）が短いほど流れやすい。');
+  xwSliders(b.ctl,[{k:'b',l:'水路の幅 b',min:.5,max:8,step:.1,v:4,u:'m'},{k:'h',l:'水深 h',min:.2,max:4,step:.05,v:1,u:'m'},{k:'n',l:'水路の材料',v:.015,opts:[[.012,'なめらかなコンクリート（n＝0.012）'],[.015,'コンクリート（n＝0.015）'],[.025,'土の水路（n＝0.025）'],[.035,'自然の川（n＝0.035）']]},{k:'I',l:'勾配',min:1,max:20,step:.5,v:2,f:v=>'1/'+nf(1000/v,0)}],st=>{
+   const A=st.b*st.h, S=st.b+2*st.h, R=A/S, I=st.I/1000, v=1/st.n*R**(2/3)*Math.sqrt(I), Q=A*v; const best=Math.abs(st.b/st.h-2)<.15;
+   const W=520,H=240, sc=Math.min(50,380/st.b,170/st.h), cx=260, by=210; let s=`<polyline points="${cx-st.b/2*sc},${by-st.h*sc-30} ${cx-st.b/2*sc},${by} ${cx+st.b/2*sc},${by} ${cx+st.b/2*sc},${by-st.h*sc-30}" fill="none" stroke="#12286B" stroke-width="4"/>`;
+   s+=`<rect x="${cx-st.b/2*sc}" y="${by-st.h*sc}" width="${st.b*sc}" height="${st.h*sc}" fill="#93BCD6"/>`+`<polyline points="${cx-st.b/2*sc},${by-st.h*sc} ${cx-st.b/2*sc},${by} ${cx+st.b/2*sc},${by} ${cx+st.b/2*sc},${by-st.h*sc}" fill="none" stroke="#C62422" stroke-width="4"/>`+tx(cx,by+16,`潤辺 S＝${nf(S)} m`,'#C62422',12);
+   if(best) s+=tx(cx,24,'b＝2h：一番流れやすい形','#C62422',14);
+   s+=wsm(cx+st.b/2*sc-22,by-st.h*sc)+gnd(cx-st.b/2*sc-30,by-st.h*sc-30,cx-st.b/2*sc-4,by-st.h*sc-30)+gnd(cx+st.b/2*sc+4,by-st.h*sc-30,cx+st.b/2*sc+30,by-st.h*sc-30); b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<div class="kv"><span>断面積 A</span><b>${nf(A)} m²</b><span>径深 R＝A/S</span><b>${nf(R,3)} m</b><span>流速 v</span><b>${nf(v,3)} m/s</b><span>流量 Q</span><b>${nf(Q,3)} m³/s</b></div><p class="xnote">${F('v = (1/n)R^{2/3}I^{1/2}')}。壁がざらざら（n が大きい）だと遅くなる。河川改修でコンクリート護岸にすると流れは速くなるが、生き物のすみかが減る。近年は自然に近い川づくり（多自然川づくり）とのバランスを考える。</p>`; }); };
+
+XW.energy=root=>{ const b=xwBase(root,'同じ流量に、水深が2つある','比エネルギー E と水深 h の曲線です。水深を動かすと、同じ E で「深くて遅い」常流と「浅くて速い」射流の2つがあることがわかります。');
+  xwSliders(b.ctl,[{k:'q',l:'単位幅流量 q',min:.5,max:5,step:.1,v:2,u:'m²/s'},{k:'h',l:'水深 h',min:.1,max:3,step:.02,v:1.5,u:'m'}],st=>{
+   const hc=Math.cbrt(st.q**2/9.8), E=h=>h+st.q**2/(2*9.8*h*h); const A=axes({W:520,H:320,x0:0,x1:4,y0:0,y1:3,xl:'比エネルギー E（m）',yl:'水深 h（m）',xt:[0,1,2,3,4],yt:[0,1,2,3]});
+   let s=A.s+pl([[0,0],[3,3]],A.X,A.Y,'#D9D6CC',1.5,'4 4'); const c=[]; for(let h=.08;h<=3;h+=.02){ const e=E(h); if(e<=4.2) c.push([e,h]); } s+=pl(c,A.X,A.Y,'#12286B',3);
+   s+=`<circle cx="${A.X(1.5*hc)}" cy="${A.Y(hc)}" r="5" fill="#3286BE"/>`+tx(A.X(1.5*hc)+8,A.Y(hc),`限界水深 h_c＝${nf(hc,3)} m`,'#3286BE',11,'start');
+   const e0=E(st.h), Fr=st.q/st.h/Math.sqrt(9.8*st.h); s+=`<circle cx="${A.X(e0)}" cy="${A.Y(st.h)}" r="7" fill="#C62422"/>`;
+   let alt=null; if(e0>1.5*hc){ let lo= st.h>hc? .02:hc, hi= st.h>hc? hc:20; for(let i=0;i<60;i++){ const m=(lo+hi)/2; if((E(m)-e0)*(E(lo)-e0)>0) lo=m; else hi=m; } alt=(lo+hi)/2; if(alt<3) s+=`<circle cx="${A.X(e0)}" cy="${A.Y(alt)}" r="6" fill="#fff" stroke="#C62422" stroke-width="2.5"/><line x1="${A.X(e0)}" y1="${A.Y(st.h)}" x2="${A.X(e0)}" y2="${A.Y(alt)}" stroke="#C62422" stroke-dasharray="3 3"/>`; }
+   b.fig.innerHTML=svgWrap(520,320,s);
+   b.out.innerHTML=`<div class="kv"><span>比エネルギー E</span><b>${nf(e0,3)} m</b><span>流速 v</span><b>${nf(st.q/st.h,3)} m/s</b><span>フルード数 Fr</span><b class="${Fr>1?'ng':''}">${nf(Fr,3)}（${Fr<1?'常流':'射流'}）</b><span>同じEのもう一つの水深</span><b>${alt?nf(alt,3)+' m':'—'}</b></div><p class="xnote">E が最小になる水深が限界水深。急勾配の水路やダムの放流路では射流（Fr＞1）になり、普通の川は常流。せきや段差で限界水深になることを利用して、水深から流量を測る（パーシャルフリューム）。</p>`; }); };
+
+XW.jump=root=>{ const b=xwBase(root,'跳水でエネルギーを消す','射流（浅くて速い）が常流に変わる場所で水面が急に高くなります。ダムの下流でこれを起こし、川底が掘れるのを防ぎます。');
+  let anim=null; const st=xwSliders(b.ctl,[{k:'h1',l:'跳水前の水深 h₁',min:.1,max:1,step:.02,v:.3,u:'m'},{k:'v1',l:'跳水前の流速 v₁',min:2,max:15,step:.25,v:8,u:'m/s'}],()=>{});
+  function draw(){ const Fr=st.v1/Math.sqrt(9.8*st.h1); const h2= Fr>1? st.h1/2*(Math.sqrt(1+8*Fr*Fr)-1):st.h1; const dE=(h2-st.h1)**3/(4*st.h1*h2), E1=st.h1+st.v1**2/19.6;
+    const W=520,H=240, sc=Math.min(60,170/Math.max(h2,st.h1)), by=220, xj=220, t=performance.now()/1000; let pts=[];
+    for(let x=0;x<=W;x+=4){ let h; if(x<xj) h=st.h1; else if(x<xj+90){ const u=(x-xj)/90; h=st.h1+(h2-st.h1)*(1-Math.pow(1-u,2))+ (Fr>1? Math.sin(x*.25+t*8)*0.04*(h2-st.h1)*(1-u):0); } else h=h2; pts.push([x,by-h*sc]); }
+    let s=`<polygon points="0,${by} ${pts.map(p=>p[0]+','+p[1].toFixed(1)).join(' ')} ${W},${by}" fill="#93BCD6"/><line x1="0" y1="${by}" x2="${W}" y2="${by}" stroke="#12286B" stroke-width="3"/>`;
+    if(Fr>1) for(let k=0;k<6;k++){ const x=xj+15+k*12, y=by-(st.h1+(h2-st.h1)*.6)*sc+Math.sin(t*6+k)*6; s+=`<circle cx="${x}" cy="${y}" r="${4+Math.sin(t*5+k*2)*2}" fill="#fff" opacity=".8"/>`; }
+    s+=tx(60,by-st.h1*sc-14,`h₁＝${nf(st.h1)} m`,'#12286B',12)+tx(W-60,by-h2*sc-14,`h₂＝${nf(h2,3)} m`,'#12286B',12);
+    s+=wsm(22,by-st.h1*sc)+wsm(W-24,by-h2*sc)+gnd(0,by,W,by); b.fig.innerHTML=svgWrap(W,H,s);
+    b.out.innerHTML=Fr<=1? `<p class="warn">Fr₁＝${nf(Fr,3)}。射流ではないので跳水は起きない。流速を上げるか水深を浅くしてください。</p>` : `<div class="kv"><span>Fr₁</span><b>${nf(Fr,3)}</b><span>跳水後の水深 h₂</span><b>${nf(h2,3)} m</b><span>失われるエネルギー</span><b>${nf(dE,3)} m（元の ${nf(dE/E1*100,0)}%）</b></div><p class="xnote">勢いのある流れのエネルギーを、渦と乱れで熱に変えて消す。ダムやせきの直下につくる「減勢工（静水池）」はこのための施設。うまく跳水が起きないと、下流の川底や護岸が深く掘られて壊れる。</p>`; }
+  const loop=()=>{ if(!root.isConnected){ cancelAnimationFrame(anim); return; } draw(); anim=requestAnimationFrame(loop); }; loop(); };
+
+XW.orifice=root=>{ const b=xwBase(root,'水槽の水はどう減る？','底の穴から水が抜けていく様子です。水位が下がるほど流れ出る勢いが弱まり、減り方がゆっくりになります。');
+  let anim=null,t0=null,h=4; const st=xwSliders(b.ctl,[{k:'A',l:'水槽の断面積',min:1,max:10,step:.5,v:4,u:'m²'},{k:'a',l:'穴の直径',min:2,max:20,step:1,v:8,u:'cm'},{k:'H',l:'はじめの水深',min:1,max:5,step:.25,v:4,u:'m'}],()=>{ t0=null; });
+  const reset=document.createElement('button'); reset.className='b'; reset.textContent='もう一度流す'; reset.onclick=()=>{ t0=null; }; b.ctl.appendChild(reset);
+  function frame(now){ if(!root.isConnected){ cancelAnimationFrame(anim); return; } const a=Math.PI*(st.a/100)**2/4, C=.6, k=C*a*Math.sqrt(2*9.8)/st.A; const T=2*Math.sqrt(st.H)/k;
+    if(t0==null) t0=now; const tt=Math.min(T,(now-t0)/1000*T/8); const sq=Math.max(0,Math.sqrt(st.H)-k*tt/2); h=sq*sq;
+    const W=520,H=260, sc=200/5; let s=`<rect x="40" y="${240-5*sc}" width="140" height="${5*sc}" fill="none" stroke="#12286B" stroke-width="3"/><rect x="40" y="${240-h*sc}" width="140" height="${h*sc}" fill="#93BCD6"/>`;
+    if(h>0.005){ const v=Math.sqrt(2*9.8*h); s+=`<path d="M110,240 Q${110+v*2},${250} ${110+v*4},${258}" stroke="#93BCD6" stroke-width="${Math.max(2,st.a/2)}" fill="none"/>`; }
+    const A=axes({W:290,H:250,x0:0,x1:T,y0:0,y1:st.H,xl:'時間（秒）',yl:'水深（m）',ml:40,xt:[0,Math.round(T/2),Math.round(T)],yt:[0,st.H]}); let g2=A.s; const c=[]; for(let i=0;i<=50;i++){ const ti=T*i/50; const q=Math.max(0,Math.sqrt(st.H)-k*ti/2); c.push([ti,q*q]); } g2+=pl(c,A.X,A.Y,'#12286B',2.5)+`<circle cx="${A.X(tt)}" cy="${A.Y(h)}" r="6" fill="#C62422"/>`;
+    if(h>0.05) s+=wsm(160,240-h*sc); b.fig.innerHTML=`<div class="two">${svgWrap(230,260,s)}${svgWrap(290,250,g2)}</div>`;
+    b.out.innerHTML=`<div class="kv"><span>空になるまで</span><b>${nf(T,0)} 秒（${nf(T/60,1)} 分）</b><span>半分の深さまで</span><b>${nf(2*(Math.sqrt(st.H)-Math.sqrt(st.H/2))/k,0)} 秒</b></div><p class="xnote">流出速度は ${F('√(2gh)')} なので、水深が1/4になると勢いは半分。前半の半分の水位が下がるのは早く、最後のほうは時間がかかる。ため池や調整池の水を抜く時間、ダムの放流計画の基本。</p>`;
+    anim=requestAnimationFrame(frame); }
+  anim=requestAnimationFrame(frame); };
+
+XW.well=root=>{ const b=xwBase(root,'井戸で汲み上げると、地下水位が下がる','井戸から揚水すると、まわりの地下水位が円すい形に下がります（水位降下錐）。揚水量を増やしてみてください。');
+  xwSliders(b.ctl,[{k:'Q',l:'揚水量',min:0,max:30,step:.5,v:8,u:'L/s'},{k:'k',l:'地盤の透水係数',v:5e-4,opts:[[1e-3,'砂礫（1×10⁻³ m/s）'],[5e-4,'粗い砂（5×10⁻⁴）'],[1e-4,'細かい砂（1×10⁻⁴）']]}],st=>{
+   const H0=20, R=300, r0=.2, Q=st.Q/1000; const h=r=>{ const v=H0*H0-Q*Math.log(R/Math.max(r,r0))/(Math.PI*st.k); return v>0?Math.sqrt(v):0; };
+   const W=520,H=280, X=r=>260+r/R*240, Y=y=>250-y*9; let s=`<rect x="20" y="${Y(H0)}" width="480" height="${Y(0)-Y(H0)}" fill="#E3D6B8"/>`;
+   const pts=[]; for(let r=-R;r<=R;r+=5){ const rr=Math.abs(r)<r0?r0:Math.abs(r); pts.push([X(r),Y(h(rr))]); } s+=`<polygon points="${X(-R)},${Y(0)} ${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')} ${X(R)},${Y(0)}" fill="rgba(50,134,190,.55)"/>`+`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="#3286BE" stroke-width="2.5"/>`;
+   s+=`<line x1="20" y1="${Y(H0)}" x2="500" y2="${Y(H0)}" stroke="#3286BE" stroke-dasharray="6 4"/><rect x="255" y="${Y(H0)-20}" width="10" height="${Y(0)-Y(H0)+20}" fill="#12286B"/>`+ar(260,Y(H0)-6,290,Y(H0)-36,'#C62422',2.5);
+   const dd=H0-h(r0+.01); s+=wsm(60,Y(H0))+gnd(20,Y(H0)-18,250,Y(H0)-18)+gnd(270,Y(H0)-18,500,Y(H0)-18); b.fig.innerHTML=svgWrap(W,H,s);
+   b.out.innerHTML=`<div class="kv"><span>井戸での水位低下</span><b>${h(r0)>0?nf(dd)+' m':'井戸が干上がる'}</b><span>50 m 離れた所の低下</span><b>${nf(H0-h(50))} m</b></div><p class="xnote">${F('Q = πk(H² − h²)/ln(R/r)')}。工事で地下を掘るとき、ディープウェルで地下水位を下げて（ドライワーク）安全に掘る。逆に、汲み上げすぎると周辺の井戸が枯れたり、地盤沈下を起こしたりする（地盤力学の有効応力・圧密とつながる）。</p>`; }); };
+
+XW.hydro=root=>{ const b=xwBase(root,'舗装が増えると、洪水はどう変わる？','同じ雨でも、森や田畑が舗装や屋根に変わると、川に流れ出る量が増え、早くピークが来ます（模式的なハイドログラフ）。');
+  xwSliders(b.ctl,[{k:'u',l:'舗装・屋根の割合',min:0,max:100,step:5,v:20,u:'%'},{k:'r',l:'雨の強さ',min:10,max:100,step:5,v:50,u:'mm/h'},{k:'A',l:'流域面積',min:.5,max:10,step:.5,v:2,u:'km²'},{k:'pond',l:'調整池',v:0,opts:[[0,'なし'],[1,'あり']]}],st=>{
+   const f=.3+(.9-.3)*st.u/100; const Qp=f*st.r*st.A/3.6, Qp0=.3*st.r*st.A/3.6; const tp=90-50*st.u/100; const hyd=(qp,tp,t)=>{ const x=t/tp; return qp*Math.pow(x*Math.exp(1-x),3); };
+   const A=axes({W:520,H:280,x0:0,x1:360,y0:0,y1:Math.max(Qp0,Qp)*1.15+1,xl:'雨が降り始めてからの時間（分）',yl:'川の流量（m³/s）',xt:[0,60,120,180,240,300,360],yt:[0,Math.round(Math.max(Qp0,Qp)/2),Math.round(Math.max(Qp0,Qp))]});
+   let s=A.s; const c0=[],c1=[],c2=[]; for(let t=0;t<=360;t+=3){ c0.push([t,hyd(Qp0,90,t)]); c1.push([t,hyd(Qp,tp,t)]); }
+   s+=pl(c0,A.X,A.Y,'#3286BE',2,'6 4')+tx(A.X(250),A.Y(hyd(Qp0,90,250))-12,'開発前（森林）','#3286BE',11);
+   s+=pl(c1,A.X,A.Y,'#C62422',3);
+   if(st.pond){ let S=0; const lim=Qp0*1.05; for(const [t,q] of c1){ let out=q; if(q>lim){ S+=(q-lim)*180; out=lim; } else if(S>0){ const rel=Math.min(S,(lim-q)*180); S-=rel; out=q+rel/180; } c2.push([t,out]); } s+=pl(c2,A.X,A.Y,'#12286B',3)+tx(A.X(200),A.Y(lim)-12,'調整池でピークを抑える','#12286B',11); }
+   b.fig.innerHTML=svgWrap(520,280,s);
+   b.out.innerHTML=`<div class="kv"><span>平均流出係数 f</span><b>${nf(f,3)}</b><span>ピーク流量（合理式）</span><b>${nf(Qp)} m³/s</b><span>開発前との比</span><b>${nf(Qp/Qp0)}倍</b></div><p class="xnote">${F('Q = (1/3.6)frA')}。都市の川があふれやすくなったのはこのため。調整池・雨水貯留施設（学校の校庭や公園の地下）・透水性舗装で、ピークを下げて遅らせる。東京の首都圏外郭放水路や環状七号線地下調節池は、その大規模な例。</p>`; }); };
+
+XW.wave=root=>{ const b=xwBase(root,'津波は浅くなると遅く、高くなる','海の深さによって津波の速さが変わります。陸に近づくと遅くなり、後ろの波が追いついて高くなります。');
+  let anim=null,t0=null; const st=xwSliders(b.ctl,[{k:'d',l:'沖の水深',min:500,max:6000,step:100,v:4000,u:'m'},{k:'a',l:'沖での波の高さ',min:.5,max:3,step:.1,v:1,u:'m'}],()=>{ t0=null; });
+  function frame(now){ if(!root.isConnected){ cancelAnimationFrame(anim); return; } if(t0==null) t0=now; const W=520,H=260;
+    const depth=x=> x<300? st.d : x<420? st.d+(10-st.d)*(x-300)/120 : 10; // x in km 0..450
+    const X=x=>20+x/450*480, Yd=dd=>120+Math.sqrt(dd)/Math.sqrt(6000)*120;
+    // travel: integrate dt = dx / sqrt(g h)
+    const sim=(now-t0)/1000*600; let pos=0,tt=0; const dx=2; while(pos<440 && tt+dx*1000/Math.sqrt(9.8*depth(pos))<=sim){ tt+=dx*1000/Math.sqrt(9.8*depth(pos)); pos+=dx; }
+    if(pos>=440 && sim>tt+200) t0=now;
+    const hd=depth(pos), amp=st.a*Math.pow(st.d/hd,.25); let s=`<polygon points="${[...Array(91).keys()].map(i=>{ const x=i*5; return X(x)+','+Yd(depth(x)); }).join(' ')} ${X(450)},${H} ${X(0)},${H}" fill="#D8CFBE"/>`;
+    const pts=[]; for(let x=0;x<=450;x+=2){ const w=Math.exp(-(((x-pos)/(8+0.05*Math.sqrt(depth(x))))**2)); pts.push([X(x),120-w*Math.min(60,amp*8)]); }
+    s+=`<polygon points="${X(0)},${Yd(st.d)} ${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')} ${X(450)},${Yd(10)} ${X(450)},${H} ${X(0)},${H}" fill="#93BCD6" opacity=".9"/>`;
+    s+=`<polygon points="${[...Array(91).keys()].map(i=>{ const x=i*5; return X(x)+','+Yd(depth(x)); }).join(' ')} ${X(450)},${H} ${X(0)},${H}" fill="#D8CFBE"/>`+tx(X(440),110,'陸','#12286B',13);
+    const C=Math.sqrt(9.8*hd); s+=tx(20,24,`いまの水深 ${nf(hd,0)} m：速さ ${nf(C*3.6,0)} km/h、高さ 約${nf(amp,2)} m`,'#C62422',13,'start');
+    s+=wsm(X(25),120); for(const [a,c] of [[0,300],[300,420],[420,450]]) s+=gnd(X(a),Yd(depth(a)),X(c),Yd(depth(c-0.001))); b.fig.innerHTML=svgWrap(W,H,s);
+    b.out.innerHTML=`<div class="kv"><span>沖での速さ √(gh)</span><b>${nf(Math.sqrt(9.8*st.d)*3.6,0)} km/h</b><span>水深10 mでの速さ</span><b>${nf(Math.sqrt(98)*3.6,0)} km/h</b></div><p class="xnote">深い海ではジェット機並みの速さで、波の高さは低く船の上では気づかないほど。浅くなると速さが落ちて高さが増す（高さはおよそ水深の−1/4乗に比例：グリーンの法則）。それでも陸の近くで時速30〜40 km 程度と、人が走って逃げ切れる速さではない。だから揺れたらすぐ高い所へ避難する。防波堤や避難タワーの高さ、ハザードマップの浸水想定はこの計算をもとにつくる。</p>`;
+    anim=requestAnimationFrame(frame); }
+  anim=requestAnimationFrame(frame); };
+
+// ================= 水理学 units =================
+const g=9.8, RHO=1000;
+unit({id:'hydrostatic',name:'静水圧',tag:'c',ds:'水深と圧力、液柱計（マノメータ）',
+ pts:[`静水圧 ${F('p = ρgh')}（水深に比例し、向きによらず同じ大きさ）`,`水なら ${F('p')}［kN/m²］≒ 9.8 × 水深［m］`,`同じ液体でつながった同じ高さの点は同じ圧力`,`U字管マノメータ ${F('Δp = (ρ_m − ρ)gΔh')}（水銀の比重13.6）`,`大気圧は約101 kN/m²（水柱で約10.3 m）`],
+ gens:[
+ {t:'水深と水圧',tag:'c',g(){ const h=pick([2,3,5,8,10,20]); const p=RHO*g*h/1000; return {fig:'',q:`水深 ${h} m の点の静水圧（ゲージ圧）は？`,ans:[{l:'p',u:'kN/m²',v:p}],sol:`${F('p = ρgh')}＝1000×9.8×${h}＝${nf(p*1000,0)} N/m²＝<b>${nf(p)} kN/m²</b>`}; }},
+ {t:'2層の液体',tag:'c',g(){ const h1=pick([1,2,3]),s1=pick([.8,.85,.9]),h2=pick([2,3,4]); const p=g*(s1*h1+h2); return {fig:'',q:`容器に比重 ${s1} の油が ${h1} m、その下に水が ${h2} m 入っている。底面の圧力は？`,ans:[{l:'p',u:'kN/m²',v:p}],sol:`上から順に足す：${F('p = ρ_1gh_1 + ρ_wgh_2')}＝9.8×(${s1}×${h1}＋${h2})＝<b>${nf(p)} kN/m²</b>`}; }},
+ {t:'U字管マノメータ',tag:'c',g(){ const dh=pick([.05,.1,.15,.2]); const dp=(13.6-1)*g*dh; return {fig:'',q:`水が流れる管の2点をU字管水銀マノメータでつないだら、水銀の高さの差が ${dh*100} cm だった。2点の圧力差は？`,ans:[{l:'Δp',u:'kN/m²',v:dp}],sol:`${F('Δp = (ρ_Hg − ρ_w)gΔh')}＝(13.6−1)×9.8×${dh}＝<b>${nf(dp)} kN/m²</b>`}; }},
+ ]});
+unit({id:'force',name:'面に働く全水圧',tag:'c',ds:'鉛直・傾斜した面の全水圧と作用点',
+ pts:[`全水圧 ${F('P = ρg h_G A')}（h_G：面の図心の水深）`,`鉛直な長方形の壁（水面から底まで）${F('P = ½ρgH²B')}、作用点は底から ${F('H/3')}`,`作用点（圧力中心） ${F('h_C = h_G + I_G /(h_G A)')}：図心より必ず深い`,`両側に水がある壁 ${F('P = ½ρgB(H_1² − H_2²)')}`],
+ gens:[
+ {t:'鉛直な壁の全水圧',tag:'c',g(){ const H=pick([2,3,4,5,6]),B=pick([1,2,3]); const P=.5*g*H*H*B; return {fig:'',q:`幅 ${B} m の鉛直な水門に、水面から底まで水深 ${H} m の水がかかる。全水圧と、その作用点の水面からの深さは？`,ans:[{l:'P',u:'kN',v:P},{l:'h<sub>C</sub>',u:'m',v:2*H/3}],sol:`圧力は三角形分布（底で ρgH）。面積×幅：${F('P = ½ρgH²B')}＝0.5×9.8×${H}²×${B}＝<b>${nf(P)} kN</b>。三角形の重心なので水面から ${F('2H/3')}＝<b>${nf(2*H/3)} m</b>`}; }},
+ {t:'水中の板',tag:'c',g(){ const d=pick([1,2,3]),b=pick([1,2]),h=pick([1,2]); const hG=d+h/2, A=b*h, P=g*hG*A, IG=b*h**3/12, hC=hG+IG/(hG*A); return {fig:'',q:`幅 ${b} m、高さ ${h} m の長方形の板が鉛直に沈んでいて、上端の水深が ${d} m。全水圧と圧力中心の水深は？`,ans:[{l:'P',u:'kN',v:P},{l:'h<sub>C</sub>',u:'m',v:hC}],sol:`図心の水深 ${F('h_G')}＝${nf(hG)} m。${F('P = ρgh_GA')}＝9.8×${nf(hG)}×${A}＝<b>${nf(P)} kN</b>。${F('I_G = bh³/12')}＝${nf(IG,4)}、${F('h_C = h_G + I_G/(h_GA)')}＝<b>${nf(hC,3)} m</b>`}; }},
+ {t:'両側に水がある水門',tag:'d',g(){ const H1=pick([4,5,6]),H2=pick([1,2,3]),B=pick([2,3]); const P=.5*g*B*(H1*H1-H2*H2); return {fig:'',q:`幅 ${B} m の水門。上流側の水深 ${H1} m、下流側 ${H2} m。水門に働く正味の水圧は？`,ans:[{l:'P',u:'kN',v:P}],sol:`両側の全水圧の差：${F('P = ½ρgB(H_1² − H_2²)')}＝0.5×9.8×${B}×(${H1*H1}−${H2*H2})＝<b>${nf(P)} kN</b>`}; }},
+ ]});
+unit({id:'buoy',name:'浮力と浮体の安定',tag:'c',ds:'アルキメデスの原理、喫水、メタセンタ',
+ pts:[`浮力 ＝ 押しのけた水の重さ ${F('B = ρgV')}（アルキメデスの原理）`,`浮かんでいるとき 重さ＝浮力 → 喫水 ${F('d = (ρ_b/ρ_w)H')}（直方体）`,`メタセンタ高さ ${F('GM = I/V − CG')}（I：水線面の断面二次モーメント、C：浮心）`,`${F('GM > 0')} なら安定（傾いても戻る）`,`幅 B の直方体：${F('I/V = B²/(12d)')}`],
+ gens:[
+ {t:'喫水',tag:'c',g(){ const r=pick([.5,.6,.7,.8]),H=pick([1,2,3]); return {fig:'',q:`比重 ${r} の直方体の木材（高さ ${H} m）を水に浮かべた。水中に沈む深さ（喫水）は？`,ans:[{l:'d',u:'m',v:r*H}],sol:`重さ＝浮力：${F('ρ_bgBLH = ρ_wgBLd')} → ${F('d = (ρ_b/ρ_w)H')}＝<b>${nf(r*H)} m</b>`}; }},
+ {t:'水中の重さ',tag:'c',g(){ const V=pick([.1,.2,.5]),s=pick([2.4,2.65,7.85]); const W=s*g*V, Bf=g*V; return {fig:'',q:`体積 ${V} m³、比重 ${s} のブロックを水中でつり下げる。空気中の重さと、水中でワイヤーにかかる力は？`,ans:[{l:'W',u:'kN',v:W},{l:'T',u:'kN',v:W-Bf}],sol:`W＝${s}×9.8×${V}＝<b>${nf(W)} kN</b>。浮力 ${nf(Bf)} kN を引いて T＝<b>${nf(W-Bf)} kN</b>`}; }},
+ {t:'浮体の安定（GM）',tag:'d',g(){ const B=pick([4,6,8]),d=pick([1,1.5,2]),KG=pick([1.5,2,2.5,3]); const BM=B*B/(12*d), KB=d/2, GM=KB+BM-KG; return {fig:'',q:`幅 ${B} m の箱形の浮体（ポンツーン）が喫水 ${d} m で浮かぶ。底から重心までの高さ KG＝${KG} m。メタセンタ高さ GM は？`,ans:[{l:'GM',u:'m',v:GM}],sol:`浮心の高さ ${F('KB = d/2')}＝${nf(KB)}。${F('BM = B²/(12d)')}＝${nf(BM,3)}。${F('GM = KB + BM − KG')}＝<b>${nf(GM,3)} m</b>（${GM>0?'正なので安定':'負なので転覆する'}）`}; }},
+ ]});
+unit({id:'bern',name:'連続の式とベルヌーイの定理',tag:'c',ds:'流量、エネルギー保存、トリチェリの定理、ベンチュリ管',
+ pts:[`連続の式 ${F('Q = A_1v_1 = A_2v_2')}（細いところほど速い）`,`ベルヌーイ ${F('z + p/(ρg) + v²/(2g) = 一定')}（位置水頭＋圧力水頭＋速度水頭）`,`速くなると圧力が下がる`,`トリチェリ ${F('v = √(2gh)')}（水槽の穴から出る水の速さ）`,`ベンチュリ管：2断面の圧力差から流量を測る`],
+ gens:[
+ {t:'連続の式',tag:'c',g(){ const D1=pick([.2,.3,.4]),D2=pick([.1,.15]),v1=pick([1,1.5,2]); const v2=v1*(D1/D2)**2, Q=PI*D1*D1/4*v1; return {fig:'',q:`直径 ${D1*100} cm の管が直径 ${D2*100} cm に細くなる。太い側の流速 ${v1} m/s のとき、流量と細い側の流速は？`,ans:[{l:'Q',u:'m³/s',v:Q},{l:'v<sub>2</sub>',u:'m/s',v:v2}],sol:`${F('Q = Av')}＝π×${D1}²/4×${v1}＝<b>${nf(Q,4)} m³/s</b>。${F('v_2 = v_1(D_1/D_2)²')}＝<b>${nf(v2)} m/s</b>`}; }},
+ {t:'トリチェリの定理',tag:'c',g(){ const h=pick([1,2,3,5]),d=pick([.05,.1]),C=.6; const v=Math.sqrt(2*g*h), Q=C*PI*d*d/4*v; return {fig:'',q:`水面から ${h} m 下の側壁に直径 ${d*100} cm の小さな穴。流出する理論流速と、流量係数 0.6 のときの流量は？`,ans:[{l:'v',u:'m/s',v},{l:'Q',u:'L/s',v:Q*1000}],sol:`水面と穴の出口にベルヌーイ：${F('h = v²/(2g)')} → ${F('v = √(2gh)')}＝<b>${nf(v)} m/s</b>。${F('Q = Ca v')}＝0.6×${nf(PI*d*d/4,5)}×${nf(v)}＝<b>${nf(Q*1000)} L/s</b>`}; }},
+ {t:'ベルヌーイで圧力',tag:'c',g(){ const p1=pick([100,150,200]),v1=pick([1,2]),r=pick([2,3]),dz=pick([0,1,2]); const v2=v1*r*r; const p2=p1+RHO*(v1*v1-v2*v2)/2/1000-g*dz; return {fig:'',q:`管の断面1で圧力 ${p1} kN/m²、流速 ${v1} m/s。断面2は直径が 1/${r} で、断面1より ${dz} m 高い。損失を無視して断面2の圧力は？`,ans:[{l:'p<sub>2</sub>',u:'kN/m²',v:p2}],sol:`v₂＝${v1}×${r}²＝${v2} m/s。${F('p_2 = p_1 + ρ(v_1² − v_2²)/2 − ρgΔz')}＝${p1}＋${nf(RHO*(v1*v1-v2*v2)/2000)}−${nf(g*dz)}＝<b>${nf(p2)} kN/m²</b>`}; }},
+ ]});
+unit({id:'momentum',name:'運動量の式',tag:'d',ds:'噴流が板を押す力、曲がり管、水門に働く力',
+ pts:[`運動量の式 ${F('ΣF = ρQ(v_2 − v_1)')}（向きを持つ量として扱う）`,`噴流が垂直な板に当たって横へ散る：${F('F = ρQv')}`,`水門（スルースゲート）に働く力：上下流の静水圧の差と運動量の変化から求める`,`消防ホースの筒先に反動が生じるのも同じ理由`],
+ gens:[
+ {t:'噴流が板を押す力',tag:'d',g(){ const d=pick([.05,.1]),v=pick([10,15,20]); const Q=PI*d*d/4*v, Fv=RHO*Q*v/1000; return {fig:'',q:`直径 ${d*100} cm、速さ ${v} m/s の噴流が、垂直な固定板に当たって横へ散る。板が受ける力は？`,ans:[{l:'F',u:'kN',v:Fv}],sol:`${F('Q')}＝${nf(Q,4)} m³/s。噴流方向の速度が v→0 になるので ${F('F = ρQv')}＝1000×${nf(Q,4)}×${v}＝<b>${nf(Fv,3)} kN</b>`}; }},
+ {t:'スルースゲートの力',tag:'d',g(){ const h1=pick([2,3,4]),h2=pick([.3,.4,.5]),B=1; const q=Math.sqrt(2*g*h1*h1*h2*h2/(h1+h2)); const v1=q/h1,v2=q/h2; const Fg=.5*g*(h1*h1-h2*h2)-RHO*q*(v2-v1)/1000; return {fig:'',q:`幅1 m あたり、水門の上流水深 ${h1} m、下流（縮流部）水深 ${h2} m。単位幅流量は ${F('q = √(2g h_1²h_2²/(h_1+h_2))')} で ${nf(q,3)} m²/s。水門に働く力（単位幅）は？`,ans:[{l:'F',u:'kN/m',v:Fg}],sol:`静水圧の差 ${F('½ρg(h_1² − h_2²)')}＝${nf(.5*g*(h1*h1-h2*h2))}。運動量の変化 ${F('ρq(v_2 − v_1)')}＝${nf(RHO*q*(v2-v1)/1000)}（v₁＝${nf(v1,3)}、v₂＝${nf(v2,3)}）。差が水門の力：<b>${nf(Fg)} kN/m</b>`}; }},
+ ]});
+unit({id:'pipe',name:'管路の流れ',tag:'c',ds:'層流と乱流、摩擦損失、2つの水槽をつなぐ管',
+ pts:[`レイノルズ数 ${F('Re = vD/ν')}（水 ν≒1.0×10⁻⁶ m²/s）。約2000以下で層流、約4000以上で乱流`,`摩擦損失（ダルシー・ワイスバッハ）${F('h_f = f(L/D)v²/(2g)')}`,`入口損失 ${F('0.5v²/2g')}、出口損失 ${F('1.0v²/2g')}`,`2つの水槽の水位差 ${F('H = (0.5 + fL/D + 1.0)v²/(2g)')}`,`エネルギー線は損失の分だけ下がり、動水勾配線はそれより速度水頭だけ下`],
+ gens:[
+ {t:'レイノルズ数',tag:'c',g(){ const v=pick([.01,.05,.5,1,2]),D=pick([.02,.05,.1]); const Re=v*D/1e-6; return {fig:'',q:`直径 ${D*100} cm の管を流速 ${v} m/s で水が流れる（ν＝1.0×10⁻⁶ m²/s）。レイノルズ数は？`,ans:[{l:'Re',u:'',v:Re}],sol:`${F('Re = vD/ν')}＝${v}×${D}/10⁻⁶＝<b>${nf(Re,0)}</b>（${Re<2000?'層流':Re>4000?'乱流':'遷移域'}）`}; }},
+ {t:'摩擦損失水頭',tag:'c',g(){ const f=pick([.02,.025,.03]),L=pick([100,200,500]),D=pick([.2,.3,.5]),v=pick([1,1.5,2]); const hf=f*L/D*v*v/(2*g); return {fig:'',q:`長さ ${L} m、直径 ${D} m の管を流速 ${v} m/s で流れる。摩擦損失係数 f＝${f}。摩擦損失水頭は？`,ans:[{l:'h<sub>f</sub>',u:'m',v:hf}],sol:`${F('h_f = f(L/D)v²/(2g)')}＝${f}×(${L}/${D})×${v}²/19.6＝<b>${nf(hf,3)} m</b>`}; }},
+ {t:'2つの水槽をつなぐ管',tag:'d',g(){ const H=pick([5,10,20]),f=pick([.02,.025]),L=pick([100,200]),D=pick([.2,.3]); const k=.5+f*L/D+1; const v=Math.sqrt(2*g*H/k), Q=PI*D*D/4*v; return {fig:'',q:`水位差 ${H} m の2つの水槽を、長さ ${L} m、直径 ${D} m の管（f＝${f}）でつなぐ。入口損失0.5、出口損失1.0。流速と流量は？`,ans:[{l:'v',u:'m/s',v},{l:'Q',u:'m³/s',v:Q}],sol:`${F('H = (0.5 + fL/D + 1.0)v²/(2g)')}。係数の合計 ${nf(k,3)} → v＝√(2×9.8×${H}/${nf(k,3)})＝<b>${nf(v,3)} m/s</b>、Q＝<b>${nf(Q,4)} m³/s</b>`}; }},
+ ]});
+unit({id:'manning',name:'開水路の等流',tag:'d',ds:'マニングの式、径深、水理学的に有利な断面',
+ pts:[`川や水路のように水面が大気に接する流れ＝開水路`,`マニングの式 ${F('v = (1/n) R^{2/3} I^{1/2}')}（n：粗度係数、I：勾配）`,`径深 ${F('R = A / S')}（A：流水断面積、S：潤辺＝水に接する周の長さ）`,`粗度係数の目安：コンクリート水路 0.015、自然河川 0.03〜0.04`,`長方形断面で最も流しやすい形は ${F('b = 2h')}（幅が水深の2倍）`],
+ gens:[
+ {t:'マニングの式',tag:'d',g(){ const b=pick([2,3,4]),h=pick([.5,1,1.5]),n=pick([.015,.02,.03]),I=pick([1/500,1/1000,1/2000]); const A=b*h,S=b+2*h,R=A/S,v=1/n*R**(2/3)*Math.sqrt(I),Q=A*v; return {fig:'',q:`幅 ${b} m の長方形水路、水深 ${h} m、粗度係数 ${n}、勾配 1/${Math.round(1/I)}。流速と流量は？`,ans:[{l:'v',u:'m/s',v},{l:'Q',u:'m³/s',v:Q}],sol:`A＝${A}、S＝${b}＋2×${h}＝${S}、${F('R = A/S')}＝${nf(R,3)} m。${F('v = (1/n)R^{2/3}I^{1/2}')}＝<b>${nf(v,3)} m/s</b>、${F('Q = Av')}＝<b>${nf(Q,3)} m³/s</b>`}; }},
+ {t:'径深と有利な断面',tag:'d',g(){ const A=pick([2,4,8]); const h=Math.sqrt(A/2), b=2*h, R=h/2; return {fig:'',q:`断面積 ${A} m² の長方形水路を、同じ勾配・粗度で最も多く流せる形にしたい。水深と径深は？`,ans:[{l:'h',u:'m',v:h},{l:'R',u:'m',v:R}],sol:`潤辺が最小になる形は ${F('b = 2h')}。${F('A = 2h²')} → h＝√(${A}/2)＝<b>${nf(h,3)} m</b>。${F('R = A/S = 2h²/(4h) = h/2')}＝<b>${nf(R,3)} m</b>`}; }},
+ ]});
+unit({id:'energy',name:'比エネルギーと限界水深',tag:'d',ds:'常流と射流、フルード数、限界水深',
+ pts:[`比エネルギー ${F('E = h + v²/(2g)')}（水路の底から測ったエネルギー）`,`同じ流量でも、深くて遅い流れ（常流）と浅くて速い流れ（射流）の2通りがある`,`その境目が限界水深 ${F('h_c = (q²/g)^{1/3}')}、このとき E が最小 ${F('E_min = 1.5h_c')}`,`フルード数 ${F('Fr = v / √(gh)')}：Fr<1 常流、Fr>1 射流`,`常流は下流の影響が上流に伝わり、射流は伝わらない`],
+ gens:[
+ {t:'限界水深',tag:'d',g(){ const q=pick([1,2,3,5]); const hc=Math.cbrt(q*q/g); return {fig:'',q:`単位幅流量 ${q} m²/s の長方形水路。限界水深と最小比エネルギーは？`,ans:[{l:'h<sub>c</sub>',u:'m',v:hc},{l:'E<sub>min</sub>',u:'m',v:1.5*hc}],sol:`${F('h_c = (q²/g)^{1/3}')}＝(${q*q}/9.8)^{1/3}＝<b>${nf(hc,3)} m</b>。${F('E_min = 1.5h_c')}＝<b>${nf(1.5*hc,3)} m</b>`}; }},
+ {t:'フルード数',tag:'d',g(){ const q=pick([1,2,3]),h=pick([.3,.5,1,2]); const v=q/h,Fr=v/Math.sqrt(g*h),E=h+v*v/(2*g); return {fig:'',q:`単位幅流量 ${q} m²/s、水深 ${h} m の流れ。フルード数と比エネルギーは？`,ans:[{l:'Fr',u:'',v:Fr},{l:'E',u:'m',v:E}],sol:`v＝q/h＝${nf(v,3)} m/s。${F('Fr = v/√(gh)')}＝<b>${nf(Fr,3)}</b>（${Fr<1?'常流':'射流'}）。${F('E = h + v²/2g')}＝<b>${nf(E,3)} m</b>`}; }},
+ ]});
+unit({id:'jump',name:'跳水',tag:'d',ds:'射流から常流への急変、共役水深、エネルギー損失',
+ pts:[`射流が常流に変わるとき、水面が急に盛り上がって渦を巻く＝跳水`,`共役水深 ${F('h_2/h_1 = ½(√(1 + 8Fr_1²) − 1)')}`,`損失水頭 ${F('ΔE = (h_2 − h_1)³/(4h_1h_2)')}`,`ダムの放流やせきの下流で、エネルギーを消して川底が掘れるのを防ぐ（減勢工）`],
+ gens:[
+ {t:'跳水後の水深',tag:'d',g(){ const h1=pick([.2,.3,.4,.5]),v1=pick([5,6,8,10]); const Fr=v1/Math.sqrt(g*h1); const h2=h1/2*(Math.sqrt(1+8*Fr*Fr)-1), dE=(h2-h1)**3/(4*h1*h2); return {fig:'',q:`水深 ${h1} m、流速 ${v1} m/s の射流で跳水が起きた。跳水後の水深と損失水頭は？`,ans:[{l:'h<sub>2</sub>',u:'m',v:h2},{l:'ΔE',u:'m',v:dE}],sol:`${F('Fr_1')}＝${v1}/√(9.8×${h1})＝${nf(Fr,3)}。${F('h_2 = (h_1/2)(√(1+8Fr_1²) − 1)')}＝<b>${nf(h2,3)} m</b>。${F('ΔE = (h_2−h_1)³/(4h_1h_2)')}＝<b>${nf(dE,3)} m</b>`}; }},
+ ]});
+unit({id:'orifice',name:'オリフィスとせき',tag:'c',ds:'流量係数、長方形せき・三角せき、水槽の排水時間',
+ pts:[`オリフィス（小孔）${F('Q = Ca√(2gh)')}（C：流量係数 0.6前後）`,`長方形せき ${F('Q = (2/3)CB√(2g)H^{3/2}')}`,`直角三角せき ${F('Q = (8/15)C√(2g)H^{5/2}')}（小さな流量を精度よく測れる）`,`水槽の排水時間 ${F('t = 2A(√H_1 − √H_2)/(Ca√(2g))')}`],
+ gens:[
+ {t:'長方形せき',tag:'c',g(){ const B=pick([1,2,3]),H=pick([.2,.3,.5]),C=.62; const Q=2/3*C*B*Math.sqrt(2*g)*H**1.5; return {fig:'',q:`幅 ${B} m の長方形せき、越流水深 ${H} m、流量係数 ${C}。流量は？`,ans:[{l:'Q',u:'m³/s',v:Q}],sol:`${F('Q = (2/3)CB√(2g)H^{3/2}')}＝<b>${nf(Q,3)} m³/s</b>。H が2倍で Q は約2.8倍`}; }},
+ {t:'直角三角せき',tag:'c',g(){ const H=pick([.1,.15,.2]),C=.59; const Q=8/15*C*Math.sqrt(2*g)*H**2.5; return {fig:'',q:`直角三角せき（流量係数 ${C}）の越流水深が ${H*100} cm。流量は何 L/s？`,ans:[{l:'Q',u:'L/s',v:Q*1000}],sol:`${F('Q = (8/15)C√(2g)H^{5/2}')}＝${nf(Q,5)} m³/s＝<b>${nf(Q*1000)} L/s</b>`}; }},
+ {t:'水槽の排水時間',tag:'c',g(){ const A=pick([2,4,10]),a=pick([.005,.01]),H1=pick([2,4]),H2=pick([0,1]),C=.6; const t=2*A*(Math.sqrt(H1)-Math.sqrt(H2))/(C*a*Math.sqrt(2*g)); return {fig:'',q:`断面積 ${A} m² の水槽の底に面積 ${a} m² の穴（C＝${C}）。水深が ${H1} m から ${H2} m になるまでの時間は？`,ans:[{l:'t',u:'s',v:t}],sol:`${F('t = 2A(√H_1 − √H_2)/(Ca√(2g))')}＝<b>${nf(t,0)} 秒</b>（約${nf(t/60,1)}分）。水位が下がるほど流出が遅くなる`}; }},
+ ]});
+unit({id:'well',name:'地下水と井戸',tag:'c',ds:'ダルシーの法則、被圧・不圧井戸の揚水量',
+ pts:[`地下水の流れもダルシーの法則 ${F('v = ki')}`,`被圧帯水層（上下を不透水層にはさまれる）${F('Q = 2πkb(H − h)/ln(R/r)')}`,`不圧帯水層（水面がある）${F('Q = πk(H² − h²)/ln(R/r)')}`,`R：影響圏半径、r：井戸の半径、H：元の水位、h：井戸の水位`,`汲み上げると井戸のまわりに円すい形の水位低下（水位降下錐）ができる`],
+ gens:[
+ {t:'不圧井戸の揚水量',tag:'c',g(){ const k=pick([1,2,5])*1e-4,H=pick([10,15,20]),dd=pick([2,3,5]),R=pick([100,200,300]),r=pick([.15,.2,.3]); const h=H-dd; const Q=PI*k*(H*H-h*h)/Math.log(R/r); return {fig:'',q:`不圧帯水層（元の水深 ${H} m、透水係数 ${k*1e4}×10⁻⁴ m/s）で半径 ${r} m の井戸から揚水し、井戸の水深が ${h} m になった。影響圏半径 ${R} m。揚水量は？`,ans:[{l:'Q',u:'m³/s',v:Q}],sol:`${F('Q = πk(H² − h²)/ln(R/r)')}＝π×${k.toExponential(0)}×(${H*H}−${h*h})/ln(${R}/${r})＝<b>${nf(Q,4)} m³/s</b>（${nf(Q*86400,0)} m³/日）`}; }},
+ {t:'被圧井戸の揚水量',tag:'c',g(){ const k=pick([1,2,5])*1e-4,b=pick([5,10]),dd=pick([2,4]),R=pick([200,500]),r=.2; const Q=2*PI*k*b*dd/Math.log(R/r); return {fig:'',q:`厚さ ${b} m の被圧帯水層（k＝${k*1e4}×10⁻⁴ m/s）。半径 ${r} m の井戸で水位が ${dd} m 下がった。影響圏半径 ${R} m。揚水量は？`,ans:[{l:'Q',u:'m³/s',v:Q}],sol:`${F('Q = 2πkb(H−h)/ln(R/r)')}＝<b>${nf(Q,4)} m³/s</b>`}; }},
+ ]});
+unit({id:'hydro',name:'雨と洪水（水文）',tag:'d',ds:'合理式、流出係数、到達時間',
+ pts:[`合理式 ${F('Q = (1/3.6) f r A')}（Q：m³/s、r：mm/h、A：km²）`,`流出係数 f：降った雨のうち川へ流れ出る割合（舗装面 0.9前後、森林 0.3前後）`,`r は洪水到達時間内の平均降雨強度`,`都市化で舗装が増えると f が大きくなり、洪水のピークが高く・早くなる`,`複数の土地利用は面積で重み付けした平均 f を使う`],
+ gens:[
+ {t:'合理式',tag:'d',g(){ const f=pick([.5,.7,.9]),r=pick([30,50,80]),A=pick([.5,1,2,5]); const Q=f*r*A/3.6; return {fig:'',q:`流域面積 ${A} km²、流出係数 ${f}、到達時間内の降雨強度 ${r} mm/h。ピーク流量は？`,ans:[{l:'Q',u:'m³/s',v:Q}],sol:`${F('Q = (1/3.6)frA')}＝${f}×${r}×${A}/3.6＝<b>${nf(Q)} m³/s</b>`}; }},
+ {t:'都市化の影響',tag:'d',g(){ const A=pick([1,2]),a=pick([.2,.4,.6]),r=pick([50,80]); const f0=.3, f1=a*.9+(1-a)*.3; const r0=f0*r*A/3.6, r1=f1*r*A/3.6; return {fig:'',q:`面積 ${A} km² の森林（f＝0.3）のうち ${a*100}% が舗装（f＝0.9）に変わった。降雨強度 ${r} mm/h のピーク流量は、開発前と後でそれぞれ？`,ans:[{l:'Q<sub>前</sub>',u:'m³/s',v:r0},{l:'Q<sub>後</sub>',u:'m³/s',v:r1}],sol:`開発後の平均 ${F('f')}＝0.9×${a}＋0.3×${nf(1-a)}＝${nf(f1,3)}。前 ${nf(r0)}、後 <b>${nf(r1)} m³/s</b>（${nf(r1/r0)}倍）。だから都市では調整池や雨水貯留施設をつくる`}; }},
+ ]});
+unit({id:'wave',name:'波と津波',tag:'d',ds:'深海波・浅海波の速さ、津波の伝わる速さ',
+ pts:[`深海波の波長 ${F('L_0 = gT²/(2π)')}、波速 ${F('C_0 = L_0/T')}`,`水深が波長の約1/2より深ければ深海波、約1/20より浅ければ長波（浅海波）`,`長波の速さ ${F('C = √(gh)')}：水深だけで決まる`,`津波は波長が数十〜数百 km の長波。深い海ではジェット機並み、浅くなると遅くなって高さが増す`],
+ gens:[
+ {t:'深海波',tag:'d',g(){ const T=pick([5,8,10,12]); const L0=g*T*T/(2*PI); return {fig:'',q:`周期 ${T} 秒の深海波の波長と波速は？`,ans:[{l:'L<sub>0</sub>',u:'m',v:L0},{l:'C<sub>0</sub>',u:'m/s',v:L0/T}],sol:`${F('L_0 = gT²/(2π)')}＝<b>${nf(L0)} m</b>（≒1.56T²）。${F('C_0 = L_0/T')}＝<b>${nf(L0/T)} m/s</b>`}; }},
+ {t:'津波の速さ',tag:'d',g(){ const h=pick([4000,2000,1000,100,10]),D=pick([100,200,500]); const C=Math.sqrt(g*h); return {fig:'',q:`水深 ${h} m の海を進む津波の速さ（km/h）と、その水深が ${D} km 続くときの所要時間（分）は？`,ans:[{l:'C',u:'km/h',v:C*3.6},{l:'t',u:'分',v:D*1000/C/60}],sol:`${F('C = √(gh)')}＝√(9.8×${h})＝${nf(C)} m/s＝<b>${nf(C*3.6)} km/h</b>。${D} km 進むのに <b>${nf(D*1000/C/60)} 分</b>`}; }},
+ ]});
+
+const LIFE={
+ hydrostatic:{ex:['ダムの壁が下ほど厚いこと','水道の蛇口の水圧（配水池が高い所にある理由）','ダイバーの耳が痛くなる'],use:'水圧は深さだけで決まる。ダム・水門・地下室の壁・水槽の設計の出発点。水道は配水池を高い所に置いて、その高さの水圧で各家庭に水を届けている。'},
+ force:{ex:['河川の水門・ダムのゲート','地下の駅や地下室の壁に地下水がかかる','高潮・津波の防潮扉'],use:'水門やゲートに働く力と作用点から、扉の板厚や支える梁、開閉装置の力を決める。構造力学の梁の計算とつながる。'},
+ buoy:{ex:['船・フェリー','港の防波堤に使うケーソン（大きなコンクリートの箱を浮かべて運ぶ）','浮き桟橋・メガフロート'],use:'浮かぶ構造物が傾いても戻るかを判定する。ケーソンを曳航して据え付ける工事や、船に荷物を積むときの安全確認に欠かせない。'},
+ bern:{ex:['水道管の流量計（ベンチュリ管）','ポンプやダムの放流管のキャビテーション','飛行機の翼が浮く理由の一部'],use:'管や水路のどこで圧力が下がるか、どれだけの水が流れるかを、エネルギー保存の式で求める。水理学の計算のほとんどがこの式の応用。'},
+ momentum:{ex:['水車・ポンプの羽根','消防ホースの反動','曲がった水道管を支えるコンクリートの固まり'],use:'流れの向きや速さが変わると、構造物に力がかかる。管の曲がり部の固定、水門や橋脚が受ける流れの力の計算に使う。'},
+ pipe:{ex:['上水道の配水管網','ダムから発電所へ水を送る水圧管路','マンションの給水管'],use:'必要な水を送るのに、どの太さの管が要るか、ポンプがどれだけの力を出せばよいかを決める。古い管は内面が荒れて損失が増えるので、更新計画にも使う。'},
+ manning:{ex:['河川の護岸・用水路・下水道管','都市の排水路'],use:'洪水のとき川があふれないか、下水道管が雨水を流しきれるかを判定する。川幅や堤防の高さ、下水道管の太さを決める基本の式。'},
+ energy:{ex:['急な水路の勢いのある流れ（射流）と、ゆったりした川の流れ（常流）','流量を測る水路（パーシャルフリューム）'],use:'同じ流量でも水深が2通りありうることを知ると、段差や水門の前後で水面がどう変わるかを予測できる。水路やせきの設計、流量観測に使う。'},
+ jump:{ex:['ダムやせきの下流の白く泡立つ流れ','砂防えん堤の下流','台所のシンクに水を落としたときの輪'],use:'勢いのある流れのエネルギーを跳水で消す「減勢工」を設計する。これがないと、放流の勢いで下流の川底や護岸が壊れる。'},
+ orifice:{ex:['ため池・調整池の放流口','用水路の分水ゲート','三角せき（実験や工場排水の流量測定）'],use:'水を決まった量だけ流す・測る仕組みの計算。調整池から少しずつ水を出して下流の洪水を防ぐ放流口の大きさを決める。'},
+ well:{ex:['地下水を使う水道（井戸水）','工事で地下水位を下げるディープウェル','汲み上げすぎによる地盤沈下'],use:'井戸からどれだけ汲めるか、周りの水位がどれだけ下がるかを予測する。掘削工事の地下水対策や、地下水資源の管理に使う。地盤力学の有効応力・圧密とつながる。'},
+ hydro:{ex:['都市部の川の氾濫（舗装で雨がしみこまない）','学校の校庭や公園の地下の雨水貯留施設','首都圏外郭放水路などの大規模な地下の放水路・調節池'],use:'雨の量から川や下水道に流れ出る量を見積もり、川の大きさや調整池の容量を決める。ハザードマップの浸水想定もこうした計算をもとにつくる。'},
+ wave:{ex:['東日本大震災の津波','港の防波堤・海岸堤防','津波避難タワー・ハザードマップ'],use:'波や津波の速さ・高さを計算して、防波堤や堤防の高さ、避難にかけられる時間を見積もる。「揺れたらすぐ逃げる」の理由を数字で説明できる。'},
+};
+
+// ================= 証明（水理学） =================
+const PFIG={
+ column:`<svg viewBox="0 0 200 120"><rect x="0" y="0" width="200" height="120" fill="#F4F3EF"/><rect x="20" y="20" width="160" height="96" fill="#93BCD6"/><line x1="20" y1="20" x2="180" y2="20" stroke="#3286BE" stroke-width="2"/><rect x="85" y="20" width="30" height="70" fill="none" stroke="#12286B" stroke-width="2" stroke-dasharray="4 3"/><line x1="100" y1="96" x2="100" y2="112" stroke="#C62422" stroke-width="2.5"/><path d="M100,90 l-5,8 h10z" fill="#C62422"/><text x="124" y="108" font-size="10" fill="#C62422">pA（下から押す）</text><line x1="100" y1="40" x2="100" y2="62" stroke="#12286B" stroke-width="2.5"/><path d="M100,68 l-5,-8 h10z" fill="#12286B"/><text x="122" y="52" font-size="10" fill="#12286B">重さ ρg(Ah)</text><text x="62" y="58" font-size="10" fill="#12286B" text-anchor="end">h</text><line x1="70" y1="20" x2="70" y2="90" stroke="#5E6B86"/></svg>`,
+ wedge:`<svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F4F3EF"/><path d="M60,95 L150,95 L60,30Z" fill="#93BCD6" stroke="#12286B" stroke-width="2"/><text x="105" y="110" font-size="10" fill="#12286B" text-anchor="middle">dx</text><text x="66" y="80" font-size="10" fill="#12286B">dz</text><text x="112" y="56" font-size="10" fill="#12286B">ds（角度θ）</text><path d="M30,62 h22" stroke="#C62422" stroke-width="2"/><path d="M58,62 l-7,-4 v8z" fill="#C62422"/><text x="28" y="54" font-size="10" fill="#C62422">p<tspan font-size="75%" dy="3">x</tspan><tspan dy="-3">​</tspan></text><path d="M105,118 v-16" stroke="#C62422" stroke-width="2"/><path d="M105,98 l-4,7 h8z" fill="#C62422"/><path d="M140,44 l-14,12" stroke="#C62422" stroke-width="2"/><path d="M122,59 l3,-9 l6,6z" fill="#C62422"/><text x="146" y="40" font-size="10" fill="#C62422">p</text></svg>`,
+ strip:`<svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F4F3EF"/><rect x="40" y="20" width="70" height="90" fill="#93BCD6"/><rect x="110" y="10" width="8" height="105" fill="#12286B"/><line x1="40" y1="20" x2="110" y2="20" stroke="#3286BE" stroke-width="2"/><rect x="40" y="60" width="70" height="8" fill="none" stroke="#C62422" stroke-width="1.5"/><text x="36" y="66" font-size="10" fill="#C62422" text-anchor="end">dA（深さh）</text><polygon points="110,20 110,110 160,110" fill="rgba(198,36,34,.2)" stroke="#C62422"/><text x="150" y="80" font-size="10" fill="#C62422">p＝ρgh</text></svg>`,
+ heel:`<svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F4F3EF"/><rect x="0" y="62" width="200" height="58" fill="#93BCD6"/><g transform="rotate(12 100 70)"><rect x="50" y="40" width="100" height="50" fill="#D8CFBE" stroke="#12286B" stroke-width="2"/></g><path d="M100,62 L150,62 L148,72Z" fill="#C62422" opacity=".6"/><path d="M100,62 L50,62 L52,52Z" fill="#3286BE" opacity=".8"/><text x="150" y="88" font-size="9" fill="#C62422">沈んだくさび</text><text x="22" y="48" font-size="9" fill="#3286BE">浮いたくさび</text><line x1="112" y1="20" x2="112" y2="100" stroke="#12286B" stroke-dasharray="3 3"/><text x="116" y="24" font-size="10" fill="#12286B">M</text></svg>`,
+ tube:`<svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F4F3EF"/><path d="M10,40 C80,40 110,60 190,62 L190,78 C110,78 80,90 10,90Z" fill="#93BCD6" stroke="#12286B" stroke-width="2"/><rect x="20" y="40" width="14" height="50" fill="rgba(198,36,34,.35)"/><rect x="170" y="62" width="22" height="16" fill="rgba(198,36,34,.35)"/><text x="26" y="104" font-size="10" fill="#C62422" text-anchor="middle">1：p₁, v₁, z₁</text><text x="172" y="96" font-size="10" fill="#C62422" text-anchor="middle">2：p₂, v₂, z₂</text><text x="100" y="20" font-size="10" fill="#12286B" text-anchor="middle">同じ体積 dV が入って出る</text></svg>`,
+ weir:`<svg viewBox="0 0 200 120"><rect width="200" height="120" fill="#F4F3EF"/><rect x="20" y="30" width="110" height="80" fill="#93BCD6"/><rect x="130" y="62" width="10" height="50" fill="#12286B"/><line x1="20" y1="30" x2="130" y2="30" stroke="#3286BE" stroke-width="2"/><rect x="100" y="44" width="30" height="6" fill="none" stroke="#C62422" stroke-width="1.5"/><text x="96" y="47" font-size="10" fill="#C62422" text-anchor="end">深さ y の帯 dy</text><path d="M140,47 q20,2 30,20" stroke="#C62422" fill="none" stroke-width="2"/><text x="166" y="40" font-size="10" fill="#C62422">√(2gy)</text><line x1="150" y1="30" x2="150" y2="62" stroke="#5E6B86"/><text x="154" y="56" font-size="10" fill="#5E6B86">H</text></svg>`,
+};
+const PF={
+ hydrostatic:[
+  {t:'p＝ρgh',f:'column',b:`水面から深さ h の点のまわりに、底面積 A・高さ h の水の柱を考える（点線）。この柱は止まっているので、上下の力がつりあう。<br>・下向き：柱の水の重さ ${F('W = ρ × (Ah) × g')}（水面の上は大気圧で、ゲージ圧では0）<br>・上向き：底面を下の水が押す力 ${F('pA')}<br>・横向きの力は左右で打ち消し合うので、上下には効かない。<br>つりあい ${F('pA = ρgAh')} の両辺を A で割ると ${F('p = ρgh')}。圧力は「その点より上にある水の柱の重さ÷面積」。`},
+  {t:'圧力は向きによらず同じ（パスカルの原理）',f:'wedge',b:`水中に小さな三角柱（底辺 dx、高さ dz、斜辺 ds、斜面の角度 θ）を取り出す。止まっている水にはずれる向きの力（せん断力）がないので、各面には面に垂直な圧力だけが働く。<br>・横方向：${F('p_x · dz = p · ds · sinθ')}。${F('dz = ds · sinθ')} なので ${F('p_x = p')}。<br>・縦方向：${F('p_z · dx = p · ds · cosθ + ½ρg·dx·dz')}（最後は三角柱の重さ）。${F('dx = ds·cosθ')} を入れて ${F('p_z = p + ½ρg·dz')}。三角柱を小さくして ${F('dz → 0')} とすると ${F('p_z = p')}。<br>θ は自由に選べるので、どの向きの面にも同じ圧力が働く。`},
+  {t:'同じ高さの点は同じ圧力',b:`同じ液体の中の、同じ高さの2点を結ぶ水平な細い柱を考える。横方向に働くのは両端の圧力だけ（重さは下向きなので横には効かない）。つりあい ${F('p_1 A = p_2 A')} から ${F('p_1 = p_2')}。容器の形がどんなに複雑でも、液体でつながっていれば成り立つ。`},
+  {t:'U字管マノメータ Δp＝(ρm−ρ)gΔh',b:`管の点A（圧力 p<sub>A</sub>）と点B（p<sub>B</sub>）をU字管でつなぎ、下に水銀（密度 ρ<sub>m</sub>）を入れる。水銀の低い側の液面の高さで、左右の圧力が等しい（同じ液体・同じ高さ）。<br>左：${F('p_A + ρg(h + Δh)')}、右：${F('p_B + ρgh + ρ_m gΔh')}（h は共通部分の高さ）。<br>等しいとおいて ${F('p_A − p_B = (ρ_m − ρ)gΔh')}。`},
+  {t:'大気圧は水柱で約10.3 m',b:`大気圧 101.3 kN/m² を ${F('p = ρgh')} に入れると ${F('h = 101300/(1000 × 9.8) ≒ 10.3 m')}。だから吸い上げポンプでは、理論上10 m 程度より高く水を吸い上げられない。`},
+ ],
+ force:[
+  {t:'全水圧 P＝ρg h_G A',f:'strip',b:`面を小さな帯 dA に分ける。深さ h の帯が受ける力は ${F('dP = p·dA = ρgh·dA')}。全部足すと ${F('P = ∫ρgh dA = ρg∫h dA')}。<br>図心（面の重心）の定義は ${F('h_G = ∫h dA / A')} なので ${F('∫h dA = h_G A')}。よって ${F('P = ρg h_G A')}：「図心の深さの水圧 × 面積」。`},
+  {t:'鉛直な壁 P＝½ρgH²B、作用点は底から H/3',b:`水面から底までの壁（高さ H、幅 B）は、図心の深さ ${F('h_G = H/2')}、面積 ${F('A = HB')}。${F('P = ρg(H/2)(HB) = ½ρgH²B')}。<br>圧力は深さに比例するので、分布は三角形（底で ρgH）。合力は三角形の重心を通るので、水面から 2H/3、底から H/3 の位置。`},
+  {t:'作用点 h_C＝h_G＋I_G/(h_G A)',b:`水面の線のまわりのモーメントで考える。合力 P が深さ h<sub>C</sub> に働くとすると ${F('P·h_C = ∫h·dP = ρg∫h² dA')}。<br>${F('∫h² dA')} は水面の線まわりの断面二次モーメント。平行軸の定理で ${F('I_G + h_G²A')}。<br>${F('h_C = ρg(I_G + h_G²A) / (ρg h_G A) = h_G + I_G/(h_G A)')}。第2項は必ず正なので、作用点は図心より深い。`},
+  {t:'両側に水がある P＝½ρgB(H₁²−H₂²)',b:`上流側から ${F('½ρgH_1²B')}、下流側から逆向きに ${F('½ρgH_2²B')}。向きが反対なので差し引きが正味の力。`},
+ ],
+ buoy:[
+  {t:'浮力＝押しのけた水の重さ（アルキメデス）',b:`物体を取り除いて、同じ形の「水のかたまり」に置きかえて考える。その水のかたまりは周りの水の中で止まっているので、周りの水圧の合力は、ちょうどかたまりの重さ ${F('ρgV')} と同じ大きさで上向き。<br>周りの水圧は、中身が物体でも水でも同じ（圧力は深さだけで決まる）。だから物体にも ${F('B = ρgV')} の上向きの力が働く。<br>直方体なら：底面の上向き ${F('ρg h_2 A')} − 上面の下向き ${F('ρg h_1 A')} ＝ ${F('ρg(h_2 − h_1)A = ρgV')} と直接確かめられる。`},
+  {t:'喫水 d＝(ρb/ρw)H',b:`浮かんで止まっているとき、重さ＝浮力。底面積 A の直方体で ${F('ρ_b g A H = ρ_w g A d')}。両辺を ${F('ρ_w g A')} で割ると ${F('d = (ρ_b/ρ_w)H')}。`},
+  {t:'メタセンタ高さ GM＝I/V−CG',f:'heel',b:`浮体を小さな角度 θ 傾けると、片側のくさびが水から出て、反対側のくさびが沈む（どちらも体積は同じ）。水線から x の位置の幅 dA の部分は、深さ ${F('xθ')} だけ沈む（または浮く）。<br>浮心の横移動：${F('V · BB′ = ∫x · (xθ) dA = θ ∫x² dA = θI')} → ${F('BB′ = Iθ/V')}。<br>新しい浮心を通る鉛直線と、浮体の中心線の交点が M。小さな θ では ${F('BM = BB′/θ = I/V')}。<br>重心 G が M より下（${F('GM = BM − BG > 0')}）なら、浮力と重さが元に戻す向きの偶力 ${F('W·GM·sinθ')} をつくる。ここで ${F('BG = CG')}（C＝浮心）。`},
+  {t:'直方体 I/V＝B²/(12d)',b:`長さ L、幅 B の水線面の断面二次モーメントは ${F('I = LB³/12')}、水中の体積は ${F('V = LBd')}。割ると ${F('B²/(12d)')}。幅が広いほど急に大きくなる（B²）。`},
+ ],
+ bern:[
+  {t:'連続の式 Q＝A₁v₁＝A₂v₂',b:`水はほとんど縮まない。時間 dt の間に断面1を通る体積 ${F('A_1 v_1 dt')} と、断面2を通る体積 ${F('A_2 v_2 dt')} は等しくないと、間に水がたまるか消えてしまう。だから ${F('A_1 v_1 = A_2 v_2')}。`},
+  {t:'ベルヌーイの定理',f:'tube',b:`流れに沿った細い管（流管）を考える。時間 dt の間に、断面1から体積 dV の水が入り、断面2から同じ dV が出る。<br>・圧力がする仕事：入口で ${F('p_1 dV')}（押し込む）、出口で ${F('−p_2 dV')}（押し返される）。<br>・運動エネルギーの変化：${F('½ρdV(v_2² − v_1²)')}、位置エネルギーの変化：${F('ρdV g(z_2 − z_1)')}。<br>摩擦がなければ「仕事＝エネルギーの増加」：${F('(p_1 − p_2)dV = ½ρdV(v_2²−v_1²) + ρdVg(z_2−z_1)')}。<br>dV で割り、1と2を左右に分けて ρg で割ると ${F('z_1 + p_1/(ρg) + v_1²/(2g) = z_2 + p_2/(ρg) + v_2²/(2g)')}。どの断面でも同じ値＝一定。`},
+  {t:'速くなると圧力が下がる',b:`高さが同じ（${F('z_1 = z_2')}）なら ${F('p_2 = p_1 − ½ρ(v_2² − v_1²)')}。v<sub>2</sub>＞v<sub>1</sub> なら p<sub>2</sub>＜p<sub>1</sub>。エネルギーの合計は変わらないので、運動エネルギーが増えた分、圧力のエネルギーが減る。`},
+  {t:'トリチェリ v＝√(2gh)',b:`水面（大気圧で p＝0、広いので v≒0、高さ h）と、穴から出た直後の噴流（大気中で p＝0、高さ0）にベルヌーイを使う。${F('h + 0 + 0 = 0 + 0 + v²/(2g)')} → ${F('v = √(2gh)')}。高さ h から物を落としたときの速さと同じ。`},
+  {t:'ベンチュリ管の流量',b:`断面1と2（細い）で ${F('p_1 − p_2 = ½ρ(v_2² − v_1²)')}、連続の式 ${F('v_2 = v_1(A_1/A_2)')}。代入して ${F('p_1 − p_2 = ½ρv_1²((A_1/A_2)² − 1)')}。<br>v<sub>1</sub> について解き ${F('Q = A_1 v_1 = A_1√(2(p_1 − p_2)/(ρ((A_1/A_2)² − 1)))')}。圧力差を測れば流量がわかる。`},
+ ],
+ momentum:[
+  {t:'運動量の式 ΣF＝ρQ(v₂−v₁)',b:`ニュートンの運動の法則「力×時間＝運動量の変化」を、流れのある区間（検査体積）に使う。時間 dt の間に、質量 ${F('ρQ dt')} の水が速度 v<sub>1</sub> で入り、同じ質量が v<sub>2</sub> で出ていく。区間内の運動量の変化は ${F('ρQ dt (v_2 − v_1)')}。<br>これが区間の水に働く力の合計 × dt に等しいので ${F('ΣF = ρQ(v_2 − v_1)')}（向きを含めたベクトルの式）。`},
+  {t:'噴流が板を押す力 F＝ρQv',b:`噴流の向きを＋とする。板に当たる前 ${F('v_1 = v')}、横へ散った後は噴流方向の成分 ${F('v_2 = 0')}。水が板から受ける力は ${F('ρQ(0 − v) = −ρQv')}（逆向き）。作用・反作用で、板は ${F('ρQv')} で押される。角度 θ に曲げられると ${F('v_2 = v cosθ')} なので ${F('ρQv(1 − cosθ)')}、180°はね返すと ${F('2ρQv')}。`},
+  {t:'スルースゲートに働く力',b:`水門の上流の断面1と下流の断面2の間の水について、流れの向きの力を書く。上流の静水圧 ${F('½ρgh_1²')}（＋）、下流の静水圧 ${F('½ρgh_2²')}（−）、水門が水を押し返す力 F（−）。<br>${F('½ρg(h_1² − h_2²) − F = ρq(v_2 − v_1)')} → ${F('F = ½ρg(h_1² − h_2²) − ρq(v_2 − v_1)')}。静水圧の差から、水が勢いをつけるのに使った分を引いたものが水門の力。`},
+ ],
+ pipe:[
+  {t:'レイノルズ数 Re＝vD/ν',b:`流れを乱そうとする慣性の力（${F('ρv²')} 程度）と、流れをならす粘性の力（${F('μv/D')} 程度）の比。${F('ρv² ÷ (μv/D) = ρvD/μ = vD/ν')}（${F('ν = μ/ρ')}）。この比が小さいと粘性が勝って層流、大きいと乱れが勝って乱流になる。境目の約2000という値は、レイノルズの実験で決まった値。`},
+  {t:'摩擦損失 h_f＝f(L/D)v²/(2g)',b:`長さ L の管の中の水について、流れの向きの力のつりあいを書く。両端の圧力差がする力 ${F('Δp · πD²/4')} と、管の壁の摩擦（せん断応力 τ₀）${F('τ_0 · πDL')} がつりあう：${F('Δp = 4τ_0 L/D')}。<br>実験から、乱流の壁の摩擦は速度の2乗に比例するので ${F('τ_0 = (f/8)ρv²')} と書く（f が摩擦損失係数）。代入して ${F('h_f = Δp/(ρg) = f (L/D) v²/(2g)')}。<br>層流ではハーゲン・ポアズイユの式から ${F('f = 64/Re')} と計算できる。`},
+  {t:'入口損失0.5、出口損失1.0',b:`出口：管から広い水槽に出ると、水の速さは0になる。運動エネルギー ${F('v²/2g')} はすべて渦になって消えるので、損失係数は1.0。入口：角ばった入口では流れが一度縮まってから広がり、実験的に ${F('0.5 v²/2g')} 程度が失われる（入口を丸くすると小さくなる）。`},
+  {t:'2つの水槽 H＝(0.5＋fL/D＋1.0)v²/(2g)',b:`上の水槽の水面（p＝0、v≒0、高さ H）から下の水槽の水面（p＝0、v≒0、高さ0）へ、損失を含めたベルヌーイの式を書く：${F('H = 0 + h_入口 + h_f + h_出口')}。それぞれを代入すると式になる。水位差はすべて損失に使われる。`},
+ ],
+ manning:[
+  {t:'等流のつりあい τ₀＝ρgRI',b:`勾配 I（角度 θ、${F('sinθ ≒ I')}）の水路で、長さ L の水のかたまりを考える。等流（深さが変わらない）なら、両端の水圧は打ち消し合い、重さの斜面方向成分と底・壁の摩擦がつりあう。<br>${F('ρgAL · I = τ_0 · S · L')} → ${F('τ_0 = ρg(A/S)I = ρgRI')}。ここで径深 ${F('R = A/S')} が自然に出てくる。`},
+  {t:'マニングの式 v＝(1/n)R^{2/3}I^{1/2}',b:`乱流の摩擦は ${F('τ_0 ∝ ρv²')}。上の式とあわせると ${F('v² ∝ RI')}、つまり ${F('v = C√(RI)')}（シェジーの式）。<br>係数 C は、実際の水路の観測から ${F('C = R^{1/6}/n')} とおくとよく合うことがわかった（マニング）。代入して ${F('v = (1/n)R^{1/6}R^{1/2}I^{1/2} = (1/n)R^{2/3}I^{1/2}')}。n は壁の粗さを表す、実験で決める値。`},
+  {t:'一番流しやすい長方形は b＝2h',b:`断面積 A を一定にして、潤辺 ${F('S = b + 2h = A/h + 2h')} を最小にすれば、R が最大になり流速が最大になる。<br>h で微分して0とおく：${F('dS/dh = −A/h² + 2 = 0')} → ${F('A = 2h²')}。${F('A = bh')} なので ${F('b = 2h')}。このとき ${F('R = A/S = 2h²/(4h) = h/2')}。`},
+ ],
+ energy:[
+  {t:'比エネルギー E＝h＋v²/(2g)',b:`開水路の断面では、水圧は静水圧と同じ分布。底から z の点では ${F('p/(ρg) = h − z')} なので、${F('z + p/(ρg) = h')}（どの深さの点でも同じ）。ベルヌーイの「位置水頭＋圧力水頭」が水深 h になり、${F('E = h + v²/(2g)')}。水路の底を基準にしたエネルギー。`},
+  {t:'同じ流量で水深が2つある',b:`単位幅流量 q で ${F('v = q/h')} なので ${F('E = h + q²/(2gh²)')}。h が大きいと第1項、小さいと第2項が大きくなるので、E は途中で最小になる U 字形の曲線。最小値より大きい E には、深い解（常流）と浅い解（射流）の2つの水深がある。`},
+  {t:'限界水深 h_c＝(q²/g)^{1/3}、E_min＝1.5h_c',b:`E を h で微分して0：${F('dE/dh = 1 − q²/(gh³) = 0')} → ${F('h_c³ = q²/g')}。<br>このとき ${F('q²/(2gh_c²) = (gh_c³)/(2gh_c²) = h_c/2')}。よって ${F('E_min = h_c + h_c/2 = 1.5h_c')}。速度水頭が水深の半分。`},
+  {t:'フルード数 Fr＝v/√(gh)',b:`限界水深では ${F('q² = gh_c³')}、つまり ${F('v² = q²/h_c² = gh_c')} → ${F('v/√(gh_c) = 1')}。h＞h<sub>c</sub>（常流）では v が小さく ${F('Fr < 1')}、h＜h<sub>c</sub>（射流）では ${F('Fr > 1')}。<br>${F('√(gh)')} は浅い水面を伝わる小さな波の速さ（波と津波の単元で証明）。Fr＜1 なら波は流れに逆らって上流へ伝われ、Fr＞1 なら押し流されて上流に伝わらない。`},
+ ],
+ jump:[
+  {t:'共役水深 h₂/h₁＝½(√(1＋8Fr₁²)−1)',b:`跳水の前（1）と後（2）の間の水に運動量の式を使う。跳水の中では大きなエネルギー損失があるのでベルヌーイは使えないが、運動量の式は使える。単位幅で：<br>${F('½ρgh_1² − ½ρgh_2² = ρq(v_2 − v_1)')}、${F('v = q/h')} を入れると ${F('½g(h_1² − h_2²) = q²(h_1 − h_2)/(h_1 h_2)')}。<br>${F('h_1 ≠ h_2')} なので両辺を ${F('(h_1 − h_2)')} で割り ${F('½g(h_1 + h_2) = q²/(h_1 h_2)')}。<br>h<sub>2</sub> の2次方程式 ${F('h_2² + h_1 h_2 − 2q²/(gh_1) = 0')} を解き、${F('Fr_1² = q²/(gh_1³)')} を使うと ${F('h_2 = (h_1/2)(√(1 + 8Fr_1²) − 1)')}。`},
+  {t:'損失 ΔE＝(h₂−h₁)³/(4h₁h₂)',b:`${F('ΔE = (h_1 + q²/(2gh_1²)) − (h_2 + q²/(2gh_2²))')}。上の結果 ${F('q²/g = h_1 h_2(h_1 + h_2)/2')} を代入すると、${F('q²/(2g) · (1/h_1² − 1/h_2²) = (h_1 + h_2)²(h_2 − h_1)/(4h_1 h_2)')}。<br>${F('ΔE = (h_2 − h_1)[(h_1 + h_2)² − 4h_1 h_2]/(4h_1 h_2) = (h_2 − h_1)³/(4h_1 h_2)')}。`},
+ ],
+ orifice:[
+  {t:'オリフィス Q＝Ca√(2gh)',b:`理論流速はトリチェリの ${F('√(2gh)')}。実際は①穴を出た流れが縮む（縮流係数 C<sub>c</sub>≒0.61〜0.64）、②摩擦でわずかに遅くなる（流速係数 C<sub>v</sub>≒0.97〜0.99）。両方をまとめた流量係数 ${F('C = C_c C_v ≒ 0.6')} をかける。`},
+  {t:'長方形せき Q＝(2/3)CB√(2g)H^{3/2}',f:'weir',b:`越流部を、上流の水面から深さ y、厚さ dy の細い帯に分ける。帯から出る水の速さはトリチェリで ${F('√(2gy)')}、流量は ${F('dQ = B√(2gy) dy')}。<br>y＝0 から H まで足すと ${F('Q = B√(2g)∫_0^H y^{1/2} dy = B√(2g) · (2/3)H^{3/2}')}。実際の縮流などを流量係数 C で補正する。`},
+  {t:'直角三角せき Q＝(8/15)C√(2g)H^{5/2}',b:`切り欠きが直角（片側45°）なので、上流水面から深さ y での幅は ${F('2(H − y)')}。<br>${F('Q = ∫_0^H 2(H − y)√(2gy) dy = 2√(2g)[H · (2/3)H^{3/2} − (2/5)H^{5/2}] = 2√(2g) · (4/15)H^{5/2} = (8/15)√(2g)H^{5/2}')}。`},
+  {t:'排水時間 t＝2A(√H₁−√H₂)/(Ca√(2g))',b:`水深 h のとき、短い時間 dt に出ていく水は ${F('Ca√(2gh) dt')}。そのぶん水槽の水位が dh 下がる：${F('A dh = −Ca√(2gh) dt')}。<br>${F('dt = −A/(Ca√(2g)) · h^{−1/2} dh')} を H<sub>1</sub> から H<sub>2</sub> まで積分すると ${F('t = (2A/(Ca√(2g)))(√H_1 − √H_2)')}。`},
+ ],
+ well:[
+  {t:'ダルシーの法則 v＝ki',b:`ダルシー（1856年）が砂の柱に水を流す実験で見つけた、実験の法則。流量は水頭差に比例し、流れる距離に反比例する。地盤力学の透水の単元と同じ式。`},
+  {t:'被圧井戸 Q＝2πkb(H−h)/ln(R/r)',b:`井戸を中心に、半径 r の円筒の面（高さは帯水層の厚さ b）を水が通って井戸に集まる。面積 ${F('2πrb')}、動水勾配 ${F('dh/dr')}。<br>${F('Q = k · (dh/dr) · 2πrb')} → ${F('dh = (Q/(2πkb)) · dr/r')}。井戸（r, h）から影響圏（R, H）まで積分して ${F('H − h = (Q/(2πkb)) ln(R/r)')}。Q について解くと式になる。`},
+  {t:'不圧井戸 Q＝πk(H²−h²)/ln(R/r)',b:`水面がある帯水層では、半径 r の円筒の高さが、その場所の水位 h(r) になる（デュプイの仮定：流れはほぼ水平）。<br>${F('Q = k · (dh/dr) · 2πrh')} → ${F('h dh = (Q/(2πk)) · dr/r')}。積分して ${F('(H² − h²)/2 = (Q/(2πk)) ln(R/r)')} → ${F('Q = πk(H² − h²)/ln(R/r)')}。`},
+ ],
+ hydro:[
+  {t:'合理式 Q＝(1/3.6)frA',b:`雨が、流域の一番遠い所から出口まで流れる時間（洪水到達時間）以上降り続くと、流域全体の雨が同時に出口に集まり、流量が最大になる。そのとき ${F('Q = f × r × A')}（降った雨の割合 × 強さ × 面積）。<br>単位をそろえる：r［mm/h］＝ r×10⁻³/3600［m/s］、A［km²］＝ A×10⁶［m²］。かけると ${F('r A × 10⁶ × 10⁻³/3600 = rA/3.6')}。`},
+  {t:'土地利用が混ざるときの f',b:`それぞれの土地から流れ出る量 ${F('f_i A_i r')} を足して、全体の面積で割る：${F('f = Σf_i A_i / ΣA_i')}（面積の重み付き平均）。`},
+ ],
+ wave:[
+  {t:'長波の速さ C＝√(gh)',b:`水深 h の水路を、高さ Δh の小さな段差（波の先端）が速さ C で進むとする。波と一緒に動く人から見ると、水は速さ C で波に流れ込む。<br>・連続の式：先端が進むと、時間 dt に ${F('C·Δh·dt')} の水が増える。これは波の後ろの水が速さ u で運んだ量 ${F('h·u·dt')} に等しい：${F('CΔh = hu')}。<br>・運動量の式：段差による水圧の差 ${F('ρghΔh')} が、水を0から u に加速させる：${F('ρghΔh = ρ(Ch)u')}。<br>2つから u を消すと ${F('C² = gh')} → ${F('C = √(gh)')}。水深だけで決まる。`},
+  {t:'深海波 L₀＝gT²/(2π)',b:`水面の波の速さは一般に ${F('C² = (g/k) tanh(kh)')}（${F('k = 2π/L')}）。これは水の流れを数式で解く「微小振幅波理論」から導かれる（大学の水理学・海岸工学で学ぶ）。<br>深い海（h が大きい）では ${F('tanh → 1')} なので ${F('C² = gL/(2π)')}。${F('C = L/T')} を代入して ${F('L²/T² = gL/(2π)')} → ${F('L = gT²/(2π)')}。浅い海では ${F('tanh(kh) ≒ kh')} となり、上の ${F('C = √(gh)')} と一致する。`},
+  {t:'浅くなると高くなる（グリーンの法則）',b:`波が運ぶエネルギーの流れ（エネルギー × 速さ）は、途中で失われなければ一定。波のエネルギーは高さ a の2乗に比例し、速さは ${F('√(gh)')}。${F('a² √h = 一定')} → ${F('a ∝ h^{−1/4}')}。水深が 4000 m から 10 m になると、高さは ${F('(4000/10)^{1/4} ≒ 4.5')} 倍。`},
+ ],
+};
+
+
+// ==MISS==
+const MISS={"hydrostatic": [["浸水した玄関のドア", "../sogi/#door", "p＝ρgh：深いほど強く押す理由", 1, 2], ["高い階でも水が出るわけ", "../sogi/#water", "配水池の高さ＝水圧", 1, 3]], "force": [["浸水した玄関のドア", "../sogi/#door", "ドア全体の力と作用点（三角形の重心）", 2, 2], ["高潮をせき止める水門", "../kasen/#gate", "両側からの全水圧の差", 1, 3]], "bern": [["ゲリラ豪雨と用水路", "../sogi/#channel", "流量＝面積×速さ（連続の式）", 1, 3], ["高い階でも水が出るわけ", "../sogi/#water", "流れているときのエネルギー（ベルヌーイ）", 2, 3], ["夕方の交差点", "../sogi/#signal", "「流れの量」の考え方（連続の式）は車の流れにも使える", 1, 1], ["魚が登れない堰", "../sogi/#fish", "落ちる水の速さ v＝√(2gh)（エネルギーの保存）", 1, 2]], "manning": [["ゲリラ豪雨と用水路", "../sogi/#channel", "水路が流せる量（マニングの式）", 2, 3], ["洪水が運ぶ石", "../kasen/#stone", "底をこする力 τ₀＝ρgRI", 1, 3], ["堤防の高さを決める", "../kasen/#levee", "洪水の水深（マニングの式）", 1, 2]], "hydro": [["ゲリラ豪雨と用水路", "../sogi/#channel", "流れ込む量（合理式）", 3, 3], ["森は洪水を減らす？", "../sogi/#forest", "合理式と流出係数", 1, 3], ["洪水を一時預かる遊水地", "../kasen/#pond", "洪水の流量の変化（ハイドログラフ・合理式）", 1, 1], ["川があふれていないのに浸水", "../kasen/#pump", "まちの雨水の流量（合理式）", 1, 2]], "pipe": [["高い階でも水が出るわけ", "../sogi/#water", "管の摩擦で圧力が下がる量（損失水頭）", 3, 3], ["川があふれていないのに浸水", "../kasen/#pump", "ポンプと管の損失", 2, 2]], "wave": [["津波から逃げられる町？", "../sogi/#evac", "津波の速さ C＝√(gh)：浅くなると遅く高くなる", 1, 1]], "orifice": [["魚が登れない堰", "../sogi/#fish", "穴や段差から出る水の速さ（トリチェリ）", 2, 2]], "energy": [["堤防の高さを決める", "../kasen/#levee", "常流・射流と水面の形", 2, 2]]};
+// ==/MISS==
+// ================= app =================
+function missHtml(L){ return `<div class="miss"><h3>この単元で解ける謎</h3>${L.map(x=>`<a class="mlink" href="${x[1]}" target="_blank" rel="noopener"><b>ミッション「${x[0]}」</b><span>道順 ${x[3]}/${x[4]}：${x[2]}</span></a>`).join('')}</div>`; }
+function pfHtml(L){ const sup=t=>t.replace(/\^\{([^}]+)\}/g,'<sup>$1</sup>'); return `<div class="pf"><h3>なぜそうなる？（証明・導き方）</h3><p class="pfl">式をタップすると、どこから出てくるかを順に説明します。</p>${L.map(x=>`<details><summary>${sup(String(x.t).replace(/_([A-Za-z0-9\u4e00-\u9fff]+)/g,'<sub>$1</sub>'))}</summary><div class="pfb">${x.f&&typeof PFIG!=='undefined'&&PFIG[x.f]?`<div class="pff">${PFIG[x.f]}</div>`:''}${sup(x.b)}</div></details>`).join('')}</div>`; }
+const $main=document.getElementById('main'), $crumb=document.getElementById('crumb'), $prog=document.getElementById('prog');
+let filt='all', cur=null, prob=null, gi=null;
+let st={}; try{ st=JSON.parse(localStorage.getItem('suiri-progress')||'{}'); }catch(e){ st={}; }
+const save=()=>{ try{ localStorage.setItem('suiri-progress',JSON.stringify(st)); }catch(e){} };
+const TAG={c:['共通','c'],k:['建築','k'],d:['土木','d']};
+function totalSolved(){ return Object.values(st).reduce((a,b)=>a+(b.ok||0),0); }
+function home(){
+  cur=null; $crumb.textContent=''; $prog.textContent=`正解 ${totalSolved()} 問`; location.hash='';
+  const list=U.filter(u=> filt==='all' || u.tag==='c' || u.tag===filt || u.gens.some(g=>g.tag===filt));
+  $main.innerHTML=`<h1>水の重さと流れを、<b>動かして</b>つかむ。</h1>
+   <p class="lead">静水圧・浮力から、ベルヌーイの定理、管路、開水路、跳水、せき、地下水、洪水、津波まで13単元。各単元で、水深や流量を動かして変化を確かめる体験と、数値が毎回変わる問題、身近な実例と使い道をそろえています。土木（公務員・技術士一次・大学の水理学）を中心に、建築設備の基礎にも対応しています。</p>
+   <div class="filters">${[['all','すべて'],['k','建築でよく出る'],['d','土木でよく出る']].map(([k,l])=>`<button class="chip ${filt===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+   <div class="grid">${list.map(u=>{ const i=U.indexOf(u); const p=st[u.id]||{ok:0,n:0}; const pct=Math.min(100,(p.ok||0)/(u.gens.length*2)*100);
+     return `<button class="unit" data-u="${i}"><span class="no"><span>UNIT ${String(i+1).padStart(2,'0')}</span><span class="tag ${u.tag}">${TAG[u.tag][0]}</span></span><span class="nm">${u.name}</span><span class="ds">${u.ds}</span><span class="ds">問題 ${u.gens.length}種　正解 ${p.ok||0}</span><span class="bar"><i style="width:${pct}%"></i></span></button>`; }).join('')}</div>
+   <div class="games"><h2>シリーズのほかのラボ</h2><ul><li><a href="../sogi/" target="_blank" rel="noopener">そぎ落としミッション（入口）</a>：実物から問題へ。9つの勉強のつながりマップ</li><li><a href="../kozo/" target="_blank" rel="noopener">構造力学ラボ</a>：力のつりあいから振動まで16単元</li><li><a href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a>：荷重を動かしてN図・Q図・M図、カスティリアーノの定理</li><li><a href="../jiban/" target="_blank" rel="noopener">地盤力学ラボ</a>：土の性質・有効応力・圧密・土圧・支持力・液状化</li><li><a href="../kasen/" target="_blank" rel="noopener">河川工学ラボ</a>：川原の石・堤防・浸透・遊水地・内水・水門の6ミッション</li></ul></div>
+   <div class="games"><h2>体験しながら学ぶゲーム</h2><ul>
+     <li><a href="../bukkowashi/" target="_blank" rel="noopener">ぶっ壊し構造ラボ</a>：どこが壊れるか予想して、力の流れを見る（ダム・トンネルも）</li>
+     <li><a href="../kaso/" target="_blank" rel="noopener">仮想仕事ラボ</a>：少し動かして力を求める</li>
+     <li><a href="../kotei/" target="_blank" rel="noopener">固定法ラボ</a>：固定端モーメント・解放・分配・到達</li></ul></div>
+   <p class="foot">モーメントの符号は単元ごとに説明しています。答えは有効数字3桁程度で入力してください（±1.5%まで正解）。進み具合はこの端末のブラウザに保存されます。</p>`;
+  $main.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ filt=b.dataset.f; home(); });
+  $main.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>openUnit(+b.dataset.u));
+  window.scrollTo(0,0);
+}
+function openUnit(i,g){
+  const keepXW=(cur===i)?document.getElementById('xw'):null; cur=i; const u=U[i]; location.hash='u'+(i+1); $crumb.textContent=`${String(i+1).padStart(2,'0')} ${u.name}`; updProg();
+  const gens=u.gens.map((x,k)=>({x,k})).filter(o=> filt==='all'||o.x.tag==='c'||o.x.tag===filt);
+  const pool=gens.length?gens:u.gens.map((x,k)=>({x,k}));
+  gi = g!=null? g : pick(pool).k; lastBeam=null; prob=u.gens[gi].g(); if(prob.dia===undefined) prob.dia=lastBeam;
+  const p=prob;
+  $main.innerHTML=`<div class="uhead"><h2>${u.name}</h2><span class="tag ${u.tag}">${TAG[u.tag][0]}</span></div>
+   <div class="ucols"><aside class="points">${(typeof MISS!=='undefined'&&MISS[u.id])?missHtml(MISS[u.id]):''}<h3>要点</h3><ul>${u.pts.map(x=>`<li>${x}</li>`).join('')}</ul>${[].concat(u.game||[]).map(gm=>`<div class="game">体験：<a href="${gm.url}" target="_blank" rel="noopener">${gm.name}</a></div>`).join('')}
+     ${(typeof PF!=='undefined'&&PF[u.id])?pfHtml(PF[u.id]):''}${LIFE[u.id]?`<div class="life"><h3>実例</h3><ul>${LIFE[u.id].ex.map(x=>`<li>${x}</li>`).join('')}</ul><h3>この勉強がどう生きるか</h3><p>${LIFE[u.id].use}</p></div>`:''}<div class="btns" style="margin-top:10px">${i>0?`<button class="b" id="prevU">← 前の単元</button>`:''}${i<U.length-1?`<button class="b" id="nextU">次の単元 →</button>`:''}</div></aside>
+   <div class="rcol">${XW[u.id]?`<section class="xcard" id="xw"></section>`:''}<section class="pcard"><h3>問題</h3><div class="types">${u.gens.map((x,k)=>`<button class="chip ${k===gi?'on':''}" data-g="${k}">${x.t}<span class="tag ${x.tag}" style="margin-left:5px">${TAG[x.tag][0]}</span></button>`).join('')}</div>
+     ${p.fig?`<div class="fig">${p.fig}</div>`:''}<p class="q">${p.q}</p>
+     <div class="ansrow">${p.ans.map((a,k)=>`<label>${a.l}<input id="a${k}" type="number" inputmode="decimal" step="any" placeholder="?">${a.u}</label>`).join('')}</div>
+     <div class="btns"><button class="b main" id="chk">答え合わせ</button><button class="b" id="show">解き方を見る</button><button class="b" id="new">次の問題</button></div>
+     <div id="out"></div></section></div></div>`;
+  { const slot=document.getElementById('xw'); if(slot){ if(keepXW) slot.replaceWith(keepXW); else XW[u.id](slot); } }
+  $main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>openUnit(i,+b.dataset.g));
+  const pv=document.getElementById('prevU'); if(pv) pv.onclick=()=>openUnit(i-1); const nx=document.getElementById('nextU'); if(nx) nx.onclick=()=>openUnit(i+1);
+  document.getElementById('new').onclick=()=>openUnit(i,gi);
+  document.getElementById('show').onclick=()=>reveal(false);
+  document.getElementById('chk').onclick=check;
+  p.ans.forEach((a,k)=>document.getElementById('a'+k).onkeydown=e=>{ if(e.key==='Enter') check(); });
+  if(!keepXW) window.scrollTo(0,0);
+}
+function within(v,t){ return Math.abs(v-t) <= Math.max(Math.abs(t)*.015, .011); }
+function check(){ const p=prob; let all=true, any=false;
+  p.ans.forEach((a,k)=>{ const el=document.getElementById('a'+k); const v=parseFloat(el.value); if(!isFinite(v)){ all=false; el.className=''; return; } any=true; const ok=within(v,a.v); el.className=ok?'ok':'ng'; if(!ok) all=false; });
+  if(!any){ document.getElementById('a0').focus(); return; }
+  const u=U[cur]; st[u.id]=st[u.id]||{ok:0,n:0}; if(!p.counted){ p.counted=true; st[u.id].n++; if(all) st[u.id].ok++; save(); updProg(); }
+  reveal(all,true); }
+function reveal(ok,checked){ const p=prob; const o=document.getElementById('out');
+  o.innerHTML=`${checked?`<div class="res ${ok?'ok':'ng'}">${ok?'正解！':'惜しい、もう一度確かめよう'}</div>`:''}<div class="sol">${p.sol}<div class="note">答え：${p.ans.map(a=>`${a.l}＝${nf(a.v)} ${a.u}`).join('、')}</div></div>${p.dia?`<div class="nqmwrap"><h3>この問題の N図・Q図・M図</h3>${NQM(p.dia)}<p class="note">荷重を動かして形の変わり方を見るなら <a href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a></p></div>`:''}`; }
+function updProg(){ $prog.textContent=`正解 ${totalSolved()} 問`; }
+document.getElementById('logo').onclick=home;
+function route(){ const m=location.hash.match(/^#u(\d+)$/); if(m&&U[+m[1]-1]) openUnit(+m[1]-1); else home(); }
+window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#u(\d+)$/); if(m){ if(cur!==+m[1]-1) openUnit(+m[1]-1); } else if(cur!=null) home(); });
+// ==NAZO==
+const JISSEN_URL='../suiri-jissen/';
+const THEORY={main:'../suiri/',name:'水理学'};
+const NAZO={
+ hydrostatic:{q:'水深10 m のダムの底と、水深10 m の細い井戸の底。水圧が大きいのは？',o:['ダムの底','井戸の底','同じ'],a:2,w:'水圧は p＝ρgh で、深さだけで決まります。水の広さや量には関係しません。10 m で約98 kPa（大気圧と同じくらい）です。'},
+ force:{q:'浸水した家のドア。外の水深50 cm で、大人の力で開けられる？',o:['簡単に開く','ほとんど開けられない','水があっても同じ'],a:1,w:'ドアにかかる全水圧は P＝½ρgh²B。幅0.9 m なら約1.1 kN、100 kg 以上の物を押すのと同じです。水深は2乗で効くので、少しの浸水でも開かなくなります。'},
+ buoy:{q:'鉄でできた大きな船が、水に浮くのはなぜ？',o:['鉄が水より軽いから','押しのけた水の重さの分だけ、浮力が働くから','エンジンで浮いているから'],a:1,w:'アルキメデスの原理：浮力は、押しのけた水の重さに等しい。船は中が空洞で、大きな体積の水を押しのけるので、鉄でも浮きます。'},
+ bern:{q:'ホースの先を指でつぶすと、水が遠くまで飛ぶのはなぜ？',o:['出る水の量が増えるから','同じ量の水が狭い所を通るので、速くなるから','水の温度が上がるから'],a:1,w:'連続の式 Q＝Av。流れる量 Q が同じなら、断面積 A を小さくすると速さ v が大きくなります。ベルヌーイの定理では、その分だけ圧力が速さに変わっています。'},
+ momentum:{q:'消防士が太いホースを持つと、後ろに押される。なぜ？',o:['水が重いから','噴き出す水の勢い（運動量）の反動','風のせい'],a:1,w:'水を前に勢いよく押し出すと、同じ大きさの力で押し返されます。力＝ρQv（毎秒押し出す運動量）。ロケットと同じしくみです。'},
+ pipe:{q:'水道管を半分の太さにすると、同じ量の水を送るのに必要な圧力は？',o:['2倍','4倍','約32倍'],a:2,w:'摩擦損失 h＝f(L/D)(v²/2g)。太さが半分だと速さ v は4倍、v² は16倍、さらに 1/D で2倍。合わせて約32倍（直径の5乗に反比例）です。'},
+ manning:{q:'同じ川で、川底の傾きを急にすると、水位は？',o:['上がる','下がる','変わらない'],a:1,w:'マニングの式 v＝(1/n)R^{2/3}I^{1/2}。勾配 I が大きいと流れが速くなり、同じ流量なら浅い水深で流せます。逆に、ゆるい区間や下流で水位が上がります。'},
+ energy:{q:'同じ量の水が流れる流れ方は、1通りだけ？',o:['1通りだけ','「深くゆっくり」と「浅く速い」の2通り','何通りでもある'],a:1,w:'同じ比エネルギーで、深くゆっくりの常流と、浅く速い射流の2つの水深があります。境目が限界水深で、そこでは比エネルギーが最小になります。'},
+ jump:{q:'ダムの放流口の下で、水面が急に盛り上がって白く泡立つ場所がある。何が起きている？',o:['魚が集まっている','速い流れが急にゆっくりになり、エネルギーを消している','風で波立っている'],a:1,w:'射流から常流に変わるとき、水面が急に高くなる「跳水」が起きます。渦でエネルギーを熱に変えて消すので、下流の川底を守るためにわざと起こします（減勢工）。'},
+ orifice:{q:'水槽の底に開けた穴。水深を4倍にすると、流れ出る量は？',o:['4倍','2倍','16倍'],a:1,w:'トリチェリの定理 v＝√(2gh)。速さは水深の平方根に比例するので、4倍の深さで2倍。流量 Q＝CA√(2gh) も2倍です。'},
+ well:{q:'井戸で水をくみ上げると、まわりの地下水の面はどうなる？',o:['変わらない','井戸に向かってすり鉢状に下がる','上がる'],a:1,w:'くみ上げると井戸に向かって水が流れ、水面はすり鉢形（水位降下の円錐）に下がります。流量は、水面の差と影響圏の半径の対数で決まります。'},
+ hydro:{q:'同じ大雨。畑と駐車場、川に早くたくさん水が流れ出るのは？',o:['畑','駐車場','同じ'],a:1,w:'合理式 Q＝fRA/3.6。舗装は雨がしみ込まないので流出係数 f が0.9くらい、畑は0.3くらい。街がアスファルトで覆われるほど、川があふれやすくなります。'},
+ wave:{q:'津波は、海岸に近づいて浅くなると、どうなる？',o:['遅く、高くなる','速く、低くなる','変わらない'],a:0,w:'津波の速さは c＝√(gh) で、浅くなると遅くなります。後ろから来る波が追いつき、エネルギーが詰まって高くなります。沖で数十 cm でも、海岸で何 m にもなります。'},
+};
+
+// ---- 謎解きの層：各単元を「謎→予想→確かめる→答え→腕試し」にする ----
+const NK=document.title+'-nazo';
+let NZ={}; try{ NZ=JSON.parse(localStorage.getItem(NK)||'{}'); }catch(e){ NZ={}; }
+const nzSave=()=>{ try{ localStorage.setItem(NK,JSON.stringify(NZ)); }catch(e){} };
+const nzStars=id=>{ const z=NZ[id]||{}; return (z.p!=null?1:0)+(z.r?1:0)+(((st[id]||{}).ok||0)>0?1:0); };
+const nzOpen=i=> i===0 || NZ.__all || (U[i-1] && (NZ[U[i-1].id]||{}).r) || nzStars(U[i].id)>0;
+(function(){ const s=document.createElement('style'); s.textContent=`
+.nzintro{border:3px solid var(--red);background:#fff;padding:10px 14px;margin:0 0 14px}
+.nzintro b{color:var(--red)}.nzintro ol{margin:6px 0 0;padding-left:1.4em}.nzintro li{margin:2px 0}
+.nzq{display:block;font-weight:900;color:var(--red);font-size:15px;line-height:1.45;margin:4px 0 2px}
+.nzst{display:block;font-size:14px;letter-spacing:2px;color:var(--red)}
+.unit.nzlock{opacity:.55;background:#eceae3}.unit.nzlock .nzq{color:#5E6B86}
+.nzall{margin:0 0 12px}
+.nzcard{border:4px solid var(--red);background:#fff;padding:14px 16px;margin:0 0 16px}
+.nzcard .lb{display:inline-block;background:var(--red);color:#fff;font-weight:900;padding:2px 10px;font-size:13px;letter-spacing:.1em}
+.nzcard h3{margin:8px 0 10px;font-size:20px;line-height:1.45;color:var(--navy,#12286B)}
+.nzopts{display:flex;flex-wrap:wrap;gap:8px}
+.nzopts button{font:inherit;font-weight:700;border:2px solid var(--navy,#12286B);background:#fff;color:var(--navy,#12286B);padding:8px 14px;cursor:pointer}
+.nzopts button.on{background:var(--navy,#12286B);color:#fff}.nzopts button.ans{border-color:var(--red);box-shadow:0 0 0 3px var(--red) inset}
+.nzmsg{margin:10px 0 0;line-height:1.7}.nzmsg .hit{color:var(--red);font-weight:900;font-size:18px}
+.nzsteps{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0;font-size:12px;font-weight:700}
+.nzsteps span{border:1.5px solid #93BCD6;padding:2px 8px;color:#5E6B86}.nzsteps span.on{background:#12286B;color:#fff;border-color:#12286B}
+.nzcard .b{margin-top:8px}`; document.head.appendChild(s); })();
+function nzHome(){
+  if(typeof NAZO==='undefined') return;
+  const f=$main.querySelector('.filters');
+  if(f){ const d=document.createElement('div'); d.className='nzintro'; const done=U.filter(u=>(NZ[u.id]||{}).r).length;
+    d.innerHTML=`<b>謎を解きながら進む。</b>各単元は、身の回りの「謎」から始まります（解いた謎 ${done}/${U.length}）。<ol><li>謎を読んで、答えを<b>予想</b>する</li><li>体験や問題で<b>確かめる</b></li><li>答えと理由を見る（★2）→ <b>次の謎が開く</b></li><li>腕試しの問題に1問正解で ★3</li></ol>`;
+    f.before(d);
+    const a=document.createElement('div'); a.className='nzall'; a.innerHTML=`<button class="chip ${NZ.__all?'on':''}" id="nzall">${NZ.__all?'すべての謎を開いています（順番に戻す）':'試験前などは、すべての謎を開く'}</button>`; f.after(a);
+    a.querySelector('#nzall').onclick=()=>{ NZ.__all=!NZ.__all; nzSave(); home(); };
+  }
+  $main.querySelectorAll('.unit[data-u]').forEach(b=>{ const i=+b.dataset.u, u=U[i], z=NAZO[u.id]; if(!z) return;
+    const open=nzOpen(i), s=nzStars(u.id);
+    const q=document.createElement('span'); q.className='nzq'; q.textContent=open?('謎：'+z.q):'？？？　前の謎を解くと開きます';
+    const nm=b.querySelector('.nm'); nm.before(q); nm.style.fontSize='13px';
+    const sv=document.createElement('span'); sv.className='nzst'; sv.textContent='★'.repeat(s)+'☆'.repeat(3-s); b.querySelector('.bar').before(sv);
+    if(!open){ b.classList.add('nzlock'); b.onclick=e=>{ e.stopImmediatePropagation(); const t=document.getElementById('nzall'); if(t){ t.scrollIntoView({behavior:'smooth',block:'center'}); } }; }
+  });
+}
+function nzCard(i){
+  if(typeof NAZO==='undefined') return; const u=U[i], z=NAZO[u.id]; if(!z) return;
+  const old=document.getElementById('nzcard'); if(old) old.remove();
+  const c=document.createElement('section'); c.className='nzcard'; c.id='nzcard';
+  const head=$main.querySelector('.uhead'); (head||$main.firstChild).after(c);
+  const r=()=>{ const zz=NZ[u.id]||{}; const s=nzStars(u.id); const hasX=!!document.getElementById('xw');
+    c.innerHTML=`<span class="lb">謎 ${String(i+1).padStart(2,'0')}</span><h3>${z.q}</h3>
+     <div class="nzopts">${z.o.map((o,k)=>`<button data-k="${k}" class="${zz.p===k?'on':''} ${zz.r&&k===z.a?'ans':''}">${o}</button>`).join('')}</div>
+     <div class="nzmsg">${zz.p==null?'まずは直感で予想しよう。':
+       !zz.r?`予想しました。${hasX?'体験で数字を動かしたり、':''}下の問題を解いたりして確かめてから、答えを開こう。<br><button class="b main" id="nzrev">答えと理由を見る</button>`:
+       `<span class="hit">${zz.p===z.a?'予想どおり！':'予想が外れた！ だから面白い。'}</span>　答え：<b>${z.o[z.a]}</b><br>${z.w}<br>${s<3?'<b>腕試し：</b>下の問題に1問正解すると ★3。':'<b>★3 クリア！</b>'} ${i<U.length-1?`<button class="b main" id="nznext">次の謎へ →</button>`:''}`}</div>
+     <div class="nzsteps"><span class="${zz.p!=null?'on':''}">① 予想</span><span class="${zz.r?'on':''}">② 確かめて答え</span><span class="${s>=3?'on':''}">③ 腕試し</span></div>`;
+    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ if((NZ[u.id]||{}).r) return; NZ[u.id]=Object.assign(NZ[u.id]||{},{p:+b.dataset.k}); nzSave(); r(); });
+    const rv=c.querySelector('#nzrev'); if(rv) rv.onclick=()=>{ NZ[u.id].r=1; nzSave(); r(); };
+    const nx=c.querySelector('#nznext'); if(nx) nx.onclick=()=>openUnit(i+1);
+  };
+  r(); c._r=r;
+}
+{ const _home=home; home=function(){ _home.apply(this,arguments); nzHome(); };
+  const _open=openUnit; openUnit=function(i,g){ const same=(cur===i)&&document.getElementById('nzcard'); _open.apply(this,arguments); nzCard(i); };
+  const _check=check; check=function(){ _check.apply(this,arguments); const c=document.getElementById('nzcard'); if(c&&c._r) c._r(); }; }
+{ const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>home(); }
+{ const _h=home; home=function(){ _h.apply(this,arguments); const h=$main.querySelector('h1'); if(h){ const nm=document.title.replace(/ラボ$/,''); h.innerHTML=`${nm}の謎を、<b>予想して</b>解き明かす。`; } }; }
+// ---- もう一歩の謎（NAZO2）：単元のおまけの謎。予想 → 答えと理由 ----
+function nzExtra(i){
+  if(typeof NAZO2==='undefined') return; const u=U[i], L=NAZO2[u.id]; if(!L||!L.length) return;
+  const anchor=document.getElementById('nzcard'); if(!anchor) return;
+  L.forEach((z,k)=>{ const id='nzx-'+k; const old=document.getElementById(id); if(old) old.remove();
+    const c=document.createElement('section'); c.className='nzcard nzx'; c.id=id; c.style.borderWidth='3px';
+    (k===0?anchor:document.getElementById('nzx-'+(k-1))).after(c); const key=u.id+'#'+k;
+    const r=()=>{ const zz=NZ[key]||{};
+      c.innerHTML=`<span class="lb" style="background:#3286BE">もう一歩の謎 ${k+1}</span><h3>${z.q}</h3>
+       <div class="nzopts">${z.o.map((o,j)=>`<button data-k="${j}" class="${zz.p===j?'on':''} ${zz.p!=null&&j===z.a?'ans':''}">${o}</button>`).join('')}</div>
+       <div class="nzmsg">${zz.p==null?'予想してから、答えを見よう。':`<span class="hit">${zz.p===z.a?'予想どおり！':'予想が外れた！ だから面白い。'}</span>　答え：<b>${z.o[z.a]}</b><br>${z.w}${z.link?`<br><a href="${(typeof THEORY_URL!=='undefined'&&/^#d/.test(z.link[1]))?THEORY_URL+z.link[1]:z.link[1]}" target="_blank" rel="noopener">${z.link[0]} →</a>`:''}`}</div>`;
+      c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ if((NZ[key]||{}).p!=null) return; NZ[key]={p:+b.dataset.k}; nzSave(); r(); });
+    }; r(); });
+}
+{ const _open=openUnit; openUnit=function(i,g){ _open.apply(this,arguments); nzExtra(i); }; }
+
+// ---- 導出ノート：基本原理から、図と式で一歩ずつ導く ----
+const DC={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#93BCD6',s:'#D8CFBE',g:'#5E6B86',w:'#fff'};
+const dg={
+ S:(w,h,...p)=>`<svg viewBox="0 0 ${w} ${h}" class="dfig" role="img"><rect width="${w}" height="${h}" fill="#fff"/>${p.join('')}</svg>`,
+ L:(x1,y1,x2,y2,c=DC.n,w=2,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`,
+ A:(x1,y1,x2,y2,c=DC.r,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=9; const p1=[x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)], p2=[x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)];
+   return `<line x1="${x1}" y1="${y1}" x2="${x2-6*Math.cos(a)}" y2="${y2-6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${p1} ${p2}" fill="${c}"/>`; },
+ T:(x,y,s,c=DC.n,fs=13,an='middle',b=700)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="${b}" text-anchor="${an}" font-family="'Zen Kaku Gothic New',sans-serif">${s}</text>`,
+ M:(x,y,s,c=DC.n,fs=15,an='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-style="italic" font-weight="700" text-anchor="${an}" font-family="'Times New Roman',serif">${s}</text>`,
+ R:(x,y,w,h,f=DC.m,st=DC.n,sw=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" stroke="${st}" stroke-width="${sw}"/>`,
+ P:(d,f='none',st=DC.n,w=2,da='')=>`<path d="${d}" fill="${f}" stroke="${st}" stroke-width="${w}"${da?` stroke-dasharray="${da}"`:''}/>`,
+ C:(x,y,r,f=DC.w,st=DC.n,w=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${st}" stroke-width="${w}"/>`,
+ B:(x1,x2,y,c=DC.n,w=6)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,
+ G:(x1,x2,y)=>{ let s=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${DC.n}" stroke-width="2"/>`; for(let x=x1+4;x<=x2;x+=7) s+=`<line x1="${x}" y1="${y}" x2="${x-6}" y2="${y+7}" stroke="${DC.n}" stroke-width="1"/>`; return s; },
+ Pin:(x,y)=>dg.P(`M${x},${y} l-11,18 h22z`,DC.w)+dg.G(x-16,x+16,y+18),
+ Rol:(x,y)=>dg.P(`M${x},${y} l-11,14 h22z`,DC.w)+dg.C(x-6,y+18,3.5)+dg.C(x+6,y+18,3.5)+dg.G(x-16,x+16,y+22),
+ Fix:(x,y1,y2,side=-1)=>{ let s=dg.L(x,y1,x,y2,DC.n,3); for(let y=y1+3;y<=y2;y+=7) s+=dg.L(x,y,x+side*7,y+6,DC.n,1); return s; },
+ W:(x1,x2,y,c=DC.r,n,lab)=>{ n=n||Math.max(3,Math.round((x2-x1)/22)); let s=dg.L(x1,y-28,x2,y-28,c,2); for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=dg.A(x,y-28,x,y-2,c,1.6);} return s+(lab?dg.M((x1+x2)/2,y-34,lab,c,14):''); },
+ Dim:(x1,x2,y,lab,c=DC.n)=>dg.L(x1,y,x2,y,c,1.2)+dg.L(x1,y-6,x1,y+6,c,1.2)+dg.L(x2,y-6,x2,y+6,c,1.2)+`<rect x="${(x1+x2)/2-String(lab).length*4-4}" y="${y-9}" width="${String(lab).length*8+8}" height="16" fill="#fff"/>`+dg.M((x1+x2)/2,y+5,lab,c,14),
+ Mo:(x,y,r,lab,ccw=false,c=DC.b)=>{ const s=ccw?0:1; const a0=-2.4,a1=1.4; const x0=x+r*Math.cos(a0),y0=y+r*Math.sin(a0),xe=x+r*Math.cos(a1),ye=y+r*Math.sin(a1);
+   const [sx,sy,ex,ey]=ccw?[xe,ye,x0,y0]:[x0,y0,xe,ye]; const t=ccw?a0:a1; const tx=ccw?Math.sin(t):-Math.sin(t), ty=ccw?-Math.cos(t):Math.cos(t);
+   return `<path d="M${sx},${sy} A${r},${r} 0 1 ${s} ${ex},${ey}" fill="none" stroke="${c}" stroke-width="2.2"/>`+dg.A(ex-tx*6,ey-ty*6,ex+tx*2,ey+ty*2,c,2.2)+(lab?dg.M(x+r+8,y-r+4,lab,c,14,'start'):''); },
+};
+const fr=(a,b)=>`<span class="fr"><span>${a}</span><span>${b}</span></span>`;
+const m=s=>`<span class="mm">${s}</span>`;
+(function(){ const s=document.createElement('style'); s.textContent=`
+.pfd{display:block;margin:6px 0 8px;padding:8px 10px;background:#12286B;color:#fff!important;font-weight:900;text-decoration:none;font-size:14px}
+.pfd:hover{background:#C62422}.pfdi{display:inline-block;margin-top:6px;font-weight:700;font-size:13px;color:#C62422}
+.dv h1{font-family:"Dela Gothic One";font-weight:400;font-size:clamp(26px,5vw,40px);color:#12286B;margin:6px 0 8px;line-height:1.3}.dv h1 b{color:#C62422;font-weight:400}
+.dv .lead{max-width:760px}
+.dprin{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:14px 0 20px}
+.dprin div{background:#fff;border:3px solid #12286B;padding:10px 12px}.dprin b{display:block;color:#C62422;font-size:16px}.dprin .mm{font-size:16px;white-space:normal}
+.dprin small{display:block;margin-top:6px;font-size:12px;line-height:1.6;color:#5E6B86}.dprin small a{color:#12286B}
+.dtoc{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 20px}.dtoc a{border:2px solid #12286B;padding:3px 10px;font-weight:700;font-size:13px;color:#12286B;text-decoration:none;background:#fff}.dtoc a:hover{background:#12286B;color:#fff}
+.dch{background:#fff;border:3px solid #12286B;padding:14px 16px 16px;margin:0 0 22px;scroll-margin-top:70px}
+.dch>h2{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;color:#12286B;font-size:24px}
+.dch .from{font-size:13px;font-weight:700;margin:0 0 10px}.dch .from span{display:inline-block;background:#C62422;color:#fff;padding:1px 8px;margin:2px 4px 2px 0}
+.dit{border-top:2px dashed #93BCD6;padding:14px 0 4px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:start;scroll-margin-top:70px}
+.dit h3{grid-column:1/-1;margin:0;font-size:19px;color:#12286B}.dit h3 em{font-style:normal;color:#C62422}
+.dfig{width:100%;height:auto;border:2px solid #12286B;background:#fff;display:block}
+.dfcap{font-size:12px;color:#5E6B86;margin:4px 0 0;line-height:1.5}
+.dst{margin:0;padding:0;list-style:none;counter-reset:s}
+.dst li{counter-increment:s;position:relative;padding:6px 0 8px 36px;line-height:1.8;border-bottom:1px solid #eceae3}
+.dst li::before{content:counter(s);position:absolute;left:0;top:7px;width:26px;height:26px;border-radius:50%;background:#12286B;color:#fff;font-weight:900;text-align:center;line-height:26px;font-size:14px}
+.dst li.q{color:#C62422;font-weight:700}.dst li.q::before{content:"？";background:#C62422}
+.dst li.hide{display:none}
+.dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
+.mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
+.dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
+.dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
+.tk{background:#fff;border:4px solid #12286B;padding:14px 16px 16px;margin:14px 0 20px;scroll-margin-top:70px}
+.tkh{margin:0 0 4px;font-family:"Dela Gothic One";font-weight:400;font-size:22px;color:#12286B}.tkh b{color:#C62422;font-weight:400}
+.tkl{margin:0 0 10px;font-size:13px;color:#5E6B86}
+.tkp{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.tkpc{font:inherit;text-align:left;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;cursor:pointer;background:#fff;border:2px solid var(--c);border-top:8px solid var(--c);padding:8px 10px;color:#12286B}
+.tkpc b{display:block;color:var(--c);font-size:14px}.tkpc .mm{font-size:14px;white-space:normal}.tkpc small{display:block;font-size:11px;line-height:1.5;color:#5E6B86;margin-top:4px}
+.tkpc.on{background:var(--c);color:#fff}.tkpc.on b,.tkpc.on small{color:#fff}
+.tka{text-align:center;font-weight:900;color:#12286B;margin:10px 0;font-size:14px;letter-spacing:.1em}
+.tkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.tkgb{border:2px solid #12286B;padding:10px;background:#F4F3EF;display:flex;flex-direction:column}.tkgb h3{margin:0;font-size:17px;color:#12286B}.tkgb>p{margin:2px 0 8px;font-size:12px;color:#5E6B86;line-height:1.5}
+.tku{display:flex;flex-direction:column;gap:5px}
+.tkuc{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#fff;border:1.5px solid #93BCD6;padding:5px 8px;font-size:13px;font-weight:700;color:#12286B;text-decoration:none;transition:.2s}
+.tkuc:hover{border-color:#C62422}.tkuc span{display:flex;gap:3px;flex:none}.tkuc i{width:10px;height:10px;border-radius:50%;display:block}
+.tk.hl .tkuc{opacity:.25}.tk.hl .tkuc.lit{opacity:1;border-color:#C62422;box-shadow:0 0 0 2px #C62422 inset}
+.tka2{margin:10px 0 4px;font-size:12px;font-weight:900;color:#C62422;margin-top:auto;padding-top:10px}
+.tkuse{margin:0;padding-left:1.2em;font-size:13px;line-height:1.6}
+.tksh{margin-top:12px;border-top:2px dashed #93BCD6;padding-top:8px}.tksh summary{cursor:pointer;font-weight:900;color:#12286B}
+.tksh table{border-collapse:collapse;margin-top:8px;font-size:13px;width:100%}.tksh td,.tksh th{border:1px solid #93BCD6;padding:4px 8px;text-align:left}.tksh th{background:#12286B;color:#fff}
+@media(max-width:700px){.dit{grid-template-columns:1fr}}`; document.head.appendChild(s); })();
+const TH=typeof THEORY!=='undefined'?THEORY:null;
+const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
+const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
+function taikei(byP){
+  const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
+  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
+   <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
+   <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
+   <div class="tka">▼ 原理を組み合わせると ▼</div>
+   <div class="tkg">${(DPR.groups||[]).map(([gn,gd,ids,uses])=>`<div class="tkgb"><h3>${gn}</h3><p>${gd}</p><div class="tku">${ids.filter(id=>DER[id]).map(id=>`<a href="#d-${id}" class="tkuc" data-ps="${DER[id].p.join(' ')}">${uname(id)}<span>${DER[id].p.map(k=>`<i style="background:${col(k)}"></i>`).join('')}</span></a>`).join('')}</div>
+     <div class="tka2">▼ 使う場面</div><ul class="tkuse">${uses.map(x=>`<li>${x}</li>`).join('')}</ul></div>`).join('')}</div>
+   ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
+   <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
+}
+function deriveView(){
+  if(typeof DER==='undefined') return;
+  cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
+  const nm=TH?TH.name:document.title.replace(/ラボ$/,'');
+  const byP={}; U.forEach(u=>{ const d=DER[u.id]; if(d) d.p.forEach(k=>{ (byP[k]=byP[k]||[]).push(u); }); });
+  $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
+   <p class="lead">${DPR.lead}</p>
+   ${taikei(byP)}
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
+   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+     <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
+     ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
+       <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
+       <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
+     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+  const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
+  $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
+  $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
+  $main.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>step(b.dataset.all,true));
+  const id=location.hash.slice(1); const el=id&&id!=='d'?document.getElementById(id):null;
+  if(el) setTimeout(()=>el.scrollIntoView({block:'start'}),30); else window.scrollTo(0,0);
+}
+{ const _h=home; home=function(){ if(TH||/^#d(-|$)/.test(location.hash)) return deriveView(); return _h.apply(this,arguments); };
+  const _o=openUnit; openUnit=function(i,g){ _o.apply(this,arguments); const u=U[i]; if(typeof DER==='undefined'||!DER[u.id]) return; const pf=$main.querySelector('.pf h3');
+    const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; const tg=TU?' target="_blank" rel="noopener"':'';
+    if(pf){ pf.insertAdjacentHTML('afterend',`<a class="pfd" href="${TU}#d-${u.id}"${tg}>理論ラボ：基本原理から、図と式で一歩ずつ導く →</a>`);
+      $main.querySelectorAll('.pf details .pfb').forEach(b=>b.insertAdjacentHTML('beforeend',`<a class="pfdi" href="${TU}#d-${u.id}"${tg}>理論ラボで、図つきの導出を見る →</a>`)); } };
+  window.addEventListener('hashchange',()=>{ if((TH||/^#d(-|$)/.test(location.hash)) && cur==null) deriveView(); });
+  const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>{ if(location.hash) history.replaceState(null,'',location.pathname+location.search); home(); };
+  const _hm=home; home=function(){ _hm.apply(this,arguments); if(/^#d/.test(location.hash)) return; const f=$main.querySelector('.nzintro')||$main.querySelector('.filters'); if(f&&typeof DER!=='undefined'&&!TH){ const TU=typeof THEORY_URL!=='undefined'?THEORY_URL:''; f.insertAdjacentHTML('beforebegin',`<a class="pfd" href="${TU}#taikei"${TU?' target="_blank" rel="noopener"':''} style="margin:0 0 12px">理論ラボ：${document.title.replace(/ラボ$/,'')}の体系図と、基本原理からの導出（図つき）→</a>`+(typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:0 0 12px">実践ラボ：本物の案件を、依頼から図面・コストまで設計してみる →</a>`:'')); } };
+}
+
+const DPR={title:'6つの基本原理',lead:'水理学の式は、水の小さなかたまりに「つりあい・保存則」を当てはめて作ります。止まった水のつりあい、量の保存、エネルギーの保存、勢い（運動量）の保存。これに、実験からわかった摩擦の法則を足せば、管路も川も津波も全部説明できます。「次の一歩」で1行ずつ進み、次の行を読む前に自分で考えてみてください。',
+groups:[
+ ['止まった水','水圧と浮力',['hydrostatic','force','buoy'],['水門・ダムの扉','浸水したドア','船の安定']],
+ ['流れの3つの保存則','量・エネルギー・勢い',['bern','momentum','orifice'],['流量を測る','消防ホースの反動']],
+ ['管と水路','摩擦と、流れの形',['pipe','manning','energy','jump'],['水道管の太さ','用水路・川の水位','ダムの減勢工']],
+ ['自然の水','地下水・雨・波',['well','hydro','wave'],['井戸','洪水のピーク流量','津波の高さ']],
+],
+list:[
+ ['hydro','① 静水のつりあい','dp/dz＝ρg','止まった水の小さな柱は、上下の圧力の差で自分の重さを支えている。'],
+ ['mass','② 質量保存（連続の式）','Q＝A v＝一定','水は途中で増えたり消えたりしない。'],
+ ['energy','③ エネルギー保存','z＋p/ρg＋v²/2g＝一定','高さ・圧力・速さのエネルギーは、入れかわるだけ（摩擦の損失を除く）。'],
+ ['mom','④ 運動量保存','F＝ρQ(v₂ − v₁)','水の勢いを変えるには、その分の力がいる（流れに使う F＝ma）。'],
+ ['fric','⑤ 摩擦の法則','損失 ∝ v²','壁との摩擦で、速さの2乗に比例してエネルギーを失う（実験からわかった法則）。'],
+ ['darcy','⑥ ダルシーの法則','v＝k i','土の中の流れは、水頭の傾きに比例する（実験からわかった法則）。'],
+]};
+const DER=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim,Mo}=dg; const n=DC.n,r=DC.r,b=DC.b,wt='#cfe2f1',soil=DC.s;
+const tank=(x,y,w,h)=>P(`M${x},${y} V${y+h} H${x+w} V${y}`,'none',n,3);
+const surf=(x1,x2,y)=>L(x1,y,x2,y,b,2)+P(`M${(x1+x2)/2-6},${y-10} h12 l-6,8z`,b,b,1)+L((x1+x2)/2-8,y+4,(x1+x2)/2+8,y+4,b,1);
+return {
+hydrostatic:{p:['hydro'],it:[
+ {t:'静水圧',goal:'p＝ρgh',fig:S(320,190,R(60,30,200,140,wt,'none'),tank(60,20,200,150),surf(60,260,30),R(140,30,40,110,'#9cc3e0',n,1.5),A(160,40,160,120,r,2),M(172,90,'ρgAh',r,13,'start'),A(160,165,160,142,b,2.5),M(172,162,'pA',b,14,'start'),L(110,30,110,140,n,1),M(102,90,'h',n,14,'end')),
+  s:['水の中に、断面 A、高さ h の細い水の柱を考える（自分で線を引いただけ）。',
+   `柱の重さは ${m('ρ g A h')}（ρ は水の密度）。`,
+   {q:'この重さを支えているのは？'},
+   `柱の底を押し上げる圧力 p。横からの圧力は左右で打ち消す。上下のつりあい：${m('pA＝ρgAh')}<span class="eq">${m('p＝ρ g h')}</span>A が消えるので、水の広さに関係なく、深さだけで決まる。水なら 10 m で約 98 kN/m²。`],key:'「水の柱の重さ＝底の圧力×面積」。静水の問題は全部これ。'},
+ {t:'圧力は全方向に同じ（パスカル）',fig:S(320,170,P('M110,130 L230,130 L110,50Z','#9cc3e0',n,2),A(70,90,104,90,b),M(62,94,'p<tspan font-size="10">x</tspan>',b,14,'end'),A(170,166,170,136,b),M(180,160,'p<tspan font-size="10">z</tspan>',b,14,'start'),A(210,40,176,82,r),M(214,40,'p<tspan font-size="10">n</tspan>',r,14,'start')),
+  s:['水の中に、小さな三角柱を考える。3つの面に、それぞれ圧力 p<sub>x</sub>、p<sub>z</sub>、p<sub>n</sub> が直角に働く。',
+   '斜めの面の面積は、縦の面と横の面の面積を、斜めに広げたもの。斜めの力を横と縦に分けると、ちょうど面積の比が出てくる。',
+   {q:'横向きのつりあいからわかることは？'},
+   `${m('p<sub>x</sub> × (縦の面)＝p<sub>n</sub> × (斜めの面) × sinθ')}、面積の比でちょうど消えて ${m('p<sub>x</sub>＝p<sub>n</sub>')}。縦も同じ（三角柱を小さくすると重さは無視できる）。`,
+   'どの向きの面にも、同じ大きさの圧力が直角に働く。だから水圧は「向き」を持たない。']},
+ {t:'マノメータ',goal:'Δp＝(ρ<sub>m</sub>−ρ)gΔh',fig:S(320,190,P('M110,30 V150 Q110,170 130,170 H190 Q210,170 210,150 V30','none',n,3),R(113,30,14,70,wt,'none'),R(193,30,14,100,wt,'none'),R(113,100,14,60,'#c9b3d9','none'),R(127,155,66,12,'#c9b3d9','none'),R(193,130,14,30,'#c9b3d9','none'),L(100,100,220,100,r,1.5,'5 4'),L(230,100,230,130,n,1),M(238,120,'Δh',n,14,'start'),T(80,170,'重い液体',n,11)),
+  s:['U字の管に、重い液体（密度 ρ<sub>m</sub>、例えば水銀）を入れ、両側を測りたい2点につなぐ。',
+   {q:'どこの圧力どうしが等しい？'},
+   '同じ液体でつながった、同じ高さの点の圧力は等しい（静水のつりあい）。重い液体の左の液面の高さ（点線）で、左右を比べる。',
+   `左：${m('p<sub>A</sub>＋ρg(上の水の高さ)')}、右：${m('p<sub>B</sub>＋ρg(…)＋ρ<sub>m</sub>gΔh')}。水の高さの差を整理すると<span class="eq">${m('p<sub>A</sub> − p<sub>B</sub>＝(ρ<sub>m</sub> − ρ) g Δh')}</span>`]},
+]},
+force:{p:['hydro'],it:[
+ {t:'面に働く全水圧',goal:'P＝ρgh<sub>G</sub>A',fig:S(320,190,R(40,30,160,150,wt,'none'),surf(40,200,30),R(196,60,10,100,'#ccc'),P('M196,60 L196,160 L150,160 L170,60Z','#fbe3e2',r,1.5),A(150,120,192,120,r,3),M(140,124,'P',r,14,'end'),L(240,30,240,110,n,1),M(248,74,'h<tspan font-size="10">G</tspan>',n,14,'start'),C(201,110,3,n,n)),
+  s:['水門の扉のような、水に接する平らな板。深さ h の所の圧力は ρgh で、深いほど強い。',
+   '板を細い帯に分ける。深さ h の帯（面積 dA）が受ける力は ${m("ρgh dA")}。'.replace('${m("ρgh dA")}',m('ρgh dA')),
+   {q:'全部足すと？'},
+   `${m('P＝∫ρgh dA＝ρg∫h dA')}。∫h dA は、面の図心の深さ h<sub>G</sub> × 面積 A（図心の定義）<span class="eq">${m('P＝ρ g h<sub>G</sub> A')}</span>図心の深さの圧力 × 面積。`]},
+ {t:'作用点の深さ',goal:'h<sub>C</sub>＝h<sub>G</sub>＋I<sub>G</sub>/(h<sub>G</sub>A)',fig:S(320,190,R(40,30,160,150,wt,'none'),surf(40,200,30),R(196,60,10,100,'#ccc'),C(201,110,3,n,n),C(201,120,4,r,r),L(220,110,280,110,n,1,'3 3'),L(220,120,280,120,r,1,'3 3'),T(284,114,'図心',n,11,'start'),T(284,130,'作用点',r,11,'start')),
+  s:['深い所ほど強く押されるので、合力 P の作用点は、図心より少し下になる。',
+   `水面の線のまわりのモーメント：${m('P h<sub>C</sub>＝∫h × ρgh dA＝ρg∫h² dA')}`,
+   `∫h² dA は、水面の線まわりの断面二次モーメント。平行軸の定理で ${m('I<sub>G</sub>＋A h<sub>G</sub>²')}。`,
+   `${m('P＝ρgh<sub>G</sub>A')} で割ると<span class="eq">${m('h<sub>C</sub>＝h<sub>G</sub>＋I<sub>G</sub> / (h<sub>G</sub> A)')}</span>水面から始まる長方形の壁なら h<sub>C</sub>＝2h/3（下から1/3）。`]},
+ {t:'浸水したドア',goal:'P＝½ρgh²B',fig:S(320,180,R(40,90,200,70,wt,'none'),surf(40,240,90),R(236,30,12,130,'#ccc'),P('M236,90 L236,160 L190,160Z','#fbe3e2',r,1.5),A(200,137,232,137,r,3),L(260,90,260,160,n,1),M(268,130,'h',n,14,'start')),
+  s:['外の水深 h、ドアの幅 B。水面から下の部分だけ水圧を受ける。',
+   `図心の深さは h/2、面積は hB：${m('P＝ρg(h/2)(hB)')}<span class="eq">${m('P＝½ ρ g h² B')}</span>`,
+   {q:'h＝0.5 m、B＝0.9 m なら？'},
+   '½×1000×9.8×0.25×0.9 ≒ 1100 N。100 kg 以上の物を押すのと同じ。しかも作用点は下から1/3で、ちょうつがいから遠く、開ける側に不利。']},
+]},
+buoy:{p:['hydro'],it:[
+ {t:'アルキメデスの原理',goal:'F＝ρgV',fig:S(320,190,R(30,30,260,150,wt,'none'),surf(30,290,30),R(120,70,80,60,soil),A(160,40,160,66,b),M(172,52,'ρgh₁A',b,13,'start'),A(160,170,160,134,b,3),M(172,160,'ρgh₂A',b,13,'start'),L(250,30,250,70,n,1),M(256,54,'h₁',n,13,'start'),L(270,30,270,130,n,1),M(276,100,'h₂',n,13,'start')),
+  s:['水に沈んだ箱（上下の面の面積 A）。横から押す水圧は、左右で打ち消し合う。',
+   `上の面は深さ h₁ で下向きに ${m('ρgh₁A')}、下の面は深さ h₂ で上向きに ${m('ρgh₂A')}。`,
+   {q:'差し引きは？'},
+   `${m('F＝ρg(h₂ − h₁)A＝ρ g V')}<span class="eq">${m('浮力＝押しのけた水の重さ')}</span>形がどんなでも、細い柱に分けて足せば同じ。`]},
+ {t:'浮体の安定',goal:'GM＝I/V − GC',fig:S(320,190,R(20,100,280,90,wt,'none'),P('M90,70 L230,90 L220,150 L100,135Z',soil,n,2),L(20,110,300,110,b,2),C(160,105,4,n,n),T(150,98,'G',n,12,'end'),C(170,130,4,b,b),T(180,134,'C',b,12,'start'),L(170,130,166,50,DC.g,1,'4 3'),C(166,58,4,r,r),T(176,56,'M',r,13,'start'),A(160,105,160,140,n,2),A(170,170,170,134,b,2)),
+  s:['重心 G には重さが下向き、浮心 C（押しのけた水の中心）には浮力が上向きに働く。',
+   '船が傾くと、沈む側が増えて、浮心 C が傾いた側に移る。',
+   {q:'船が起き上がるのは、どんなとき？'},
+   '新しい浮力の作用線と、船の中心線が交わる点がメタセンター M。M が G より上なら、重さと浮力の組が船を戻す向きに回す（安定）。',
+   `幾何学から ${m('CM＝I / V')}（I は水面で切った断面の二次モーメント、V は排水量）。<span class="eq">${m('GM＝I / V − GC ＞ 0')}</span>幅の広い船ほど I が大きく、安定。`]},
+]},
+bern:{p:['mass','energy'],it:[
+ {t:'連続の式',goal:'A₁v₁＝A₂v₂',fig:S(320,150,P('M20,40 H120 L200,60 H300 M20,120 H120 L200,100 H300','none',n,3),A(40,80,90,80,b),A(220,80,290,80,b,3),M(60,72,'v₁',b,14),M(250,72,'v₂',b,14),M(60,140,'A₁',n,14),M(250,140,'A₂',n,14)),
+  s:['管の中を水が流れている。1秒間に、断面1を通る水の体積は ${m("A₁v₁")}。'.replace('${m("A₁v₁")}',m('A₁v₁')),
+   {q:'断面2を1秒間に通る水の量は？'},
+   `水は途中で増えも減りもしない（質量保存）。だから同じ量が通る<span class="eq">${m('Q＝A₁v₁＝A₂v₂')}</span>細い所ほど速い。ホースの先をつぶすと遠くまで飛ぶ理由。`]},
+ {t:'ベルヌーイの定理',goal:'z＋p/ρg＋v²/2g＝一定',fig:S(320,200,P('M30,150 Q160,150 290,60','none',b,3),P('M30,120 Q160,120 290,40','none',DC.g,1,'4 3'),P('M30,180 Q160,180 290,80','none',DC.g,1,'4 3'),R(40,122,20,56,'#9cc3e0',n,1.5),R(250,48,20,40,'#9cc3e0',n,1.5),A(20,150,38,150,r),M(14,146,'p₁',r,13,'end'),A(296,68,272,68,r),M(300,64,'p₂',r,13,'start'),L(10,190,310,190,n,1),M(50,196,'z₁',n,12),T(160,20,'流れに沿った細い管（流管）',n,12)),
+  s:['流れに沿った細い管の、ある区間の水に注目する。短い時間に、入口で ${m("A₁ds₁")}、出口で ${m("A₂ds₂")} の水が動く（同じ体積 dV）。'.replace('${m("A₁ds₁")}',m('A₁ds₁')).replace('${m("A₂ds₂")}',m('A₂ds₂')),
+   `入口の圧力は押す向きに仕事 ${m('p₁dV')}、出口の圧力は押し返して ${m('−p₂dV')}。重力の仕事は ${m('ρg dV (z₁ − z₂)')}。`,
+   {q:'その仕事は、何に変わる？'},
+   `運動エネルギーの増加 ${m('½ρ dV (v₂² − v₁²)')}（エネルギー保存、摩擦は無視）。`,
+   `並べかえて ρg dV で割ると<span class="eq">${m('z＋p/(ρg)＋v²/(2g)＝一定')}</span>位置・圧力・速度の「水頭」の合計が一定。速くなる所は、圧力が下がる。`],key:'エネルギーの帳簿。高さ・圧力・速さは、互いに入れかわるだけ。'},
+ {t:'ベンチュリ計',fig:S(320,170,P('M20,60 H110 L170,80 H200 L280,60 H310 M20,140 H110 L170,120 H200 L280,140 H310','none',n,3),R(56,20,10,40,'#9cc3e0',n,1.2),R(181,40,10,40,'#9cc3e0',n,1.2),L(40,20,230,40,r,1,'4 3'),L(230,20,230,40,n,1),M(238,34,'Δh',n,13,'start')),
+  s:['管をしぼった所で、圧力がどれだけ下がるかを測ると、流量がわかる。',
+   `ベルヌーイ（同じ高さ）：${m('p₁/ρg − p₂/ρg＝(v₂² − v₁²)/2g＝Δh')}`,
+   `連続の式 ${m('v₁＝v₂A₂/A₁')} を入れて v₂ を解くと<span class="eq">${m('Q＝A₂ √(2gΔh / (1 − (A₂/A₁)²))')}</span>実際は少し損失があるので、係数 C（約0.98）をかける。`]},
+]},
+momentum:{p:['mom','mass'],it:[
+ {t:'運動量の式',goal:'F＝ρQ(v₂−v₁)',fig:S(320,170,R(90,40,140,90,'none',r,1.5),A(30,85,88,85,b),A(232,70,290,40,b),M(50,76,'v₁',b,14),M(270,36,'v₂',b,14),T(160,150,'検査領域（点線の箱）',r,12)),
+  s:['流れの一部を、点線の箱（検査領域）で囲む。毎秒、入口から質量 ρQ の水が速さ v₁ で入り、出口から v₂ で出ていく。',
+   `運動量（質量×速さ）は、毎秒 ${m('ρQv₁')} 入って、${m('ρQv₂')} 出ていく。`,
+   {q:'運動量を変えるには、何が必要？'},
+   `力（F＝ma を時間で積み上げた形）。箱の中の水に働く力の合計は<span class="eq">${m('ΣF＝ρQ(v₂ − v₁)')}</span>向きを持つので、x と y に分けて書く。水が受ける力の反作用が、管や板が受ける力。`]},
+ {t:'噴流が板を押す力',goal:'F＝ρQv',fig:S(320,160,R(40,72,120,16,'#9cc3e0','none'),A(40,80,160,80,b,3),R(200,20,14,120,'#ccc'),P('M200,70 Q186,50 190,20 M200,90 Q186,110 190,140','none',b,2),A(260,80,216,80,r,3),M(268,84,'F',r,15,'start'),M(90,66,'v',b,14)),
+  s:['速さ v の水の噴流が、壁に直角に当たって、上下に分かれて流れていく。',
+   'x 方向（板に直角）の速さは、当たる前 v、当たった後 0。',
+   `運動量の式：${m('F<sub>x</sub>＝ρQ(0 − v)')}。水は −ρQv の力を受け、その反作用で板は<span class="eq">${m('F＝ρ Q v＝ρ A v²')}</span>で押される。消防ホースを持つ人が後ろに押される理由。`]},
+]},
+pipe:{p:['energy','fric','mass'],it:[
+ {t:'摩擦損失（ダルシー・ワイスバッハ）',goal:'h<sub>f</sub>＝f(L/D)(v²/2g)',fig:S(320,150,R(40,50,240,50,'#9cc3e0',n,2),A(20,75,38,75,r),A(300,75,282,75,r,1.5),M(14,70,'p₁',r,13,'end'),M(306,70,'p₂',r,13,'start'),...[80,140,200,260].map(x=>A(x+10,48,x-10,48,DC.g,1.5)+A(x+10,102,x-10,102,DC.g,1.5)),T(160,124,'壁の摩擦 τ₀',DC.g,12),Dim(40,280,140,'L'),M(160,80,'D',n,14)),
+  s:['まっすぐな管（直径 D、長さ L）の水を考える。圧力の差で押され、壁の摩擦で止められて、一定の速さで流れている。',
+   `つりあい：${m('(p₁ − p₂) × πD²/4＝τ₀ × πD L')}`,
+   {q:'壁の摩擦 τ₀ は、何で決まる？'},
+   `実験から、乱流では速さの2乗にほぼ比例：${m('τ₀＝(f/8) ρ v²')}（f は摩擦損失係数）。`,
+   `入れて損失水頭 ${m('h<sub>f</sub>＝(p₁ − p₂)/ρg')} にすると<span class="eq">${m('h<sub>f</sub>＝f (L/D) (v²/2g)')}</span>同じ流量で D を半分にすると、v が4倍で、h<sub>f</sub> は約32倍。`]},
+ {t:'層流の摩擦係数',goal:'f＝64/Re',fig:S(320,160,L(40,30,280,30,n,3),L(40,130,280,130,n,3),P('M120,30 Q220,80 120,130','none',b,2.5),...[50,65,80,95,110].map(y=>A(120,y,120+100*(1-((y-80)/50)**2),y,b,1.2)),T(250,90,'放物線',b,12)),
+  s:['ゆっくり流れるとき（層流）、水は同心円の層になってすべる。層どうしの摩擦は、粘性 μ と速さの変わり方に比例する。',
+   `半径 r の水の円柱のつりあい：${m('Δp πr²＝τ 2πr L')}、${m('τ＝−μ du/dr')}`,
+   `積分すると、速さは放物線：${m('u＝(Δp / 4μL)(R² − r²)')}。全部足して ${m('Q＝πΔp D⁴ / (128 μ L)')}（ハーゲン・ポアズイユ）。`,
+   `これを h<sub>f</sub> の式の形に直すと<span class="eq">${m('f＝64 / Re')}</span>${m('Re＝vD/ν')}（レイノルズ数）。Re が約2000を超えると乱流になる。`]},
+ {t:'2つの水槽をつなぐ管',goal:'H＝(f<sub>e</sub>＋fL/D＋f<sub>o</sub>)v²/2g',fig:S(340,190,tank(20,40,80,100),R(23,60,74,80,wt,'none'),surf(20,100,60),tank(220,70,80,70),R(223,110,74,30,wt,'none'),surf(220,300,110),R(100,120,120,12,'#9cc3e0',n,1.5),L(310,60,310,110,r,1.5),M(316,90,'H',r,14,'start')),
+  s:['水面の高さが H だけ違う2つの水槽を、管でつなぐ。',
+   '左の水面から右の水面まで、ベルヌーイの式を書く。どちらの水面も、圧力は大気圧、速さはほぼ0。',
+   {q:'高さの差 H は、どこに消える？'},
+   `全部、途中の損失になる：入口 ${m('f<sub>e</sub>v²/2g')}、管の摩擦 ${m('f(L/D)v²/2g')}、出口 ${m('f<sub>o</sub>v²/2g')}<span class="eq">${m('H＝(f<sub>e</sub>＋fL/D＋f<sub>o</sub>) v² / 2g')}</span>これを v について解いて、Q＝Av。`]},
+]},
+manning:{p:['fric','mass'],it:[
+ {t:'等流のつりあい',goal:'τ₀＝ρgRI',fig:S(320,170,P('M20,60 L300,110','none',DC.g,1),P('M20,120 L300,170','none',n,3),P('M20,60 L20,120 M300,110 L300,170','none',DC.g,1,'4 3'),R(20,60,0,0),A(160,95,160,135,r),M(170,125,'ρgAL',r,13,'start'),A(200,140,150,131,b),T(110,158,'底の摩擦 τ₀',b,12),T(260,60,'勾配 I',n,12)),
+  s:['川の水が、いつまでも同じ深さ・同じ速さで流れている（等流）。加速していないので、力はつりあっている。',
+   `長さ L の水を取り出す。重さ ${m('ρgAL')} の、斜面方向の成分 ${m('ρgAL × I')}（I は川底の勾配）が、流れを押す。`,
+   `止めるのは、川底と岸の摩擦 ${m('τ₀ × P × L')}（P は水が触れている長さ＝潤辺）。`,
+   `${m('ρgALI＝τ₀PL')}、${m('R＝A/P')}（径深）とおくと<span class="eq">${m('τ₀＝ρ g R I')}</span>`]},
+ {t:'マニングの式',goal:'v＝(1/n)R<sup>2/3</sup>I<sup>1/2</sup>',fig:S(320,150,P('M40,30 L80,120 H240 L280,30','none',n,3),R(65,60,190,0),P('M53,60 L80,120 H240 L267,60Z',wt,b,1.5),L(53,60,267,60,b,2),T(160,95,'A（断面積）',n,12),T(160,140,'P（潤辺）',r,12),L(80,124,240,124,r,3),L(53,64,80,124,r,3),L(240,124,267,64,r,3)),
+  s:[`摩擦の法則：底の摩擦は速さの2乗に比例 ${m('τ₀ ∝ ρv²')}。`,
+   `つりあい ${m('τ₀＝ρgRI')} と合わせると ${m('v ∝ √(RI)')}（シェジーの式 ${m('v＝C√(RI)')}）。`,
+   {q:'C は一定？'},
+   `実測すると、C は深い川ほど少し大きい。マニングは実験から ${m('C＝R<sup>1/6</sup> / n')} を見つけた（n は川底の粗さ）。<span class="eq">${m('v＝(1/n) R<sup>2/3</sup> I<sup>1/2</sup>')}</span>`,
+   '流量 Q＝Av。幅の広い川では R≒水深 h。コンクリート水路 n≒0.015、自然の川 n≒0.03。']},
+]},
+energy:{p:['energy','mass'],it:[
+ {t:'比エネルギー',goal:'E＝h＋q²/(2gh²)',fig:S(320,200,L(40,180,300,180,n,1.5),L(40,180,40,20,n,1.5),P('M60,170 Q90,110 120,100 Q170,90 290,30','none',r,3),P('M120,100 Q100,140 290,172','none',r,3),L(40,180,200,20,DC.g,1,'4 3'),C(112,108,4,b,b),T(122,124,'限界',b,12,'start'),M(296,196,'E',n,14),M(50,24,'h',n,14,'start'),T(240,48,'常流（深く遅い）',r,11),T(240,166,'射流（浅く速い）',r,11)),
+  s:['川底から測ったエネルギー（比エネルギー）：水深＋速度水頭 ${m("E＝h＋v²/2g")}。'.replace('${m("E＝h＋v²/2g")}',m('E＝h＋v²/2g')),
+   `幅1 m あたりの流量 q で書くと、${m('v＝q/h')}（連続の式）：<span class="eq">${m('E＝h＋q² / (2g h²)')}</span>`,
+   {q:'同じ E で、水深は何通りある？'},
+   '曲線を描くと、同じ E に対して水深が2つある。深くゆっくり（常流）と、浅く速い（射流）。']},
+ {t:'限界水深とフルード数',goal:'h<sub>c</sub>＝(q²/g)<sup>1/3</sup>',fig:S(320,160,L(40,140,300,140,n,1.5),P('M60,20 Q120,140 300,40','none',r,2.5),C(120,82,4,b,b),L(120,82,120,140,b,1,'4 3'),M(120,156,'E<tspan font-size="10">min</tspan>',b,13)),
+  s:['2つの水深がちょうど重なる点が、E が最小になる点（限界水深 h<sub>c</sub>）。',
+   `最小では傾きが0：${m('dE/dh＝1 − q²/(g h³)＝0')}<span class="eq">${m('h<sub>c</sub>＝(q² / g)<sup>1/3</sup>')}</span>このとき ${m('E<sub>min</sub>＝1.5 h<sub>c</sub>')}。`,
+   {q:'限界では、速さはどうなっている？'},
+   `${m('q²＝g h<sub>c</sub>³')} → ${m('v＝√(g h<sub>c</sub>)')}。これは浅い水の波の速さ。<span class="eq">${m('Fr＝v / √(gh)')}</span>Fr＜1 は常流（波が上流へ伝わる）、Fr＞1 は射流（波が上流へ行けない）。`]},
+]},
+jump:{p:['mom','mass'],it:[
+ {t:'跳水の共役水深',goal:'h₂/h₁＝½(√(1＋8Fr₁²)−1)',fig:S(320,170,L(20,150,300,150,n,3),P('M20,120 H120 Q160,118 180,70 H300','none',b,2.5),P('M20,120 H120 Q160,118 180,70 H300 V150 H20Z',wt,'none'),A(60,135,110,135,b,3),A(220,110,250,110,b,1.5),L(30,120,30,150,n,1),M(24,140,'h₁',n,13,'end'),L(290,70,290,150,n,1),M(296,114,'h₂',n,13,'start'),P('M150,95 q8,-12 16,0 q8,12 16,0','none',r,1.5)),
+  s:['浅く速い流れ（射流）が、急に深くゆっくりの流れ（常流）に変わる。渦でエネルギーが失われるので、ベルヌーイは使えない。',
+   {q:'それなら、何を使う？'},
+   `運動量の式。跳水の前後で箱を囲む。押す力は静水圧の合力 ${m('½ρgh²')}（幅1 m あたり）：${m('½ρgh₁² − ½ρgh₂²＝ρq(v₂ − v₁)')}`,
+   `連続の式 ${m('q＝v₁h₁＝v₂h₂')} を入れて整理すると、h₂ の2次方程式になる。解いて<span class="eq">${m('h₂ / h₁＝½(√(1＋8Fr₁²) − 1)')}</span>`,
+   `失われたエネルギー ${m('ΔE＝(h₂ − h₁)³ / (4h₁h₂)')}。ダムの下でわざと跳水を起こして、川底を守る（減勢工）。`],key:'エネルギーが消える所では、運動量の式を使う。'},
+]},
+orifice:{p:['energy','mass'],it:[
+ {t:'トリチェリの定理',goal:'v＝√(2gh)',fig:S(320,190,tank(60,20,140,150),R(63,40,134,130,wt,'none'),surf(60,200,40),R(198,150,6,10,'#fff','none'),P('M204,155 Q250,160 280,186','none',b,3),L(40,40,40,155,n,1),M(32,104,'h',n,14,'end'),M(250,150,'v',b,14)),
+  s:['水槽の側面の、水面から h の深さに、小さな穴を開ける。',
+   '水面の水の粒から、穴から出た水の粒まで、ベルヌーイの式を書く。',
+   `水面：高さ h、圧力0（大気圧）、速さ≒0。穴の出口：高さ0、圧力0、速さ v。${m('h＝v²/(2g)')}`,
+   `<span class="eq">${m('v＝√(2 g h)')}</span>高さ h から物を落としたときの速さと同じ。実際の流量は、縮流と損失の係数 C（約0.6）をかけて ${m('Q＝C a √(2gh)')}。`]},
+ {t:'刃形せき',goal:'Q＝(2/3)CB√(2g)H<sup>3/2</sup>',fig:S(320,180,R(20,40,180,130,wt,'none'),L(20,40,200,40,b,2),R(196,90,10,90,'#ccc'),P('M200,40 Q220,50 240,120','none',b,2.5),R(120,60,80,8,'#9cc3e0',n,1),M(110,70,'dy',n,12,'end'),L(212,40,212,90,n,1),M(218,70,'H',n,14,'start'),A(150,64,196,64,b,1.5)),
+  s:['堰の上をこえて流れる水を、厚さ dy の細い帯に分ける。水面から y の深さの帯は、トリチェリの式で速さ ${m("√(2gy)")}。'.replace('${m("√(2gy)")}',m('√(2gy)')),
+   `帯の流量 ${m('dQ＝B √(2gy) dy')}（B は堰の幅）`,
+   `水面から堰の上端まで積分：${m('Q＝B√(2g) ∫<sub>0</sub><sup>H</sup> y<sup>1/2</sup> dy＝(2/3)B√(2g)H<sup>3/2</sup>')}`,
+   `<span class="eq">${m('Q＝(2/3) C B √(2g) H<sup>3/2</sup>')}</span>堰の上の水深 H を測るだけで、川や水路の流量がわかる。`]},
+]},
+well:{p:['darcy','mass'],it:[
+ {t:'被圧帯水層の井戸',goal:'Q＝2πkb(H−h₀)/ln(R/r₀)',fig:S(320,190,R(10,70,300,30,soil),R(10,100,300,50,wt,'none'),R(10,150,300,30,soil),R(150,20,20,130,'#fff',n,2),P('M10,40 Q120,42 150,80','none',b,2,'5 4'),P('M170,80 Q200,42 310,40','none',b,2,'5 4'),A(60,125,140,125,b),A(260,125,180,125,b),T(60,60,'水位',b,11),L(300,100,300,150,n,1),M(306,130,'b',n,13,'start')),
+  s:['不透水層にはさまれた厚さ b の帯水層から、井戸で Q をくみ上げる。水は四方から、円を描いて井戸に集まる。',
+   {q:'井戸から r の距離の円筒を、毎秒どれだけの水が通る？'},
+   `全部 Q（質量保存）。円筒の面積は ${m('2πr b')}、ダルシーの法則で ${m('v＝k dh/dr')}：${m('Q＝2πr b k dh/dr')}`,
+   `${m('dh＝(Q / 2πkb) dr/r')} を、井戸 r₀ から影響圏 R まで積分<span class="eq">${m('Q＝2πkb (H − h₀) / ln(R/r₀)')}</span>`]},
+ {t:'不圧帯水層の井戸',goal:'Q＝πk(H²−h₀²)/ln(R/r₀)',fig:S(320,180,R(10,40,300,130,soil),R(150,20,20,150,'#fff',n,2),P('M10,60 Q120,62 150,120 L170,120 Q200,62 310,60 V170 H10Z',wt,'none'),P('M10,60 Q120,62 150,120 M170,120 Q200,62 310,60','none',b,2),L(300,60,300,170,n,1),M(306,120,'H',n,13,'start')),
+  s:['上に不透水層がない地下水（自由水面）。くみ上げると水面そのものが、すり鉢状に下がる。',
+   `今度は、水が通る厚さが水面の高さ h そのもの：${m('Q＝2πr h k dh/dr')}`,
+   `${m('h dh＝(Q / 2πk) dr/r')} を積分<span class="eq">${m('Q＝π k (H² − h₀²) / ln(R/r₀)')}</span>`]},
+]},
+hydro:{p:['mass'],it:[
+ {t:'合理式',goal:'Q＝fRA/3.6',fig:S(320,190,P('M30,60 Q100,20 170,40 Q260,30 290,90 Q280,160 190,170 Q90,175 40,130Z','#e8efe0',n,2),...[60,100,140,180,220,260].map(x=>L(x,5,x-8,25,b,1.5)),P('M60,110 Q130,120 170,150 L200,170','none',b,3),C(200,170,5,r,r),T(220,178,'出口',r,12,'start'),T(150,90,'流域 A',n,13)),
+  s:['流域（面積 A）全体に、強さ R（mm/h）の雨が降り続く。',
+   {q:'出口の流量が最大になるのは、いつ？'},
+   'いちばん遠い所に降った雨が出口に届いたとき（洪水到達時間）。そこから先は、流域の全部の雨が同時に出口へ流れてくる。',
+   `そのとき、降った量のうちしみ込まずに流れ出る割合 f（流出係数）の分が、そのまま出口を通る（質量保存）：${m('Q＝f × R × A')}`,
+   `単位を合わせる（mm/h × km² → m³/s は 1/3.6）<span class="eq">${m('Q＝(1/3.6) f R A')}</span>舗装された街は f≒0.9、森は f≒0.3。`]},
+]},
+wave:{p:['mass','mom'],it:[
+ {t:'浅い水の波の速さ',goal:'c＝√(gh)',fig:S(320,170,L(20,150,300,150,n,3),P('M20,80 H150 Q160,80 165,100 H300','none',b,2.5),P('M20,80 H150 Q160,80 165,100 H300 V150 H20Z',wt,'none'),A(170,60,220,60,r,2.5),M(196,52,'c',r,14),A(60,120,100,120,b,1.5),M(80,112,'u',b,14),L(290,100,290,150,n,1),M(296,130,'h',n,13,'start'),L(140,80,140,100,n,1),M(134,94,'Δ',n,13,'end')),
+  s:['静かな水（深さ h）に、高さ Δ の段差が、速さ c で進んでくる。段差の後ろの水は、速さ u で動いている。',
+   `質量保存：段差が進むと、毎秒 ${m('cΔ')} だけ水が積み上がる。それを運んでくるのが ${m('hu')}：${m('cΔ＝hu')}`,
+   `運動量保存：段差の静水圧の差 ${m('ρghΔ')} が、毎秒 ${m('ρhc')} の水を速さ u に加速する：${m('ρghΔ＝ρhcu')}`,
+   {q:'2つの式から u と Δ を消すと？'},
+   `<span class="eq">${m('c＝√(g h)')}</span>水深 4000 m の海なら約200 m/s（ジェット機なみ）。津波は、海の深さ全体が動く「浅い水の波」。`]},
+ {t:'グリーンの法則（浅くなると高くなる）',goal:'H ∝ h<sup>−1/4</sup>',fig:S(320,170,P('M10,150 L310,80','none',n,3),P('M10,60 Q40,50 70,60 T130,60 Q170,40 200,62 Q230,30 260,70','none',b,2.5),A(150,20,220,20,r),T(60,40,'沖：低く速い',n,11),T(250,25,'岸：高く遅い',r,11)),
+  s:['波が運ぶエネルギーの流れ（エネルギー × 速さ）は、途中で失われなければ一定（エネルギー保存）。',
+   `波のエネルギーは高さの2乗に比例：${m('E ∝ H²')}。速さは ${m('c＝√(gh)')}。`,
+   {q:'浅くなって c が小さくなると、H は？'},
+   `${m('H² √h＝一定')}<span class="eq">${m('H ∝ h<sup>−1/4</sup>')}</span>深さ4000 m から10 m になると、高さは約4.5倍。湾が狭まるとさらに集中して高くなる。`]},
+]},
+}; })();
+
+// ==/NAZO==
+route();
+window.__kz={U,XW};
+</script>

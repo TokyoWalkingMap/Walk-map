@@ -1,0 +1,238 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>地盤力学 実践ラボ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>/* Layout: practice lab. Home = design-flow strip + case cards. Case view = brief, inputs | drawing, calc table, checks with utilisation gauges, cost & stars. Riso palette shared with the lab series. */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;
+ --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;--f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;color-scheme:light}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--f-body);margin:0}
+body{-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:5;background:var(--paper);display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:2px solid var(--navy)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#crumb{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#prog{font-size:13px;font-weight:900;color:var(--red);white-space:nowrap}
+main{max-width:1080px;margin:0 auto;padding:18px 16px 48px}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(28px,6vw,52px);line-height:1.15;margin:0;color:var(--navy);text-wrap:balance}
+h1 b{color:var(--red);font-weight:400}
+.lead{font-size:15px;line-height:1.85;max-width:66ch;margin:10px 0 14px}
+a{color:var(--blue);font-weight:700}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 18px}
+.flow div{background:var(--sheet);border:2px solid var(--navy);padding:5px 10px;font-weight:900;font-size:13px;display:flex;gap:6px;align-items:center}
+.flow div b{background:var(--red);color:#fff;width:20px;height:20px;display:inline-grid;place-items:center;font-size:12px}
+.flow i{font-style:normal;color:var(--red);font-weight:900}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.case{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px 12px;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.case:hover{background:var(--soft)}
+.case .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.case .fg svg{display:block;width:100%;height:auto;max-height:90px;border:1px solid var(--line)}
+.case b{font-size:17px;font-weight:900}
+.case .ds{font-size:12px;color:var(--muted)}
+.case .st,.stars{color:var(--red);letter-spacing:.1em;font-size:16px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;border-top:2px solid var(--navy);padding-top:12px;font-size:14px}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:14px}
+.chead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
+.chead .no{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.chead h2{font-family:var(--f-disp);font-weight:400;font-size:clamp(22px,4vw,32px);margin:0;color:var(--navy)}
+section{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px 14px;margin-bottom:14px;min-width:0}
+section h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+section h3 span{background:var(--red);color:#fff;width:22px;height:22px;display:inline-grid;place-items:center;font-size:13px}
+.req p{font-size:15px;line-height:1.85;margin:0 0 6px}
+.req .cl{font-size:12px;color:var(--muted);font-weight:700}
+.req ul{margin:4px 0 0;padding-left:20px;font-size:14px;line-height:1.85;background:var(--soft);padding:6px 10px 6px 28px;border-left:4px solid var(--blue)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px;align-items:start}
+.cols section{margin-bottom:14px}
+@media (max-width:820px){.cols{grid-template-columns:minmax(0,1fr)}}
+.drw{position:sticky;top:56px}
+@media (max-width:820px){.drw{position:static}}
+.hint{font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.6}
+.ip{display:block;margin-bottom:12px}
+.ip>b{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:14px}
+.ip small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.tg{font-size:10px;font-weight:900;padding:1px 6px;border:1.5px solid currentColor}
+.tg.d{color:#fff;background:var(--red);border-color:var(--red)} .tg.c{color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opts button{font-family:var(--f-body);font-weight:700;font-size:13px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:5px 10px;cursor:pointer;min-height:34px}
+.opts button.on{background:var(--navy);color:var(--paper)}
+#fig svg{display:block;width:100%;height:auto;border:1px solid var(--line)}
+.calc table{width:100%;border-collapse:collapse;font-size:14px}
+.calc td{border-bottom:1px solid var(--line);padding:6px 4px;vertical-align:top}
+.calc td.f{color:var(--muted)}
+.calc td.v{text-align:right;font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--navy)}
+.mm{font-family:"Times New Roman",Times,serif;font-style:italic;font-size:1.05em}
+@media (max-width:560px){.calc tr{display:grid;grid-template-columns:1fr auto auto;column-gap:6px;border-bottom:1px solid var(--line);padding:5px 0}.calc td{border:0;padding:1px 2px}.calc td:first-child{grid-column:1/-1;font-weight:700}.calc td.f{grid-column:1}}
+.ck{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 44px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+@media (max-width:560px){.ck{grid-template-columns:minmax(0,1fr) 44px}.ck .gauge{grid-column:1/-1;grid-row:2}}
+.ckl b{display:block;font-size:14px}.ckl span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.gauge{position:relative;height:14px;background:var(--soft);border:1.5px solid var(--navy)}
+.gauge i{position:absolute;left:0;top:0;bottom:0;background:var(--blue)}
+.ck.ng .gauge i{background:var(--red)}
+.gauge em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy)}
+.ckv{font-weight:900;font-size:15px;text-align:center;padding:3px 0;color:#fff;background:var(--blue)}
+.ck.ng .ckv{background:var(--red)}
+.verdict{margin-top:10px;font-weight:900;font-size:15px;padding:8px 10px;border:2px solid var(--blue);color:var(--blue)}
+.verdict.ng{border-color:var(--red);color:var(--red);background:#fdf0ef}
+.cbox{display:flex;flex-wrap:wrap;gap:10px 30px}
+.cbox small{display:block;font-size:12px;color:var(--muted)}.cbox b{font-size:17px}
+.cost p{font-size:14px;line-height:1.8;margin:8px 0 0}
+.ans summary{cursor:pointer;font-weight:700;color:var(--blue);font-size:14px;margin-top:8px}
+.ans p{background:var(--soft);padding:6px 10px}
+.ulinks{display:flex;flex-wrap:wrap;gap:8px}
+.ulinks a{border:2px solid var(--blue);padding:4px 10px;text-decoration:none;font-size:13px;background:var(--sheet)}
+.real{font-size:14px;line-height:1.8;margin:10px 0 0;background:var(--paper);padding:8px 10px;border-left:4px solid var(--red)}
+.nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 14px;cursor:pointer}
+.b.main{background:var(--red);border-color:var(--red);color:#fff}
+</style></head><body>
+<header><button class="logo" id="logo" title="案件の一覧へ">地盤力学<b>実践ラボ</b></button><div id="crumb"></div><div id="prog"></div></header>
+<main id="main"></main>
+<script>
+const URLS={"kozo": "../kozo/", "jiban": "../jiban/", "suiri": "../suiri/", "kozoR": "../kozo-riron/", "jibanR": "../jiban-riron/", "suiriR": "../suiri-riron/"};
+const DC={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#93BCD6',s:'#D8CFBE',g:'#5E6B86',w:'#fff'};
+const dg={
+ S:(w,h,...p)=>`<svg viewBox="0 0 ${w} ${h}" class="dfig" role="img"><rect width="${w}" height="${h}" fill="#fff"/>${p.join('')}</svg>`,
+ L:(x1,y1,x2,y2,c=DC.n,w=2,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`,
+ A:(x1,y1,x2,y2,c=DC.r,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=9; const p1=[x2-h*Math.cos(a-0.4),y2-h*Math.sin(a-0.4)], p2=[x2-h*Math.cos(a+0.4),y2-h*Math.sin(a+0.4)];
+   return `<line x1="${x1}" y1="${y1}" x2="${x2-6*Math.cos(a)}" y2="${y2-6*Math.sin(a)}" stroke="${c}" stroke-width="${w}"/><polygon points="${x2},${y2} ${p1} ${p2}" fill="${c}"/>`; },
+ T:(x,y,s,c=DC.n,fs=13,an='middle',b=700)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-weight="${b}" text-anchor="${an}" font-family="'Zen Kaku Gothic New',sans-serif">${s}</text>`,
+ M:(x,y,s,c=DC.n,fs=15,an='middle')=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs}" font-style="italic" font-weight="700" text-anchor="${an}" font-family="'Times New Roman',serif">${s}</text>`,
+ R:(x,y,w,h,f=DC.m,st=DC.n,sw=2)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${f}" stroke="${st}" stroke-width="${sw}"/>`,
+ P:(d,f='none',st=DC.n,w=2,da='')=>`<path d="${d}" fill="${f}" stroke="${st}" stroke-width="${w}"${da?` stroke-dasharray="${da}"`:''}/>`,
+ C:(x,y,r,f=DC.w,st=DC.n,w=2)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${st}" stroke-width="${w}"/>`,
+ B:(x1,x2,y,c=DC.n,w=6)=>`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`,
+ G:(x1,x2,y)=>{ let s=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${DC.n}" stroke-width="2"/>`; for(let x=x1+4;x<=x2;x+=7) s+=`<line x1="${x}" y1="${y}" x2="${x-6}" y2="${y+7}" stroke="${DC.n}" stroke-width="1"/>`; return s; },
+ Pin:(x,y)=>dg.P(`M${x},${y} l-11,18 h22z`,DC.w)+dg.G(x-16,x+16,y+18),
+ Rol:(x,y)=>dg.P(`M${x},${y} l-11,14 h22z`,DC.w)+dg.C(x-6,y+18,3.5)+dg.C(x+6,y+18,3.5)+dg.G(x-16,x+16,y+22),
+ Fix:(x,y1,y2,side=-1)=>{ let s=dg.L(x,y1,x,y2,DC.n,3); for(let y=y1+3;y<=y2;y+=7) s+=dg.L(x,y,x+side*7,y+6,DC.n,1); return s; },
+ W:(x1,x2,y,c=DC.r,n,lab)=>{ n=n||Math.max(3,Math.round((x2-x1)/22)); let s=dg.L(x1,y-28,x2,y-28,c,2); for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=dg.A(x,y-28,x,y-2,c,1.6);} return s+(lab?dg.M((x1+x2)/2,y-34,lab,c,14):''); },
+ Dim:(x1,x2,y,lab,c=DC.n)=>dg.L(x1,y,x2,y,c,1.2)+dg.L(x1,y-6,x1,y+6,c,1.2)+dg.L(x2,y-6,x2,y+6,c,1.2)+`<rect x="${(x1+x2)/2-String(lab).length*4-4}" y="${y-9}" width="${String(lab).length*8+8}" height="16" fill="#fff"/>`+dg.M((x1+x2)/2,y+5,lab,c,14),
+ Mo:(x,y,r,lab,ccw=false,c=DC.b)=>{ const s=ccw?0:1; const a0=-2.4,a1=1.4; const x0=x+r*Math.cos(a0),y0=y+r*Math.sin(a0),xe=x+r*Math.cos(a1),ye=y+r*Math.sin(a1);
+   const [sx,sy,ex,ey]=ccw?[xe,ye,x0,y0]:[x0,y0,xe,ye]; const t=ccw?a0:a1; const tx=ccw?Math.sin(t):-Math.sin(t), ty=ccw?-Math.cos(t):Math.cos(t);
+   return `<path d="M${sx},${sy} A${r},${r} 0 1 ${s} ${ex},${ey}" fill="none" stroke="${c}" stroke-width="2.2"/>`+dg.A(ex-tx*6,ey-ty*6,ex+tx*2,ey+ty*2,c,2.2)+(lab?dg.M(x+r+8,y-r+4,lab,c,14,'start'):''); },
+};
+
+const LAB={key:'jiban-jissen',h1:'地盤力学を、<b>本物の設計</b>で使う。',
+ lead:'土の上に何かをつくるとき、設計者は「倒れないか」「すべらないか」「沈まないか」を確かめます。だめなら形を変えてやり直し、最後にいちばん経済的な案を選ぶ。この流れを、本物の案件で体験します。',
+ note:'数値は学習用に簡略化しています（土の定数・安全率は代表値）。実際の設計は、道路土工指針・建築基礎構造設計指針などの基準と、現地の地盤調査に従います。',
+ links:[['地盤力学ラボ（謎と問題）',URLS.jiban],['地盤力学 理論ラボ（体系図と導出）',URLS.jibanR]]};
+const CASES=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Dim}=dg; const n=DC.n,r=DC.r,b=DC.b;
+const soil=(x,y,w,h)=>R(x,y,w,h,DC.s,'none',0);
+return [
+{id:'wall',title:'宅地造成の擁壁',client:'○○不動産',
+ thumb:S(160,70,soil(10,40,140,26),P('M70,10 L90,10 L100,64 L60,64Z',DC.m,n,2),soil(90,10,60,30),L(10,64,150,64,n,2)),
+ story:'坂の住宅地で、土地を平らにするために、コンクリートの擁壁（重力式）を立てる。後ろの土が押す力（土圧）に、擁壁の重さで耐える。高さと底の幅を決めよう。',
+ req:['背面の土：単位体積重量 18 kN/m³、背面は水平で、上に建物などの荷重はなし','コンクリートの重さ 23 kN/m³、天端の幅 0.5 m、前面は鉛直、背面を斜めにする台形','転倒：安全率 1.5 以上（つま先まわりのモーメントで比べる）','滑動：安全率 1.5 以上（底面の摩擦係数 0.6）','支持力：底面の最大の地盤反力 ≦ 地盤の許容支持力'],
+ inputs:[{k:'H',label:'擁壁の高さ',opts:[[2,'2 m'],[3,'3 m'],[4,'4 m']],def:3},{k:'phi',label:'背面の土（内部摩擦角）',help:'粘り気の少ない砂ほど角度が大きく、押す力が小さい。',opts:[[30,'30°（ふつうの土）'],[35,'35°（よく締まった砂）']],def:30},{k:'qa',label:'足元の地盤',opts:[[100,'やわらかい（100 kN/m²）'],[200,'ふつう（200 kN/m²）'],[300,'かたい（300 kN/m²）']],def:200},{d:1,k:'Bw',label:'擁壁の底の幅',opts:[[1.5,'1.5 m'],[2.0,'2.0 m'],[2.5,'2.5 m'],[3.0,'3.0 m'],[3.5,'3.5 m']],def:1.5}],
+ calc(s){ const g=18,gc=23,a=0.5,H=s.H,Bw=s.Bw; const Ka=Math.tan((45-s.phi/2)*Math.PI/180)**2; const Pa=0.5*Ka*g*H*H, ya=H/3;
+   const W1=a*H*gc, x1=a/2, W2=0.5*(Bw-a)*H*gc, x2=a+(Bw-a)/3; const W=W1+W2; const Mr=W1*x1+W2*x2, Mo=Pa*ya;
+   const Fo=Mr/Mo, Fs=0.6*W/Pa; const xr=(Mr-Mo)/W, e=Bw/2-xr; const qmax=e<=Bw/6?W/Bw*(1+6*e/Bw):2*W/(3*Math.max(0.01,xr));
+   const vol=(a+Bw)/2*H; const cost=vol*35; // 千円/m（コンクリート・型枠・掘削込み）
+   return {rows:[['主働土圧係数',mm('K<sub>a</sub>＝tan²(45°−φ/2)'),nf(Ka,3),''],['土圧の合力（高さ H/3 に作用）',mm('P<sub>a</sub>＝½K<sub>a</sub>γH²'),nf(Pa),'kN/m'],['擁壁の重さ',mm('W＝(a＋B)/2×H×γ<sub>c</sub>'),nf(W),'kN/m'],['倒そうとするモーメント',mm('M<sub>o</sub>＝P<sub>a</sub>×H/3'),nf(Mo),'kN·m/m'],['こらえるモーメント',mm('M<sub>r</sub>＝ΣW·x'),nf(Mr),'kN·m/m'],['合力の位置の偏心',mm('e＝B/2 − (M<sub>r</sub>−M<sub>o</sub>)/W'),nf(e,3),'m'],['最大の地盤反力',mm('q＝W/B×(1＋6e/B)'),nf(qmax),'kN/m²']],
+     checks:[['転倒（倒れないか）',1.5/Fo,1.5,Fo>=1.5,`安全率 ${nf(Fo)} ／ 必要 1.5`],['滑動（すべらないか）',1.5/Fs,1.5,Fs>=1.5,`安全率 ${nf(Fs)} ／ 必要 1.5`],['支持力（沈まないか）',qmax/s.qa,s.qa,qmax<=s.qa,`反力 ${nf(qmax)} ／ 許容 ${s.qa} kN/m²`]],
+     cost, costTxt:`コンクリート ${nf(vol)} m³/m ／ 約 ${nf(cost,0)} 千円/m`, Fo,Fs,qmax,Pa,e};
+ },
+ fig(s,q){ const k=36, x0=60, yb=190, H=s.H*k, Bw=s.Bw*k, a=0.5*k; const okO=q.Fo>=1.5, okS=q.Fs>=1.5, okQ=q.qmax<=s.qa;
+   const ang=okO?0:-6; const dx=okS?0:-10;
+   return S(340,260,soil(0,yb,340,50),soil(x0+a,yb-H,280,H),L(0,yb,340,yb,n,2),
+     `<g transform="translate(${dx},0) rotate(${ang} ${x0} ${yb})">`+P(`M${x0},${yb-H} L${x0+a},${yb-H} L${x0+Bw},${yb} L${x0},${yb}Z`,DC.m,n,2)+'</g>',
+     P(`M${x0+a+8},${yb-H} L${x0+a+8+q.Pa*1.2},${yb} L${x0+a+8},${yb}Z`,'#fbe3e2',r,1.2),A(x0+a+8+q.Pa*0.45,yb-H/3,x0+a+12,yb-H/3,r,2.5),M(x0+a+16+q.Pa*0.45,yb-H/3-6,'P<tspan font-size="10" dy="3">a</tspan>',r,14,'start'),
+     P(`M${x0},${yb+2} L${x0},${yb+Math.min(40,q.qmax/8)} L${x0+Bw},${yb+2}Z`,okQ?'#d7e6f1':'#fbe3e2',okQ?b:r,1.2),
+     Dim(x0,x0+Bw,yb+48,`B＝${s.Bw} m`),L(x0-14,yb-H,x0-14,yb,n,1),M(x0-18,yb-H/2,`${s.H} m`,n,13,'end'),
+     T(330,22,okO&&okS&&okQ?'倒れない・すべらない・沈まない':(!okO?'倒れる！':!okS?'すべる！':'地盤が沈む！'),okO&&okS&&okQ?b:r,13,'end'));
+ },
+ links:[['ランキンの主働土圧係数',URLS.jibanR+'#d-earthp'],['土圧の合力と作用点',URLS.jibanR+'#d-earthp-1'],['地盤力学ラボ「土圧」',URLS.jiban+'#u9'],['支持力',URLS.jibanR+'#d-bearing']],
+ real:'実際の擁壁は、雨で後ろに水がたまると土圧が大きく増えるので、水抜き穴を必ず設けます。地震時の照査（地震時土圧）もします。古い擁壁の崩れの多くは、水抜きの詰まりが原因です。'},
+{id:'drain',title:'埋立地の地盤改良',client:'□□港湾局',
+ thumb:S(160,70,R(10,10,140,14,DC.s,n,1),R(10,24,140,40,'#cdbfa6',n,1),...[30,55,80,105,130].map(x=>L(x,24,x,64,b,3))),
+ story:'海を埋め立てた土地に、倉庫を建てる。下にはやわらかい粘土があり、盛土をのせると何年もかけて沈む（圧密）。1年以内に沈下をほぼ終わらせたい。粘土に排水の柱（バーチカルドレーン）を打つ間隔を決めよう。',
+ req:['粘土：圧縮指数 C<sub>c</sub>＝0.6、初期間隙比 e₀＝1.5、水中単位体積重量 6 kN/m³','圧密係数 c<sub>v</sub>＝c<sub>h</sub>＝0.01 m²/日、粘土の上下は砂（両面排水）','盛土は 1 m あたり 18 kN/m² の重さ','沈下の90%が終わるまでの日数 ≦ 365 日'],
+ inputs:[{k:'Hc',label:'粘土層の厚さ',opts:[[5,'5 m'],[10,'10 m'],[15,'15 m']],def:10},{k:'f',label:'盛土の高さ',opts:[[2,'2 m'],[3,'3 m'],[4,'4 m']],def:3},{d:1,k:'sp',label:'ドレーンの間隔',help:'正三角形に配置。狭いほど早いが、本数が増えて高い。',opts:[[0,'打たない'],[3,'3.0 m'],[2,'2.0 m'],[1.5,'1.5 m'],[1,'1.0 m']],def:0}],
+ calc(s){ const Hc=s.Hc, dp=18*s.f, s0=6*Hc/2; const S_=0.6*Hc/(1+1.5)*Math.log10((s0+dp)/s0);
+   const tv=0.848*(Hc/2)**2/0.01; let t=tv, de=0, F=0;
+   if(s.sp){ de=1.05*s.sp; const nn=de/0.05; F=Math.log(nn)-0.75; const th=de*de/(8*0.01)*F*Math.log(10); t=1/(1/th+1/tv); }
+   const area=10000; const nD=s.sp?area/(0.866*s.sp*s.sp):0; const cost=s.sp?nD*Hc*1.2/1000:0; // 1 ha あたり 百万円
+   return {rows:[['盛土の重さ',mm('Δp＝18×盛土高'),nf(dp),'kN/m²'],['粘土の真ん中の有効応力',mm("σ'₀＝6×H/2"),nf(s0),'kN/m²'],['最終の沈下量',mm("S＝C<sub>c</sub>H/(1+e₀)·log((σ'₀+Δp)/σ'₀)"),nf(S_*100,0),'cm'],['ドレーンなしの90%圧密の日数',mm('t＝0.848(H/2)²/c<sub>v</sub>'),nf(tv,0),'日'],...(s.sp?[['ドレーンの影響円の直径',mm('d<sub>e</sub>＝1.05s'),nf(de),'m'],['井戸の効き方の係数',mm('F＝ln(d<sub>e</sub>/d<sub>w</sub>)−0.75'),nf(F),''],['ドレーンありの90%圧密の日数',mm('バロンの式＋上下の排水'),nf(t,0),'日']]:[])],
+     checks:[['工期（1年で沈み終わるか）',t/365,365,t<=365,`${nf(t,0)} 日 ／ 目標 365 日`]],
+     cost, costTxt:s.sp?`1 ha に ${nf(nD,0)} 本 ／ 約 ${nf(cost,1)} 百万円`:'ドレーンなし ／ 0 円', t, S:S_};
+ },
+ fig(s,q){ const yc=80, hc=s.Hc*9, x1=20,x2=320; const sp=s.sp?Math.max(14,s.sp*22):0; const ok=q.t<=365; const yrs=q.t/365;
+   let dr=''; if(sp) for(let x=x1+sp/2;x<x2;x+=sp) dr+=L(x,yc-6,x,yc+hc,b,3);
+   const sett=Math.min(26,q.S*20);
+   return S(340,260,R(x1,yc-12-s.f*8,x2-x1,s.f*8,'#e9dfc9',n,1),T(170,yc-16-s.f*4,`盛土 ${s.f} m`,n,12),R(x1,yc-12,x2-x1,12,'#f1ead8',n,1),R(x1,yc,x2-x1,hc,'#cdbfa6',n,1),T(170,yc+hc/2+4,`粘土 ${s.Hc} m`,n,13),R(x1,yc+hc,x2-x1,10,'#f1ead8',n,1),dr,
+     ...(sp?[A(x1+sp/2+40,yc+hc/2,x1+sp/2+8,yc+hc/2,b,1.8),A(x1+sp/2,yc+hc/2-8,x1+sp/2,yc-4,b,1.8)]:[A(60,yc+hc*0.3,60,yc-4,b,1.8),A(60,yc+hc*0.7,60,yc+hc+8,b,1.8)]),
+     T(170,yc+hc+34,`沈下 約 ${nf(q.S*100,0)} cm、90%まで ${yrs>=1?nf(yrs,1)+' 年':nf(q.t,0)+' 日'}`,ok?b:r,14),T(170,yc+hc+54,sp?'水は横にぬけて、近くのドレーンから逃げる':'水は上下にしか逃げられない',n,11,'middle',400));
+ },
+ links:[['圧密沈下量',URLS.jibanR+'#d-consol'],['圧密にかかる時間',URLS.jibanR+'#d-consol-1'],['有効応力',URLS.jibanR+'#d-eff'],['地盤力学ラボ「圧密」',URLS.jiban+'#u7']],
+ real:'関西国際空港や羽田空港の埋立地では、何十万本ものサンドドレーンで粘土の水を抜きました。それでも沈下は今も続いていて、観測しながら建物の高さを調整しています。'},
+{id:'footing',title:'鉄塔の基礎',client:'△△電力',
+ thumb:S(160,70,soil(10,46,140,22),R(55,40,50,12,DC.m,n,2),P('M70,40 L80,6 L90,40',  'none',n,2),L(10,46,150,46,n,2)),
+ story:'送電線の鉄塔を、正方形のコンクリート基礎（直接基礎）で支える。基礎が小さいと、地盤がせん断破壊して沈み込む。テルツァギの支持力式で、基礎の大きさを決めよう。',
+ req:['基礎は正方形、地表から深さ 1.0 m に置く。土の単位体積重量 18 kN/m³','鉄塔の重さと電線の重さの合計 P（鉛直荷重）が中心にかかる','地盤の極限支持力に対して安全率 3 以上','支持力係数は φ から決める（φ＝0° なら N<sub>c</sub>＝5.1、N<sub>q</sub>＝1、N<sub>γ</sub>＝0）'],
+ inputs:[{k:'P',label:'荷重',opts:[[600,'600 kN'],[1200,'1200 kN'],[2000,'2000 kN']],def:1200},{k:'soil',label:'地盤',opts:[['c','粘土（c＝40 kN/m²、φ＝0°）'],['s','砂（c＝0、φ＝30°）']],def:'s'},{d:1,k:'Bf',label:'基礎の一辺',opts:[[1.5,'1.5 m'],[2.0,'2.0 m'],[2.5,'2.5 m'],[3.0,'3.0 m'],[4.0,'4.0 m'],[5.0,'5.0 m']],def:2.0}],
+ calc(s){ const g=18, Df=1.0, Bf=s.Bf; let c,Nc,Nq,Ng; if(s.soil==='c'){ c=40;Nc=5.14;Nq=1;Ng=0; } else { c=0;Nc=30.1;Nq=18.4;Ng=15.7; }
+   const qu=1.3*c*Nc+g*Df*Nq+0.4*g*Bf*Ng; const qa=qu/3; const q=s.P/(Bf*Bf)+20*Df; const vol=Bf*Bf*1.0; const cost=vol*40+Bf*Bf*Df*3;
+   return {rows:[['支持力係数',mm('N<sub>c</sub>, N<sub>q</sub>, N<sub>γ</sub>'),`${Nc} / ${Nq} / ${Ng}`,''],['粘着力の項',mm('1.3cN<sub>c</sub>'),nf(1.3*c*Nc),'kN/m²'],['根入れの項',mm('γD<sub>f</sub>N<sub>q</sub>'),nf(g*Df*Nq),'kN/m²'],['基礎の幅の項',mm('0.4γBN<sub>γ</sub>'),nf(0.4*g*Bf*Ng),'kN/m²'],['極限支持力',mm('q<sub>u</sub>＝合計'),nf(qu),'kN/m²'],['許容支持力',mm('q<sub>a</sub>＝q<sub>u</sub>/3'),nf(qa),'kN/m²'],['基礎の底にかかる圧力',mm('q＝P/B²＋基礎と土の重さ'),nf(q),'kN/m²']],
+     checks:[['支持力（地盤が壊れないか）',q/qa,qa,q<=qa,`圧力 ${nf(q)} ／ 許容 ${nf(qa)} kN/m²`]],
+     cost, costTxt:`コンクリート ${nf(vol)} m³ ／ 約 ${nf(cost,0)} 千円`, q,qa};
+ },
+ fig(s,q){ const k=30, w=s.Bf*k, x0=170-w/2, yg=120, yb=yg+30; const ok=q.q<=q.qa;
+   return S(340,260,soil(0,yg,340,170),L(0,yg,340,yg,n,2),R(x0,yb-24,w,24,DC.m,n,2),R(165,yg-60,10,36+30,'#fff',n,2),P(`M150,${yg-70} L170,${yg-110} L190,${yg-70}`,'none',n,2),A(170,yg-112,170,yg-72,r),M(180,yg-96,`P＝${s.P} kN`,r,13,'start'),
+     P(`M${x0},${yb} L${x0+w/2},${yb+w*0.6} L${x0+w},${yb} M${x0+w/2},${yb+w*0.6} Q${x0+w*1.4},${yb+w*0.7} ${x0+w*1.9},${yg} M${x0+w/2},${yb+w*0.6} Q${x0-w*0.4},${yb+w*0.7} ${x0-w*0.9},${yg}`,'none',ok?DC.g:r,ok?1.2:2.4,ok?'4 4':''),
+     Dim(x0,x0+w,Math.min(yb+w*0.6+24,226),`B＝${s.Bf} m`),T(170,252,ok?'地盤は耐えられる':'すべり面ができて、沈み込む！',ok?b:r,14));
+ },
+ links:[['テルツァギの支持力式',URLS.jibanR+'#d-bearing'],['モール・クーロンの破壊規準',URLS.jibanR+'#d-shear'],['地盤力学ラボ「支持力」',URLS.jiban+'#u10']],
+ real:'実際の鉄塔は、風で電線が引っぱられて大きな横向きの力や、基礎を引き抜く力もかかります。山の中の鉄塔は、斜面の安定も同時に確かめます。'},
+]; })();
+
+// ---- 実践ラボ：本物を設計する流れ（依頼 → 条件 → 計算 → 照査 → 図面 → コスト） ----
+const $=s=>document.querySelector(s);
+const nf=(x,d=2)=>{ if(!isFinite(x)) return '—'; const a=Math.abs(x); const dd=a>=1000?0:a>=100?1:a>=10?d-1<0?0:Math.max(0,d-1):d; return (Math.round(x*10**dd)/10**dd).toLocaleString('ja-JP'); };
+const mm=s=>`<span class="mm">${s}</span>`;
+let JS={}; try{ JS=JSON.parse(localStorage.getItem(LAB.key)||'{}'); }catch(e){ JS={}; }
+const jsave=()=>{ try{ localStorage.setItem(LAB.key,JSON.stringify(JS)); }catch(e){} };
+function combos(c,base){ let out=[Object.assign({},base)]; c.inputs.filter(x=>x.d).forEach(inp=>{ const n=[]; out.forEach(o=>inp.opts.forEach(v=>n.push(Object.assign({},o,{[inp.k]:v[0]})))); out=n; }); return out; }
+// 条件（d なし）は固定したまま、設計で決める項目（d:1）だけを総当たりして、最も安い安全な案を探す
+function best(c,s){ const base={}; c.inputs.filter(x=>!x.d).forEach(x=>base[x.k]=s[x.k]); const key=JSON.stringify(base); c._best=c._best||{}; if(key in c._best) return c._best[key]; let bc=null; combos(c,base).forEach(t=>{ const r=c.calc(t); if(r.checks.every(x=>x[3])&&(!bc||r.cost<bc.cost)) bc={s:t,cost:r.cost}; }); return c._best[key]=bc; }
+function stars(c){ return (JS[c.id]||{}).st||0; }
+function home(){
+  location.hash=''; const tot=CASES.reduce((a,c)=>a+stars(c),0);
+  $('#crumb').textContent=''; $('#prog').textContent=`★ ${tot} / ${CASES.length*3}`;
+  $('#main').innerHTML=`<h1>${LAB.h1}</h1><p class="lead">${LAB.lead}</p>
+   <div class="flow">${['依頼を読む','条件を決める','計算する','照査する（安全か）','図面を見る','コストを比べる'].map((x,i)=>`<div><b>${i+1}</b>${x}</div>`).join('<i>→</i>')}</div>
+   <div class="cgrid">${CASES.map((c,i)=>`<button class="case" data-c="${i}"><span class="no">案件 ${String(i+1).padStart(2,'0')}</span><span class="fg">${c.thumb||''}</span><b>${c.title}</b><span class="ds">${c.client}</span><span class="st">${'★'.repeat(stars(c))}${'☆'.repeat(3-stars(c))}</span></button>`).join('')}</div>
+   <div class="links">${LAB.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t} →</a>`).join('')}</div>
+   <p class="foot">${LAB.note}</p>`;
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>openCase(+b.dataset.c));
+  window.scrollTo(0,0);
+}
+function openCase(i){
+  const c=CASES[i]; location.hash='c'+(i+1); $('#crumb').textContent=c.title;
+  const s=Object.assign({},...c.inputs.map(x=>({[x.k]:x.def!=null?x.def:x.opts[0][0]})), (JS[c.id]||{}).s||{});
+  $('#main').innerHTML=`<div class="chead"><span class="no">案件 ${String(i+1).padStart(2,'0')}</span><h2>${c.title}</h2></div>
+   <section class="req"><h3><span>1</span>依頼</h3><p class="cl">依頼主：${c.client}</p><p>${c.story}</p><ul>${c.req.map(x=>`<li>${x}</li>`).join('')}</ul></section>
+   <div class="cols"><section class="inp"><h3><span>2</span>条件を決める</h3><p class="hint">「条件」は現場で決まっていること。いろいろ変えて試せます。「設計で決める」が、あなたが選ぶ部材や寸法です。</p>${c.inputs.map(x=>`<label class="ip"><b><span class="tg ${x.d?'d':'c'}">${x.d?'設計で決める':'条件'}</span>${x.label}</b>${x.help?`<small>${x.help}</small>`:''}<div class="opts" data-k="${x.k}">${x.opts.map(o=>`<button data-v="${o[0]}" class="${s[x.k]==o[0]?'on':''}">${o[1]}</button>`).join('')}</div></label>`).join('')}</section>
+   <section class="drw"><h3><span>5</span>図面</h3><div id="fig"></div></section></div>
+   <section class="calc"><h3><span>3</span>計算する</h3><div id="rows"></div></section>
+   <section class="chk"><h3><span>4</span>照査する（安全か）</h3><div id="checks"></div></section>
+   <section class="cost"><h3><span>6</span>コストを比べる</h3><div id="cost"></div></section>
+   <section class="why"><h3>この設計で使った勉強</h3><div class="ulinks">${c.links.map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t}</a>`).join('')}</div>${c.real?`<p class="real"><b>本物では：</b>${c.real}</p>`:''}</section>
+   <div class="nav">${i>0?`<button class="b" id="pv">← 前の案件</button>`:''}<button class="b" id="hm">案件の一覧</button>${i<CASES.length-1?`<button class="b main" id="nx">次の案件 →</button>`:''}</div>`;
+  const upd=()=>{ const r=c.calc(s); const ok=r.checks.every(x=>x[3]); const bc=best(c,s);
+    $('#fig').innerHTML=c.fig(s,r);
+    $('#rows').innerHTML=`<table>${r.rows.map(([l,f,v,u])=>`<tr><td>${l}</td><td class="f">${f}</td><td class="v">${v}</td><td>${u||''}</td></tr>`).join('')}</table>`;
+    $('#checks').innerHTML=r.checks.map(([l,v,lim,okk,txt])=>{ const ratio=Math.max(0,Math.min(1.6,v)); return `<div class="ck ${okk?'ok':'ng'}"><div class="ckl"><b>${l}</b><span>${txt}</span></div><div class="gauge"><i style="width:${ratio/1.6*100}%"></i><em style="left:${1/1.6*100}%"></em></div><div class="ckv">${okk?'OK':'NG'}</div></div>`; }).join('')+`<div class="verdict ${ok?'ok':'ng'}">${ok?'すべて OK。この設計で安全です。':'NG があります。条件を変えて、全部 OK にしよう。'}</div>`;
+    let st=0; if(ok){ st=2; if(bc&&r.cost<=bc.cost*1.0001) st=3; }
+    else st=1;
+    const prev=stars(c); JS[c.id]={s:Object.assign({},s),st:Math.max(prev,st)}; jsave(); $('#prog').textContent=`★ ${CASES.reduce((a,x)=>a+stars(x),0)} / ${CASES.length*3}`;
+    $('#cost').innerHTML=`<div class="cbox"><div><small>この設計</small><b>${r.costTxt}</b></div><div><small>評価</small><b class="stars">${'★'.repeat(st)}${'☆'.repeat(3-st)}</b></div></div><p>${ok?(st===3?'<b>最も安い安全な設計です。</b>実務でも、安全を満たす中でいちばん経済的な案を選びます。':'安全ですが、もっと安くできる組み合わせがあります（★3は最安の安全な設計）。'):(bc?'まずは全部の照査を OK にしよう（★2）。':'<b>この条件では、どの部材を選んでも安全になりません。</b>実務なら、構造の形式そのものを見直します。条件を変えてみよう。')}</p>${bc&&!(ok&&st===3)?`<details class="ans"><summary>降参：最も安い安全な案を見る</summary><p>${c.inputs.filter(x=>x.d).map(x=>`${x.label}：<b>${(x.opts.find(o=>o[0]==bc.s[x.k])||[])[1]}</b>`).join('　')}</p></details>`:''}`;
+  };
+  document.querySelectorAll('.opts').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=g.dataset.k; const v=b.dataset.v; s[k]=isNaN(+v)?v:+v; g.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); upd(); }));
+  upd();
+  $('#hm').onclick=home; const pv=$('#pv'); if(pv) pv.onclick=()=>openCase(i-1); const nx=$('#nx'); if(nx) nx.onclick=()=>openCase(i+1);
+  window.scrollTo(0,0);
+}
+$('#logo').onclick=()=>home();
+function route(){ const mt=location.hash.match(/^#c(\d+)$/); if(mt&&CASES[+mt[1]-1]) openCase(+mt[1]-1); else home(); }
+window.addEventListener('hashchange',()=>{ const mt=location.hash.match(/^#c(\d+)$/); if(mt){ const i=+mt[1]-1; if($('#crumb').textContent!==CASES[i].title) openCase(i);} });
+route();
+
+</script></body></html>
