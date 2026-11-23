@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>雨庭設計ラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 左に操作盤（広い画面では追従）、右に結果。上から 数字 → 断面図 → 時間グラフ → 関係グラフ → 計算過程 → 実例 */
+:root{
+  --paper:#F0F3EA; --card:#F8FAF3; --ink:#1F4632; --navy:#133A25; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --green:#3E8E5A; --leaf:#A8CF9C; --band:#2F6B45; --onband:#F3F8EF;
+  --soil:#C7A878; --soil2:#A88457; --native:#9B8060; --line:rgba(31,70,50,.20); --faint:rgba(62,142,90,.09);
+  --ok:#2E7D4F; --warn:#B7791F;
+  --f-body:'Zen Kaku Gothic New','Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif;
+  --f-num:'IBM Plex Mono',ui-monospace,'SFMono-Regular',monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0F1A14; --card:#16261C; --ink:#D5E7D8; --navy:#EEF7EF; --blue:#5AA8DE; --red:#EF5B55; --mid:#2D5683;
+  --green:#6CC08A; --leaf:#2E5A3B; --band:#1F4A30; --onband:#EAF5EC;
+  --soil:#7E6443; --soil2:#9A7A52; --native:#5D4A34; --line:rgba(213,231,216,.18); --faint:rgba(108,192,138,.08);
+  --ok:#5CC48A; --warn:#E0A84A; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0F1A14; --card:#16261C; --ink:#D5E7D8; --navy:#EEF7EF; --blue:#5AA8DE; --red:#EF5B55; --mid:#2D5683;
+  --green:#6CC08A; --leaf:#2E5A3B; --band:#1F4A30; --onband:#EAF5EC;
+  --soil:#7E6443; --soil2:#9A7A52; --native:#5D4A34; --line:rgba(213,231,216,.18); --faint:rgba(108,192,138,.08);
+  --ok:#5CC48A; --warn:#E0A84A; color-scheme:dark }
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.num,input[type=number]{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+a{color:var(--blue)}
+h1,h2,h3{color:var(--navy);text-wrap:balance;margin:0}
+.heroband{background:var(--band);color:var(--onband);margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));margin-top:calc(-1*env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);margin-bottom:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{max-width:1180px;margin:0 auto;padding-block:28px 22px;display:grid;gap:8px;position:relative}
+.heroband h1,.heroband p{color:var(--onband)}
+.heroband .presets button{border-color:var(--onband);color:var(--onband)}
+.heroband .presets button:hover,.heroband .presets button.on{background:var(--onband);color:var(--band)}
+.hero .kicker{font-size:12px;letter-spacing:.18em;color:var(--leaf);font-weight:700}
+.hero h1{font-size:clamp(30px,5vw,48px);font-weight:900;letter-spacing:.02em;line-height:1.15;
+  text-shadow:3px 2px 0 color-mix(in srgb,var(--green) 70%,#000 0%)}
+.hero h1 span{color:var(--leaf)}
+.hero p{margin:0;max-width:66ch}
+.dots{position:absolute;right:0;top:12px;width:170px;height:110px;opacity:.5;pointer-events:none;
+  background:radial-gradient(circle,var(--leaf) 30%,transparent 32%) 0 0/9px 9px;
+  -webkit-mask:linear-gradient(120deg,transparent 10%,#000 70%);mask:linear-gradient(120deg,transparent 10%,#000 70%)}
+@media (max-width:640px){.dots{display:none}}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.presets button{font:inherit;font-size:13px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+  padding:4px 12px;border-radius:999px;cursor:pointer}
+.presets button:hover,.presets button.on{background:var(--ink);color:var(--paper)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:330px minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:920px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.ctl{border-top:5px solid var(--green)!important;position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);max-height:calc(100vh - 20px);overflow:auto;
+  background:var(--card);border:1.5px solid var(--line);border-radius:6px;padding:14px 16px;display:grid;gap:14px}
+@media (max-width:920px){.ctl{position:static;max-height:none}}
+fieldset{border:0;margin:0;padding:0;display:grid;gap:10px}
+legend{font-weight:900;color:var(--navy);font-size:14px;padding:0;margin-bottom:4px;display:flex;gap:8px;align-items:center}
+legend i{display:inline-block;width:10px;height:10px;border-radius:50% 0;background:var(--c,var(--green))}
+.row{display:grid;gap:2px}
+.row label{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.row label b{font-family:var(--f-num);font-weight:600;color:var(--navy);white-space:nowrap}
+.row small{font-size:11.5px;opacity:.75;line-height:1.5}
+input[type=range],input[type=checkbox]{accent-color:var(--green)}
+input[type=range]{width:100%}
+select{font:inherit;font-size:13px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:4px 6px;width:100%}
+.seg{display:flex;gap:0;border:1.5px solid var(--ink);border-radius:5px;overflow:hidden}
+.seg button{flex:1;font:inherit;font-size:12.5px;border:0;background:transparent;color:var(--ink);padding:4px 6px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px}
+details summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--navy)}
+details[open] summary{margin-bottom:8px}
+
+.res{display:grid;gap:20px;min-width:0}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.panel{border-left:5px solid var(--green)!important}
+.panel h2{font-size:18px;font-weight:900;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel h2 small{font-size:12px;font-weight:500;opacity:.7}
+.panel>p.lead{margin:6px 0 10px;font-size:13.5px;max-width:70ch}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{border-top:3px solid var(--leaf);padding:8px 2px 2px;display:grid;gap:0;min-width:0}
+.kpi.bad{border-color:var(--red)} .kpi.good{border-color:var(--ok)}
+.kpi span{font-size:12px;opacity:.8}
+.kpi b{font-family:var(--f-num);font-size:clamp(20px,3vw,28px);color:var(--navy);line-height:1.25;font-weight:600}
+.kpi b em{font-style:normal;font-size:13px;margin-left:3px}
+.kpi small{font-size:11.5px;opacity:.75}
+.checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.pill{font-size:12.5px;border-radius:999px;padding:2px 10px;border:1.5px solid currentColor;display:inline-flex;gap:5px;align-items:center}
+.pill.ok{color:var(--ok)} .pill.ng{color:var(--red)} .pill.wn{color:var(--warn)}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#sec{display:block;min-width:600px;width:100%;height:auto}
+.timebar{display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.timebar button{font:inherit;font-size:13px;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:4px;padding:3px 12px;cursor:pointer;min-width:74px}
+.timebar input{flex:1;min-width:160px}
+.timebar .num{font-size:13px;min-width:11ch}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;margin:6px 0 2px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:14px;height:8px;border-radius:2px;display:inline-block}
+svg.chart{display:block;width:100%;overflow:visible}
+svg text{font-family:var(--f-body)}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.calc{display:grid;gap:10px;font-size:13.5px}
+.calc .st{display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px;align-items:start}
+.calc .st>i{font-style:normal;font-family:var(--f-num);font-weight:600;background:var(--green);color:var(--paper);border-radius:3px;text-align:center;font-size:12px;line-height:22px}
+.calc .eq{font-family:var(--f-num);font-size:12.5px;background:var(--faint);padding:4px 8px;border-radius:3px;overflow-x:auto;white-space:nowrap;margin:2px 0}
+.calc p{margin:0}
+.note{font-size:12.5px;border-left:3px solid var(--green);padding:2px 0 2px 10px;margin:8px 0 0}
+.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.cases{grid-template-columns:minmax(0,1fr)}}
+.cases div{min-width:0}
+.cases h3{font-size:14.5px;margin-bottom:2px}
+.cases p{margin:0;font-size:13px}
+.links{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13.5px;margin-top:10px}
+table.ref{border-collapse:collapse;font-size:12.5px;min-width:640px;width:100%}
+table.ref th,table.ref td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+table.ref th{color:var(--navy);font-weight:700;background:var(--faint)}
+table.ref td.n{font-family:var(--f-num);white-space:nowrap}
+.src{font-size:12px;display:grid;gap:2px;margin-top:8px}
+footer{max-width:1180px;margin:20px auto 0;font-size:12px;opacity:.75}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+
+<div class="heroband"><header class="hero">
+  <div class="dots" aria-hidden="true"></div>
+  <div class="kicker"><a href="../" style="color:inherit">← 土木の勉強ラボ</a>　・ 水理 × 地盤</div>
+  <h1>雨庭<span>設計</span>ラボ</h1>
+  <p>屋根や道路に降った雨を、くぼ地・植栽土・礫の層にいったん貯めて、ゆっくり地面にしみこませるのが雨庭（レインガーデン）です。降雨強度、集水面積、雨庭の広さ、石の大きさ、層の厚さを動かして、雨がどこに貯まり、いつあふれ、何時間で引くかを確かめます。</p>
+  <div class="presets" id="presets" aria-label="実例に近い条件">
+    <button data-p="house" class="on">戸建ての屋根</button>
+    <button data-p="street">交差点の植栽帯</button>
+    <button data-p="school">学校の駐車場</button>
+    <button data-p="guerrilla">ゲリラ豪雨 100 mm/h</button>
+    <button data-p="typhoon">台風の長雨</button>
+  </div>
+</header></div>
+
+<div class="wrap">
+<aside class="ctl" aria-label="設計条件">
+  <fieldset style="--c:var(--blue)">
+    <legend><i></i>雨</legend>
+    <div class="row"><label for="i">降雨強度（平均）<b><span id="i_v"></span> mm/h</b></label>
+      <input type="range" id="i" min="5" max="150" step="5"></div>
+    <div class="row"><label for="T">継続時間<b><span id="T_v"></span> 時間</b></label>
+      <select id="T"><option value="0.5">0.5</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="6">6</option><option value="12">12</option><option value="24">24</option></select></div>
+    <div class="row"><label>降り方</label>
+      <div class="seg" id="shape"><button data-v="u" class="on">一様に降る</button><button data-v="c">中央が強い</button></div>
+      <small>総雨量 <span class="num" id="R_v"></span> mm。中央が強い場合、ピークは平均の2倍。</small></div>
+  </fieldset>
+  <fieldset style="--c:var(--green)">
+    <legend><i></i>領域の大きさ</legend>
+    <div class="row"><label for="Ac"><span>集水面積 A<sub>c</sub></span><b><span id="Ac_v"></span> m²</b></label>
+      <input type="range" id="Ac" min="0" max="1000" step="1"></div>
+    <div class="row"><label for="surf">集水面の種類</label>
+      <select id="surf"><option value="roof">屋根（流出係数 0.90）</option><option value="asph">アスファルト舗装（0.85）</option><option value="block">ブロック舗装（0.60）</option><option value="gravel">砂利敷き（0.35）</option><option value="lawn">芝生（0.20）</option></select></div>
+    <div class="row"><label for="Ag"><span>雨庭面積 A<sub>g</sub></span><b><span id="Ag_v"></span> m²</b></label>
+      <input type="range" id="Ag" min="0" max="1000" step="1">
+      <small>集水面積に対して <span class="num" id="ratio_v"></span> ％</small></div>
+  </fieldset>
+  <fieldset style="--c:var(--soil2)">
+    <legend><i></i>層の厚さ</legend>
+    <div class="row"><label for="hp">湛水深（くぼみの深さ）<b><span id="hp_v"></span> cm</b></label>
+      <input type="range" id="hp" min="0" max="30" step="1"></div>
+    <div class="row"><label for="Dm">表層の礫（マルチ）<b><span id="Dm_v"></span> cm</b></label>
+      <input type="range" id="Dm" min="0" max="15" step="1">
+      <small>植栽土の上に敷く砂利。流れ込みで土が削れるのを防ぎます。ただし砂利のすき間にも泥はたまるので、詰まる場所が土の表面から砂利に移るだけです。砂利は取り出して洗えるのが利点です。</small></div>
+    <div class="row"><label for="Ds">植栽土層<b><span id="Ds_v"></span> cm</b></label>
+      <input type="range" id="Ds" min="0" max="60" step="5"></div>
+    <div class="row"><label for="Dg">礫層<b><span id="Dg_v"></span> cm</b></label>
+      <input type="range" id="Dg" min="0" max="150" step="5"></div>
+  </fieldset>
+  <fieldset style="--c:var(--mid)">
+    <legend><i></i>石（礫）</legend>
+    <div class="row"><label for="d">代表粒径 d<b><span id="d_v"></span> mm</b></label>
+      <input type="range" id="d" min="0" max="1000" step="1">
+      <small>種類を選ぶと規格の中央値が入ります。動かすと粒径だけ変わります。</small></div>
+    <div class="row"><label for="stone">石の種類（規格）</label>
+      <select id="stone"></select>
+      <small id="stone_info"></small></div>
+    <label class="chk"><input type="checkbox" id="sheet" checked> 土と礫の間に透水シートを敷く</label>
+  </fieldset>
+  <fieldset style="--c:var(--native)">
+    <legend><i></i>下の地盤</legend>
+    <label class="chk"><input type="checkbox" id="aged"> 数年後を見る（泥による目詰まり）</label>
+    <label class="chk"><input type="checkbox" id="pre" checked> 流入口に沈砂部（泥をためる前処理）を設ける</label>
+    <div class="row"><label for="nat">原地盤の浸透能 f</label>
+      <select id="nat"><option value="60">砂質土（60 mm/h）</option><option value="20">ローム（20 mm/h）</option><option value="5">シルト質土（5 mm/h）</option><option value="1">粘性土（1 mm/h）</option></select>
+      <small>現地では浸透試験で測ります。ここの値は学習用の代表値です。</small></div>
+  </fieldset>
+  <details>
+    <summary>植栽土の性質（詳細）</summary>
+    <div class="row"><label for="ks"><span>植栽土の透水能 k<sub>s</sub></span><b><span id="ks_v"></span> mm/h</b></label>
+      <input type="range" id="ks" min="10" max="300" step="10"></div>
+    <div class="row"><label for="ns"><span>植栽土の有効空隙率 n<sub>s</sub></span><b><span id="ns_v"></span></b></label>
+      <input type="range" id="ns" min="0.05" max="0.30" step="0.01">
+      <small>重力で抜ける水が入る隙間の割合。土が抱えたまま離さない水は含めない。</small></div>
+  </details>
+</aside>
+
+<main class="res">
+  <section class="panel" aria-labelledby="h-sum">
+    <h2 id="h-sum">設計の結果 <small id="sum_sub"></small></h2>
+    <div class="kpis" id="kpis"></div>
+    <div class="checks" id="checks"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-sec">
+    <h2 id="h-sec">断面で見る <small>時刻を動かすと水の位置が変わります</small></h2>
+    <div class="scroll"><svg id="sec" viewBox="0 0 820 390" role="img" aria-label="雨庭の断面図"></svg></div>
+    <div class="timebar">
+      <button id="play" type="button">▶ 再生</button>
+      <input type="range" id="tsl" min="0" max="1000" value="300" aria-label="時刻">
+      <span class="num" id="tnow"></span>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-ts">
+    <h2 id="h-ts">時間とともに <small>雨が降り始めてからの変化</small></h2>
+    <div class="two">
+      <div>
+        <h3 style="font-size:14px">流れる量（m³/h）</h3>
+        <div class="legend"><span><i style="background:var(--mid)"></i>雨庭への流入</span><span><i style="background:var(--navy)"></i>原地盤への浸透</span><span><i style="background:var(--red)"></i>越流（あふれ）</span></div>
+        <svg class="chart" id="c1"></svg>
+      </div>
+      <div>
+        <h3 style="font-size:14px">貯まっている量（m³）</h3>
+        <div class="legend"><span><i style="background:var(--blue)"></i>湛水＋表層の礫</span><span><i style="background:var(--soil)"></i>植栽土</span><span><i style="background:var(--mid)"></i>礫層</span><span><i style="border-top:2px dashed var(--red);height:0"></i>貯留容量</span></div>
+        <svg class="chart" id="c2"></svg>
+      </div>
+    </div>
+    <p class="note" id="ts_note"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-sw">
+    <h2 id="h-sw">関係を見る <small>ひとつの量だけを動かし、ほかは今の条件のまま</small></h2>
+    <div class="row" style="max-width:340px;margin:8px 0 4px"><label for="swk">横軸にする量</label>
+      <select id="swk"><option value="Ag">雨庭面積</option><option value="i">降雨強度</option><option value="hp">湛水深</option><option value="Dg">礫層の厚さ</option><option value="Ds">植栽土層の厚さ</option><option value="Dm">表層の礫の厚さ</option><option value="d">礫の粒径</option><option value="f">原地盤の浸透能</option></select></div>
+    <div class="legend"><span><i style="background:var(--blue)"></i>捕捉率（％、左目盛）</span><span><i style="border-top:2px dashed var(--red);height:0"></i>湛水が引くまでの時間（h、右目盛）</span><span><i style="background:var(--navy);width:2px;height:12px"></i>今の値</span></div>
+    <svg class="chart" id="c3"></svg>
+    <p class="note" id="sw_note"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-calc">
+    <h2 id="h-calc">計算の過程 <small>今の条件の数字を入れて</small></h2>
+    <div class="calc" id="calc"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-yuki">
+    <h2 id="h-yuki">有機土木の木杭 <small>焼き杭と縦穴で、土の中に水と空気の通り道をつくる</small></h2>
+    <p class="lead">コンクリートや防腐剤を使わず、地域の木・枝・炭・石・藁で土地を整える方法です。造園家の高田宏臣さん（NPO法人地球守）らが各地で実践しています。雨庭の底や周りに組み合わせると、締め固まった地盤に水の入り口をつくる考え方になります。</p>
+    <div class="scroll"><svg viewBox="0 0 820 330" style="display:block;min-width:600px;width:100%;height:auto" role="img" aria-label="焼き杭と縦穴の断面図">
+      <style>
+        .yk-ground{fill:var(--native);fill-opacity:.35}
+        .yk-top{fill:var(--leaf)}
+        .yk-line{stroke:var(--ink);stroke-width:1.4;fill:none}
+        .yk-stake{fill:#6B4A2B}
+        .yk-char{fill:#1E1A17}
+        .yk-hole{fill:var(--paper);stroke:var(--ink);stroke-width:1.2}
+        .yk-coal{fill:#2A2522}
+        .yk-straw{stroke:#C9A646;stroke-width:2;fill:none}
+        .yk-leafc{fill:var(--green)}
+        .yk-stone{fill:var(--mid);stroke:var(--ink);stroke-width:.7;stroke-opacity:.6}
+        .yk-water{stroke:var(--blue);stroke-width:2.4;fill:none}
+        .yk-air{stroke:var(--red);stroke-width:1.8;fill:none;stroke-dasharray:4 4}
+        .yk-t{fill:var(--ink);font-size:12.5px}
+        .yk-b{fill:var(--navy);font-size:13.5px;font-weight:700}
+        .yk-root{stroke:var(--soil2);stroke-width:1.6;fill:none}
+      </style>
+      <defs><marker id="yka" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--blue)"/></marker>
+      <marker id="ykr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--red)"/></marker></defs>
+      <rect x="0" y="70" width="820" height="260" class="yk-ground"/>
+      <rect x="0" y="62" width="820" height="10" class="yk-top"/>
+      <path d="M0 70 H820" class="yk-line"/>
+      <!-- 焼き杭 -->
+      <g><rect x="92" y="30" width="22" height="210" class="yk-stake"/><rect x="92" y="60" width="22" height="180" class="yk-char" fill-opacity=".85"/><path d="M92 240 L103 262 L114 240 Z" class="yk-char"/><ellipse cx="103" cy="30" rx="11" ry="4" class="yk-stake"/></g>
+      <g><rect x="246" y="40" width="20" height="180" class="yk-stake"/><rect x="246" y="64" width="20" height="156" class="yk-char" fill-opacity=".85"/><path d="M246 220 L256 240 L266 220 Z" class="yk-char"/><ellipse cx="256" cy="40" rx="10" ry="4" class="yk-stake"/></g>
+      <text x="40" y="22" class="yk-b">焼き杭（炭化丸太）</text>
+      <text x="300" y="210" class="yk-t">焼き杭：表面を焼いて炭化させる。防腐剤は使わない。</text>
+      <!-- 縦穴 -->
+      <path d="M150 70 L156 250 L196 250 L202 70 Z" class="yk-hole"/>
+      <g>
+        <circle cx="165" cy="90" r="5" class="yk-coal"/><circle cx="184" cy="98" r="4" class="yk-coal"/><circle cx="172" cy="120" r="6" class="yk-stone"/><circle cx="188" cy="128" r="5" class="yk-coal"/>
+        <path d="M160 140 l30 10 M162 150 l26 -8 M166 165 l24 6" class="yk-straw"/>
+        <circle cx="170" cy="185" r="7" class="yk-stone"/><circle cx="186" cy="192" r="4" class="yk-coal"/><circle cx="166" cy="208" r="4" class="yk-coal"/><circle cx="182" cy="220" r="6" class="yk-stone"/><circle cx="170" cy="238" r="4" class="yk-coal"/>
+        <ellipse cx="176" cy="78" rx="18" ry="5" class="yk-leafc"/>
+      </g>
+            <text x="300" y="98" class="yk-b">縦穴</text>
+      <text x="300" y="116" class="yk-t">炭・燻炭・藁・落ち葉・枝・ガラ石を詰める</text>
+      <path d="M296 112 L206 118" class="yk-line" stroke-dasharray="3 3"/>
+      <!-- 水と空気 -->
+      <path d="M176 40 V60" class="yk-water" marker-end="url(#yka)"/>
+      <path d="M176 255 C176 280 150 296 120 310" class="yk-water" marker-end="url(#yka)"/>
+      <path d="M176 255 C182 282 214 296 250 312" class="yk-water" marker-end="url(#yka)"/>
+      <path d="M190 240 C200 200 196 140 188 66" class="yk-air" marker-end="url(#ykr)"/>
+      <text x="300" y="160" class="yk-t" style="fill:var(--blue)">━ 水：縦穴から深くしみこむ</text>
+      <text x="300" y="180" class="yk-t" style="fill:var(--red)">┅ 空気：土の中の空気が入れ替わる</text>
+      <!-- 植穴の細穴 -->
+      <g transform="translate(560,0)">
+        <path d="M40 70 q-10 -40 -30 -55 M40 70 q6 -45 0 -62 M40 70 q14 -36 34 -48" style="stroke:var(--green);stroke-width:3;fill:none"/>
+        <path d="M0 70 Q40 110 80 70" class="yk-hole"/>
+        <path d="M40 90 q-14 20 -26 40 M40 90 q4 26 0 50 M40 90 q16 20 24 42" class="yk-root"/>
+        <g class="yk-coal"><rect x="10" y="96" width="5" height="70"/><rect x="28" y="100" width="5" height="80"/><rect x="48" y="100" width="5" height="76"/><rect x="66" y="94" width="5" height="66"/></g>
+        <text x="-10" y="210" class="yk-b">植穴の下の細穴</text>
+        <text x="-10" y="228" class="yk-t">直径2〜3 cmの穴を多数あけ、</text>
+        <text x="-10" y="244" class="yk-t">燻炭や藁を詰める。根が伸びる道になる。</text>
+      </g>
+      <text x="300" y="250" class="yk-t">杭は地下水位より下の部分は腐りにくい</text>
+      <text x="300" y="266" class="yk-t">（酸素が少なく、腐朽菌やシロアリが生きられない）</text>
+    </svg></div>
+    <div class="calc" style="margin-top:12px">
+      <div class="st"><i>1</i><div><p><b>土地を読む</b>　水がどこから来てどこへ抜けるか、風の通り道、草の倒れ方、水たまりの位置を見て、詰まっている場所を探します。</p></div></div>
+      <div class="st"><i>2</i><div><p><b>溝と縦穴を掘る</b>　水の集まる線に沿って横溝を、要所に縦穴を掘ります。深さや間隔は現場の土の硬さで決め、決まった寸法はありません。</p></div></div>
+      <div class="st"><i>3</i><div><p><b>焼き杭を打つ</b>　表面を焼いて炭化させた丸太を、溝の中に一定の間隔で打ち込みます。炭化した表面は多孔質で、水と空気が動きやすく、腐りにくくなります。</p></div></div>
+      <div class="st"><i>4</i><div><p><b>詰める</b>　溝や穴に炭、燻炭、落ち葉、藁、枝、ガラ石を入れ、すき間の多い通り道として残します。表面は落ち葉や枝で覆って、雨で泥が流れ込むのを防ぎます。</p></div></div>
+      <div class="st"><i>5</i><div><p><b>順序に気をつける</b>　土手では、崩れやすい向きの杭は先に打たず、溝を充填して落ち着かせてから打ち込みます（小田原での講座記録）。</p></div></div>
+    </div>
+    <p class="note">この方法は講座や施工の記録で伝えられている実践で、浸透量を数値で示した設計基準はまだありません。そのためこのラボの計算には入れていません。雨庭と組み合わせるなら、原地盤が締まっていて浸透能が低いとき（シルト・粘性土を選んだとき）に、底に縦穴を設ける改善策として考えるのが自然です。</p>
+    <div class="src">
+      <a href="https://greenz.jp/2025/03/21/takada-hiroomi/" target="_blank" rel="noopener">greenz.jp：『土中環境』著者・高田宏臣さんに学ぶ</a>
+      <a href="https://mizunosekkei.jp/doboku21102/" target="_blank" rel="noopener">地球守 環境改善講座（小田原）土手修復の記録</a>
+      <a href="https://moto.ecodesign-labo.jp/sustainable_garden_daichinosaisei5/" target="_blank" rel="noopener">大地の再生記録「植栽・焼杭打ち」</a>
+      <a href="https://www.zeiken.co.jp/news/10938488.php" target="_blank" rel="noopener">税研：高田宏臣さんに聞く これからの「環境土木」</a>
+      <a href="https://kanazawa-u.repo.nii.ac.jp/record/62131/files/Full-N-1924052003-Murata-Takumi.pdf" target="_blank" rel="noopener">金沢大学 博士論文（地下水位以深の木杭の耐久性）</a>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-ref">
+    <h2 id="h-ref">石の資料 <small>大きさ・形・空隙率</small></h2>
+    <p class="lead">雨水浸透施設の充填材には、細かい粒を洗い落とした単粒度砕石がよく使われます。JIS A 5001（道路用砕石）の呼び名と、自治体の指針で使われている空隙率をまとめました。</p>
+    <div class="scroll"><table class="ref">
+      <thead><tr><th>材料</th><th>粒径</th><th>形</th><th>空隙率</th><th>出典・備考</th></tr></thead>
+      <tbody>
+        <tr><td>単粒度砕石 S-40（3号）</td><td class="n">40〜30 mm</td><td>角ばった</td><td class="n">40 ％</td><td>埼玉県は3〜5号を一律40％。栃木県は3号・4号を標準とする。愛知県・東京都は透水シート併用などの条件付き</td></tr>
+        <tr><td>単粒度砕石 S-30（4号）</td><td class="n">30〜20 mm</td><td>角ばった</td><td class="n">40 ％</td><td>函館市の浸透施設計算例で40％</td></tr>
+        <tr><td>単粒度砕石 S-20（5号）</td><td class="n">20〜13 mm</td><td>角ばった</td><td class="n">40 ％</td><td>埼玉県（3〜5号一律）。世田谷区の材料表に S-40・S-30・S-20</td></tr>
+        <tr><td>単粒度砕石 S-13（6号）</td><td class="n">13〜5 mm</td><td>角ばった</td><td class="n">（約40 ％）</td><td>個別の値は見つからず、3〜5号と同程度と仮定</td></tr>
+        <tr><td>砕石一般（安全側）</td><td class="n">—</td><td>角ばった</td><td class="n">30〜40 ％</td><td>栃木県は0.3〜0.4を標準とし、原則として中間値0.35</td></tr>
+        <tr><td>川砂利・玉砂利</td><td class="n">—</td><td>丸い</td><td class="n">約35 ％</td><td>丸い粒は詰まりやすい。凹凸係数は砕石0.689、円礫0.764（中央大学の研究）。数値は一般値</td></tr>
+        <tr><td>砕石の粒形の目安</td><td class="n">—</td><td>—</td><td class="n">実積率 56 ％以上</td><td>東京都の仕様で粒形判定実積率56％以上。空隙率 ≈ 100 − 実積率</td></tr>
+        <tr><td>海外の設計値（参考）</td><td class="n">—</td><td>—</td><td class="n">石 0.40／砂 0.30／土 0.20</td><td>フィラデルフィア市の雨水管理マニュアル（バイオリテンション）。石と土の間に透水シートか豆砂利層を求める</td></tr>
+      </tbody></table></div>
+    <div class="src">
+      <a href="https://www.pref.saitama.lg.jp/documents/4610/523566.pdf" target="_blank" rel="noopener">埼玉県 雨水流出抑制施設の技術資料（充填材の空隙率）</a>
+      <a href="https://www.pref.tochigi.lg.jp/h08/town/machidukuri/kaihatsukyoka/documents/20250430104139.pdf" target="_blank" rel="noopener">栃木県 浸透施設の計算例</a>
+      <a href="https://joruri-cms.city.hakodate.hokkaido.jp/docs/2023092000039/file_contents/2023092000039_hk_docs_2023092000039_files_04beshi_shintoshisetsukeisan.pdf" target="_blank" rel="noopener">函館市 浸透施設設計計算</a>
+      <a href="https://www.city.setagaya.lg.jp/documents/4630/29779_16.pdf" target="_blank" rel="noopener">世田谷区 浸透施設の材料表</a>
+      <a href="https://www-pref-aichi-jp.cache.yimg.jp/uploaded/attachment/585263.pdf" target="_blank" rel="noopener">愛知県 雨水浸透施設の資料</a>
+      <a href="https://www.kensetsu.metro.tokyo.lg.jp/content/000063093.pdf" target="_blank" rel="noopener">東京都建設局 材料仕様（粒形判定実積率）</a>
+      <a href="https://chuo-u.repo.nii.ac.jp/record/14370/files/nenpou49_045.pdf" target="_blank" rel="noopener">中央大学 粒子形状の研究（凹凸係数）</a>
+      <a href="https://water.phila.gov/development/stormwater-plan-review/manual/appendices/f-design-guidance-checklists/f-7-bioinfiltration-bioretention/" target="_blank" rel="noopener">Philadelphia Water Department: Bioinfiltration/Bioretention</a>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-case">
+    <h2 id="h-case">どこで使われているか</h2>
+    <div class="cases" style="margin-top:10px">
+      <div><h3>京都の雨庭</h3><p>京都市は交差点の植栽帯などを少し窪ませ、石や植物で庭として整えた雨庭を整備しています。2017年の四条堀川交差点が最初で、道路の雨を受けながら町並みの景観にもなっています。</p></div>
+      <div><h3>下水道の負担を減らす</h3><p>多くの都市の下水道は1時間50mm程度の雨を目安に整備されています。それを超える雨では下水があふれて内水氾濫が起きます。屋根や駐車場の雨を敷地で受け止めれば、下水に流れ込む量とピークを減らせます。</p></div>
+      <div><h3>海外のグリーンストリート</h3><p>アメリカのポートランドなどでは、歩道脇の植栽帯（バイオスウェール）に道路の雨を流し込む整備が街路単位で進んでいます。地下水の涵養、汚れの除去、夏の暑さの緩和も目的です。</p></div>
+    </div>
+    <div class="links">
+      <a href="../suiri-riron/">水理 理論ラボ（ダルシー則・礫間の流れ）</a>
+      <a href="../jiban-riron/">地盤 理論ラボ（透水・フィルター）</a>
+      <a href="../suiri-jissen/">水理 実践ラボ</a>
+      <a href="../">勉強ラボのトップへ</a>
+    </div>
+  </section>
+</main>
+</div>
+<footer>数値（流出係数、浸透能、空隙率、透水能、粒径の関係式など）は学習用の代表値です。実際の設計では現地の浸透試験、自治体の雨水浸透施設の技術指針、地下水位や地盤の調査結果に基づいてください。計算は1分刻みの水収支（各層の貯留と、透水能で決まる流れの上限）による簡易モデルです。</footer>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const SURF={roof:[0.90,'屋根'],asph:[0.85,'アスファルト舗装'],block:[0.60,'ブロック舗装'],gravel:[0.35,'砂利敷き'],lawn:[0.20,'芝生']};
+const NAT={60:'砂質土',20:'ローム',5:'シルト質土',1:'粘性土'};
+const STONES={
+  s40:{n:'単粒度砕石 S-40（3号）',lo:30,hi:40,d:35,por:0.40,psi:0.69,shape:'角ばった',mix:false,src:'空隙率40％（埼玉県 単粒度砕石3〜5号）'},
+  s30:{n:'単粒度砕石 S-30（4号）',lo:20,hi:30,d:25,por:0.40,psi:0.69,shape:'角ばった',mix:false,src:'空隙率40％（函館市の計算例・埼玉県）'},
+  s20:{n:'単粒度砕石 S-20（5号）',lo:13,hi:20,d:16.5,por:0.40,psi:0.69,shape:'角ばった',mix:false,src:'空隙率40％（埼玉県 単粒度砕石3〜5号）'},
+  s13:{n:'単粒度砕石 S-13（6号）',lo:5,hi:13,d:9,por:0.40,psi:0.69,shape:'角ばった',mix:false,src:'空隙率は3〜5号と同程度と仮定（学習用）'},
+  safe:{n:'S-30（安全側 空隙率35％）',lo:20,hi:30,d:25,por:0.35,psi:0.69,shape:'角ばった',mix:false,src:'空隙率0.3〜0.4の中間値（栃木県）'},
+  round:{n:'川砂利・玉砂利（丸い）',lo:20,hi:40,d:30,por:0.36,psi:0.76,shape:'丸い',mix:false,src:'丸い粒は詰まりやすく空隙が減る。球のランダム密充填 約0.36（一般値）'},
+  mix:{n:'粒度のそろわない砕石（細粒分まじり）',lo:0,hi:40,d:20,por:0.28,psi:0.69,shape:'角ばった',mix:true,src:'小さな粒が隙間を埋める（一般値）。貯留材には向かない'}
+};
+const D85S=2.0; // 植栽土の D85 (mm) 学習用
+const NU=1.0e-6; // 動粘性係数 m2/s
+const LOGS={Ac:[10,3000],Ag:[1,500],d:[1,80]};
+const PRESETS={
+  house:{i:50,T:1,shape:"u",Ac:80,surf:"roof",Ag:14,hp:15,Dm:5,Ds:30,Dg:40,d:25,stone:'s30',sheet:true,nat:20,ks:100,ns:0.15,aged:false},
+  street:{i:50,T:1,shape:'u',Ac:300,surf:'asph',Ag:15,hp:10,Dm:5,Ds:30,Dg:60,d:25,stone:'s30',sheet:true,nat:5,ks:100,ns:0.15,aged:false},
+  school:{i:50,T:1,shape:'c',Ac:1200,surf:'asph',Ag:60,hp:20,Dm:5,Ds:30,Dg:80,d:35,stone:'s40',sheet:true,nat:20,ks:100,ns:0.15,aged:false},
+  guerrilla:{i:100,T:1,shape:'c',Ac:80,surf:'roof',Ag:6,hp:15,Dm:5,Ds:30,Dg:40,d:25,stone:'s30',sheet:true,nat:20,ks:100,ns:0.15,aged:false},
+  typhoon:{i:15,T:12,shape:'u',Ac:80,surf:'roof',Ag:6,hp:15,Dm:5,Ds:30,Dg:40,d:25,stone:'s30',sheet:true,nat:20,ks:100,ns:0.15,aged:false}
+};
+function nice(x){ if(x<10) return Math.round(x*10)/10; if(x<100) return Math.round(x); if(x<1000) return Math.round(x/5)*5; return Math.round(x/10)*10; }
+function fromLog(id,v){const [lo,hi]=LOGS[id];return nice(lo*Math.pow(hi/lo,v/1000));}
+function toLog(id,x){const [lo,hi]=LOGS[id];return Math.round(1000*Math.log(x/lo)/Math.log(hi/lo));}
+function segVal(id){return $(id).querySelector('.on').dataset.v;}
+function setSeg(id,v){[...$(id).children].forEach(b=>b.classList.toggle('on',b.dataset.v===v));}
+function f1(x,d=1){ if(!isFinite(x)) return '—'; return x.toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fs(x){ // 有効数字ほどほど
+  if(!isFinite(x)) return '—'; const a=Math.abs(x);
+  if(a>=1000) return Math.round(x).toLocaleString('ja-JP'); if(a>=100) return f1(x,0); if(a>=10) return f1(x,1); if(a>=1) return f1(x,2); if(a===0) return '0'; return f1(x,3);
+}
+
+function read(){
+  const p={};
+  p.i=+$('i').value; p.T=+$('T').value; p.shape=segVal('shape');
+  p.Ac=fromLog('Ac',+$('Ac').value); p.surf=$('surf').value; p.C=SURF[p.surf][0];
+  p.Ag=fromLog('Ag',+$('Ag').value);
+  p.hp=+$('hp').value; p.Dm=+$('Dm').value; p.aged=$('aged').checked; p.pre=$('pre').checked; p.clog=!p.aged?1:Math.min(0.9,0.4+(p.Dm>0?0.1:0)+(p.pre?0.3:0)); p.nm=(p.aged&&!p.pre)?0.20:0.38; p.Ds=+$('Ds').value; p.Dg=+$('Dg').value;
+  p.d=fromLog('d',+$('d').value); p.stone=$('stone').value; p.st=STONES[p.stone]; p.sheet=$('sheet').checked;
+  p.f=+$('nat').value; p.ks=+$('ks').value; p.ns=+$('ns').value;
+  return p;
+}
+function apply(pr){
+  $('i').value=pr.i; $('T').value=pr.T; setSeg('shape',pr.shape);
+  $('Ac').value=toLog('Ac',pr.Ac); $('surf').value=pr.surf; $('Ag').value=toLog('Ag',pr.Ag);
+  $('hp').value=pr.hp; $('Dm').value=pr.Dm; $('aged').checked=!!pr.aged; $('pre').checked=pr.pre!==false; $('Ds').value=pr.Ds; $('Dg').value=pr.Dg;
+  $('stone').value=pr.stone; $('d').value=toLog('d',pr.d); $('sheet').checked=pr.sheet;
+  $('nat').value=pr.nat; $('ks').value=pr.ks; $('ns').value=pr.ns;
+}
+
+/* 礫の性質: 空隙率・保水・有効空隙率・透水係数(Kozeny–Carman) */
+function gravel(p){
+  const st=p.st, n=st.por;
+  const thr=Math.min(0.2,0.06/Math.sqrt(p.d));
+  const ne=Math.max(0.02,n-thr);
+  const de=p.d/1000*st.psi*(st.mix?0.45:1); // 形状係数で有効径を補正
+  const k=(9.81/NU)*de*de*Math.pow(n,3)/(180*Math.pow(1-n,2)); // m/s
+  const D15=st.mix?p.d*0.25:p.d*(st.lo/st.d);
+  return {n,thr,ne,k,kmmh:k*3.6e6,D15,de};
+}
+function rain(p,t){ if(t>=p.T) return 0; if(p.shape==='u') return p.i; const x=t/p.T; return 2*p.i*(1-Math.abs(2*x-1)); }
+
+/* 1分刻みの水収支 */
+function sim(p,rec){
+  const g=gravel(p); const dt=1/60, H=p.T+72, N=Math.round(H/dt);
+  const A=p.Ag, capP=A*p.hp/100;
+  const L=[]; if(p.Dm>0) L.push({name:'m',cap:A*p.Dm/100*p.nm,k:10,kin:10}); if(p.Ds>0) L.push({name:'s',cap:A*p.Ds/100*p.ns,k:p.ks/1000,kin:p.ks*p.clog/1000}); if(p.Dg>0) L.push({name:'g',cap:A*p.Dg/100*g.ne,k:g.kmmh/1000,kin:g.kmmh/1000});
+  const f=p.f/1000; const S=L.map(()=>0); let Sp=0;
+  let Vin=0,Vover=0,Vout=0,maxP=0,tP=0,tW=0,maxQin=0,maxFluxG=0,maxOver=0,tOver=-1;
+  const gi=L.findIndex(l=>l.name==='g');
+  const R=rec?{t:[],qin:[],qout:[],qov:[],Sp:[],Ss:[],Sg:[],r:[]}:null;
+  for(let k=0;k<N;k++){
+    const t=k*dt; const r=rain(p,t+dt/2); const qin=(p.C*p.Ac+A)*r/1000;
+    Sp+=qin*dt; Vin+=qin*dt; if(qin>maxQin) maxQin=qin;
+    let out;
+    if(L.length===0){ out=Math.min(Sp,f*A*dt); Sp-=out; }
+    else{
+      const b=L.length-1; out=Math.min(S[b],Math.min(f,L[b].k)*A*dt); S[b]-=out;
+      for(let j=b;j>=1;j--){ const m=Math.min(S[j-1],Math.min(L[j-1].k,L[j].kin)*A*dt,L[j].cap-S[j]); S[j-1]-=m; S[j]+=m; if(j===gi){const fl=m/dt/A/3600; if(fl>maxFluxG) maxFluxG=fl;} }
+      const m0=Math.min(Sp,L[0].kin*A*dt,L[0].cap-S[0]); Sp-=m0; S[0]+=m0; if(gi===0){const fl=m0/dt/A/3600; if(fl>maxFluxG) maxFluxG=fl;}
+    }
+    Vout+=out;
+    let ov=0; if(Sp>capP){ ov=Sp-capP; Sp=capP; Vover+=ov; if(tOver<0) tOver=t; }
+    if(ov/dt>maxOver) maxOver=ov/dt;
+    if(Sp>maxP) maxP=Sp;
+    const tot=Sp+S.reduce((a,b)=>a+b,0);
+    if(Sp>1e-6) tP=t+dt;
+    if(tot>1e-5) tW=t+dt;
+    if(rec && k%2===0){
+      R.t.push(t); R.qin.push(qin); R.qout.push(out/dt); R.qov.push(ov/dt); R.Sp.push(Sp); R.r.push(r);
+      {const si=L.findIndex(l=>l.name==='s'),mi=L.findIndex(l=>l.name==='m'); R.Ss.push(si>=0?S[si]:0); if(!R.Sm)R.Sm=[]; R.Sm.push(mi>=0?S[mi]:0);} R.Sg.push(gi>=0?S[gi]:0);
+    }
+    if(!rec && t>p.T && tot<1e-7) break;
+  }
+  const cap=capP+L.reduce((a,l)=>a+l.cap,0);
+  return {Vin,Vover,Vout,capP,cap,caps:L,maxP,maxPcm:A>0?maxP/A*100:0,
+    pondDrain:Math.max(0,tP-p.T),pondEnd:tP,allDrain:Math.max(0,tW-p.T),wetEnd:tW,H,
+    stillPond:tP>=H-1e-9,stillWet:tW>=H-1e-9,capture:Vin>0?1-Vover/Vin:1,maxQin,maxFluxG,maxOver,tOver,g,R};
+}
+function reqArea(p){
+  const ok=a=>{const r=sim({...p,Ag:a},false);return r.Vover<=0.001*r.Vin;};
+  let lo=0.1,hi=Math.max(p.Ac*2,50);
+  if(!ok(hi)) return null; if(ok(lo)) return lo;
+  for(let k=0;k<28;k++){const m=Math.sqrt(lo*hi); if(ok(m)) hi=m; else lo=m;}
+  return hi;
+}
+
+/* ---------- 描画: 数字 ---------- */
+function hrs(h,still){ if(still) return '72 h 超'; if(h<1) return Math.round(h*60)+' 分'; return f1(h,1)+' 時間'; }
+function renderSummary(p,s,req){
+  const cap=s.capture*100;
+  const items=[
+    ['捕捉率',f1(cap,1),'％',`流入 ${fs(s.Vin)} m³ のうち雨庭で受けた割合`,cap>=99.9?'good':(cap<90?'bad':'')],
+    ['越流量',fs(s.Vover),'m³',s.Vover>0?`雨の開始から ${hrs(s.tOver)} であふれ始める`:'あふれない',s.Vover>0.001?'bad':'good'],
+    ['最大湛水深',f1(s.maxPcm,1),'cm',`くぼみの深さ ${p.hp} cm に対して`,''],
+    ['湛水が引くまで',hrs(s.pondDrain,s.stillPond).replace(/ (時間|分)$/,''),/分$/.test(hrs(s.pondDrain,s.stillPond))?'分':(s.stillPond?'':'時間'),'雨がやんでから地表の水が消えるまで',(s.stillPond||s.pondDrain>24)?'bad':'good'],
+    ['貯留容量',fs(s.cap),'m³',`湛水 ${fs(s.capP)}・表層礫 ${fs(s.caps.find(l=>l.name==='m')?.cap||0)}・土 ${fs(s.caps.find(l=>l.name==='s')?.cap||0)}・礫 ${fs(s.caps.find(l=>l.name==='g')?.cap||0)}`,''],
+    ['越流ゼロに必要な面積',req?fs(req):'—',req?'m²':'',req?`今は ${fs(p.Ag)} m²（集水面積の ${f1(req/p.Ac*100,1)} ％が必要）`:'面積を増やしても防げない条件（土の透水能が降雨に追いつかない）',req&&req<=p.Ag?'good':'']
+  ];
+  $('kpis').innerHTML=items.map(([a,b,u,c,cls])=>`<div class="kpi ${cls}"><span>${a}</span><b>${b}<em>${u}</em></b><small>${c}</small></div>`).join('');
+  $('sum_sub').textContent=`総雨量 ${fs(p.i*p.T)} mm・流入 ${fs(s.Vin)} m³（風呂桶 約 ${Math.round(s.Vin/0.2)} 杯分）`;
+  const g=s.g; const ratio=g.D15/D85S; const Re=s.maxFluxG*(g.de)/NU;
+  const ck=[];
+  ck.push(s.Vover>0.001?['ng','越流あり']:['ok','越流なし']);
+  ck.push(s.stillPond||s.pondDrain>24?['ng','湛水が24時間以上残る（蚊・根腐れの心配）']:['ok','湛水は24時間以内に引く']);
+  ck.push(s.stillWet||s.allDrain>72?['wn','72時間で空にならない（次の雨に備えられない）']:['ok',`${hrs(s.allDrain)}で全層が空く`]);
+  if(p.Ds>0&&p.Dg>0) ck.push(ratio<=5?['ok',`フィルター則 OK（D15/D85 = ${f1(ratio,1)}）`]:(p.sheet?['ok',`粒径比 ${f1(ratio,1)} > 5、透水シートで土の落ち込みを防止`]:['ng',`フィルター則 NG（D15/D85 = ${f1(ratio,1)} > 5）土が礫に落ちて目詰まり`]));
+  if(p.Dg>0) ck.push(Re<1?['ok',`礫の中はダルシー則の範囲（Re = ${fs(Re)}）`]:(Re<10?['wn',`Re = ${fs(Re)}：ダルシー則の上限付近`]:['ng',`Re = ${fs(Re)}：乱れた流れ`]));
+  if(p.aged) ck.push(p.pre?['ok','数年後：沈砂部で泥を止め、入口の速さを保つ']:['ng',`数年後：泥で目詰まり（表面の透水能 ${p.clog.toFixed(1)}倍）`]);
+  if(p.f<=1) ck.push(['wn','粘性土は浸透が遅い。暗渠排水管の併用を検討']);
+  $('checks').innerHTML=ck.map(([c,t])=>`<span class="pill ${c}">${c==='ok'?'●':c==='ng'?'×':'▲'} ${t}</span>`).join('');
+}
+
+/* ---------- 描画: グラフ ---------- */
+function ticks(lo,hi,n){const span=hi-lo;if(span<=0)return[lo];const st=Math.pow(10,Math.floor(Math.log10(span/n)));const e=span/n/st;const s=st*(e>=5?10:e>=2?5:e>=1?2:1);const out=[];for(let v=Math.ceil(lo/s)*s;v<=hi+1e-9;v+=s)out.push(+v.toFixed(10));return out;}
+function logticks(lo,hi){const out=[];for(let e=Math.floor(Math.log10(lo));e<=Math.ceil(Math.log10(hi));e++)for(const m of [1,2,5]){const v=m*Math.pow(10,e);if(v>=lo*0.999&&v<=hi*1.001)out.push(v);}return out;}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function chart(svg,cfg){
+  const W=Math.max(280,svg.clientWidth||svg.parentNode.clientWidth||560), H=cfg.h||230;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('height',H);
+  const m={l:48,r:cfg.y2?48:14,t:12,b:38};
+  const pw=W-m.l-m.r, ph=H-m.t-m.b;
+  const X=x=>m.l+(cfg.xlog?Math.log(x/cfg.x0)/Math.log(cfg.x1/cfg.x0):(x-cfg.x0)/(cfg.x1-cfg.x0))*pw;
+  const Y=y=>m.t+ph-(y/cfg.y1)*ph;
+  const Y2=y=>m.t+ph-(y/(cfg.y2||1))*ph;
+  const ink=css('--ink'),line=css('--line');
+  let o='';
+  const yt=ticks(0,cfg.y1,4);
+  yt.forEach(v=>{o+=`<line x1="${m.l}" x2="${m.l+pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="${line}" stroke-width="1"/><text x="${m.l-6}" y="${Y(v)+4}" font-size="11" text-anchor="end" fill="${ink}">${fs(v)}</text>`;});
+  if(cfg.y2){ticks(0,cfg.y2,4).forEach(v=>{o+=`<text x="${m.l+pw+6}" y="${Y2(v)+4}" font-size="11" fill="${css('--red')}">${fs(v)}</text>`;});}
+  const xt=cfg.xlog?logticks(cfg.x0,cfg.x1):ticks(cfg.x0,cfg.x1,Math.max(3,Math.floor(pw/70)));
+  xt.forEach(v=>{o+=`<line x1="${X(v)}" x2="${X(v)}" y1="${m.t+ph}" y2="${m.t+ph+4}" stroke="${ink}"/><text x="${X(v)}" y="${m.t+ph+16}" font-size="11" text-anchor="middle" fill="${ink}">${fs(v)}</text>`;});
+  o+=`<line x1="${m.l}" x2="${m.l+pw}" y1="${m.t+ph}" y2="${m.t+ph}" stroke="${ink}" stroke-width="1.2"/>`;
+  o+=`<text x="${m.l+pw/2}" y="${H-4}" font-size="11.5" text-anchor="middle" fill="${ink}">${cfg.xlabel}</text>`;
+  (cfg.series||[]).forEach(s=>{
+    const yf=s.axis===2?Y2:Y; const pts=s.pts.filter(q=>q[0]>=cfg.x0&&q[0]<=cfg.x1);
+    if(!pts.length) return;
+    const d=pts.map((q,j)=>(j?'L':'M')+X(q[0]).toFixed(1)+' '+yf(Math.min(q[1],(s.axis===2?cfg.y2:cfg.y1)*1.05)).toFixed(1)).join('');
+    if(s.fill){
+      let base;
+      if(s.base){const bp=s.base.filter(q=>q[0]>=cfg.x0&&q[0]<=cfg.x1);base=bp.slice().reverse().map(q=>'L'+X(q[0]).toFixed(1)+' '+yf(q[1]).toFixed(1)).join('');}
+      else base=`L${X(pts[pts.length-1][0]).toFixed(1)} ${yf(0)}L${X(pts[0][0]).toFixed(1)} ${yf(0)}`;
+      o+=`<path d="${d}${base}Z" fill="${s.color}" fill-opacity="${s.op||0.85}" stroke="none"/>`;
+    } else o+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w||2}" ${s.dash?'stroke-dasharray="5 4"':''} stroke-linejoin="round"/>`;
+  });
+  (cfg.hlines||[]).forEach(h=>{o+=`<line x1="${m.l}" x2="${m.l+pw}" y1="${Y(h.y)}" y2="${Y(h.y)}" stroke="${h.color}" stroke-width="1.5" stroke-dasharray="6 4"/><text x="${m.l+pw-4}" y="${Y(h.y)-4}" font-size="11" text-anchor="end" fill="${h.color}">${h.label}</text>`;});
+  if(cfg.vband) o+=`<rect x="${X(cfg.vband[0])}" y="${m.t}" width="${Math.max(0,X(cfg.vband[1])-X(cfg.vband[0]))}" height="${ph}" fill="${css('--blue')}" fill-opacity=".07"/>`;
+  if(cfg.mark!=null&&cfg.mark>=cfg.x0&&cfg.mark<=cfg.x1) o+=`<line x1="${X(cfg.mark)}" x2="${X(cfg.mark)}" y1="${m.t}" y2="${m.t+ph}" stroke="${css('--navy')}" stroke-width="2"/>`;
+  if(cfg.cursor!=null) o+=`<line class="cur" x1="${X(cfg.cursor)}" x2="${X(cfg.cursor)}" y1="${m.t}" y2="${m.t+ph}" stroke="${css('--red')}" stroke-width="1.5"/>`;
+  if(cfg.ylabel) o+=`<text x="${m.l}" y="${m.t-2}" font-size="11" fill="${ink}" opacity=".8"></text>`;
+  svg.innerHTML=o; svg._X=X; svg._m=m; svg._ph=ph;
+}
+
+let S=null,P=null,XMAX=1,REQ=null;
+function setCursor(svg,t){const c=svg.querySelector('.cur');if(c&&svg._X){const x=svg._X(Math.min(t,XMAX));c.setAttribute('x1',x);c.setAttribute('x2',x);}}
+
+function renderTS(){
+  const R=S.R; const blue=css('--blue'),mid=css('--mid'),navy=css('--navy'),red=css('--red'),soil=css('--soil');
+  const pts=a=>R.t.map((t,j)=>[t,a[j]]);
+  let ymax=Math.max(...R.qin,1e-6)*1.12;
+  chart($('c1'),{x0:0,x1:XMAX,y1:ymax,xlabel:'時間（h）',vband:[0,P.T],cursor:curT(),series:[
+    {pts:pts(R.qin),color:mid,fill:true,op:.9},
+    {pts:pts(R.qov),color:red,fill:true,op:.85},
+    {pts:pts(R.qout),color:navy,w:2.2}
+  ]});
+  const a1=R.t.map((t,j)=>[t,R.Sg[j]]), a2=R.t.map((t,j)=>[t,R.Sg[j]+R.Ss[j]]), a3=R.t.map((t,j)=>[t,R.Sg[j]+R.Ss[j]+R.Sp[j]+R.Sm[j]]);
+  chart($('c2'),{x0:0,x1:XMAX,y1:Math.max(S.cap,1e-6)*1.15,xlabel:'時間（h）',vband:[0,P.T],cursor:curT(),
+    hlines:[{y:S.cap,color:red,label:'貯留容量 '+fs(S.cap)+' m³'}],series:[
+    {pts:a1,color:mid,fill:true,op:.95},
+    {pts:a2,base:a1,color:soil,fill:true,op:.95},
+    {pts:a3,base:a2,color:blue,fill:true,op:.9}
+  ]});
+  // 解説文
+  const inCap=P.ks*P.clog*P.Ag/1000, qpk=S.maxQin;
+  let note='';
+  if(S.Vover>0.001){
+    const simpleOK=S.Vin-P.f/1000*P.Ag*P.T<=S.cap;
+    if(simpleOK&&qpk>inCap*1.05) note=`容量の合計だけを見ると足りていますが、地表から土へ入る速さ（k<sub>s</sub>×A<sub>g</sub> = ${fs(inCap)} m³/h）が流入のピーク ${fs(qpk)} m³/h に追いつかず、湛水が先にいっぱいになって越流します。湛水深を深くするか、面積を広げるか、透水性の高い土にすると改善します。`;
+    else note=`流入 ${fs(S.Vin)} m³ に対して貯留容量 ${fs(S.cap)} m³ が足りません。礫層を厚くする、面積を広げる、のどちらかが効きます。`;
+  } else {
+    note=`雨はすべて雨庭に収まりました。礫層の水は原地盤へ ${P.f} mm/h の速さで抜け、雨がやんでから ${hrs(S.allDrain,S.stillWet)}で空になります。抜ける速さを決めているのは礫ではなく下の地盤です。`;
+  }
+  $('ts_note').innerHTML=note;
+}
+
+const SW={
+  Ag:{lab:'雨庭面積（m²）',lo:p=>Math.max(0.5,p.Ac*0.01),hi:p=>Math.max(p.Ac*0.35,p.Ag*1.5),log:true,cur:p=>p.Ag},
+  i:{lab:'降雨強度（mm/h）',lo:()=>5,hi:()=>150,cur:p=>p.i},
+  hp:{lab:'湛水深（cm）',lo:()=>0,hi:()=>30,cur:p=>p.hp},
+  Dg:{lab:'礫層の厚さ（cm）',lo:()=>0,hi:()=>150,cur:p=>p.Dg},
+  Ds:{lab:'植栽土層の厚さ（cm）',lo:()=>0,hi:()=>60,cur:p=>p.Ds},
+  Dm:{lab:'表層の礫の厚さ（cm）',lo:()=>0,hi:()=>15,cur:p=>p.Dm},
+  d:{lab:'礫の粒径（mm）',lo:()=>1,hi:()=>80,log:true,cur:p=>p.d},
+  f:{lab:'原地盤の浸透能（mm/h）',lo:()=>0.5,hi:()=>100,log:true,cur:p=>p.f}
+};
+function renderSweep(){
+  const key=$('swk').value, def=SW[key]; const lo=def.lo(P),hi=def.hi(P); const n=36;
+  const cap=[],dr=[]; let maxDr=0;
+  for(let j=0;j<=n;j++){
+    const x=def.log?lo*Math.pow(hi/lo,j/n):lo+(hi-lo)*j/n;
+    const q={...P,[key]:x}; const r=sim(q,false);
+    cap.push([x,r.capture*100]); const d=r.stillPond?72:r.pondDrain; dr.push([x,d]); if(d>maxDr) maxDr=d;
+  }
+  const y2=Math.max(6,Math.ceil(maxDr*1.15/6)*6);
+  chart($('c3'),{x0:lo,x1:hi,xlog:!!def.log,y1:105,y2,xlabel:def.lab,mark:def.cur(P),h:250,
+    hlines:[],series:[{pts:cap,color:css('--blue'),w:3},{pts:dr,color:css('--red'),w:2,dash:true,axis:2}]});
+  const notes={
+    Ag:'面積を広げると、受ける面積・貯める容量・地盤へ抜く面積の3つが同時に増えるので、捕捉率は急に上がります。集水面積の5〜10％程度が一つの目安になります。',
+    i:'降雨強度が上がると、ある強さから急に越流が始まります。その境目がこの雨庭の「受けきれる雨」です。',
+    hp:'湛水深は一番安く効く容量です。ただし深いほど湛水が引くまでの時間も長くなり、歩行者や子どもの安全への配慮も必要です。',
+    Dg:'礫層は空隙率が大きいので、厚さ10cmごとに面積×約0.04 m³ずつ容量が増えます。土の透水能が入口を絞っている場合は、厚くしても効かなくなります。',
+    Dm:'表層の礫は貯める量を少し増やすだけです。「数年後を見る」をオンにして沈砂部を外すと、砂利のすき間が泥で埋まり、厚くしてもあまり効かなくなります。',
+    Ds:'植栽土は植物を育て、汚れをこし取る層です。貯める量は礫より少なく、厚くすると入口（土の透水能）の影響が残ります。',
+    d:'粒径を変えても空隙率はほとんど変わらず、貯められる量はわずかしか変わりません。粒径が効くのは透水係数（d² に比例）と、土の落ち込み（フィルター則）の方です。',
+    f:'下の地盤が水を通しにくいと、湛水が引くまでの時間が急に長くなります。粘性土の地盤では、暗渠排水管で側溝へ逃がす設計も使われます。'
+  };
+  $('sw_note').textContent=notes[key];
+}
+
+function renderCalc(){
+  const p=P,s=S,g=s.g; const qpk=s.maxQin; const Vf=p.f/1000*p.Ag*p.T; const Re=s.maxFluxG*g.de/NU; const ratio=g.D15/D85S;
+  const steps=[
+    ['流入量（合理式の考え方）',`集水面からの流出に、雨庭そのものに降る雨を足します。`,
+      `Q = (C·A<sub>c</sub> + A<sub>g</sub>)·i = (${p.C}×${fs(p.Ac)} + ${fs(p.Ag)}) × ${p.i}/1000 = ${fs((p.C*p.Ac+p.Ag)*p.i/1000)} m³/h${p.shape==='c'?`（ピーク ${fs(qpk)} m³/h）`:''}`,
+      `総流入 V<sub>in</sub> = ${fs(s.Vin)} m³`],
+    ['貯留容量',`地表の湛水と、土と礫の隙間（有効空隙）に貯められる量の合計です。`,
+      `V<sub>cap</sub> = A<sub>g</sub>(h<sub>p</sub> + D<sub>m</sub>·n<sub>m</sub> + D<sub>s</sub>·n<sub>s</sub> + D<sub>g</sub>·n<sub>e</sub>) = ${fs(p.Ag)}×(${p.hp/100} + ${p.Dm/100}×${p.nm} + ${p.Ds/100}×${p.ns} + ${p.Dg/100}×${f1(g.ne,3)}) = ${fs(s.cap)} m³`,''],
+    ['礫の有効空隙率',`粒径のそろった石の空隙率は、粒径によらずほぼ一定です（自治体の指針では単粒度砕石3〜5号を一律40％とする例が多い）。丸い石は詰まりやすく空隙が少なめ、大小まじりは小さな粒が隙間を埋めてさらに小さくなります。細かい石ほど表面に水が残る（保水）ので、その分を引きます。`,
+      `${p.st.n}：n = ${f1(g.n,2)}、保水 θ<sub>r</sub> ≈ 0.06/√d = ${f1(g.thr,3)}、n<sub>e</sub> = n − θ<sub>r</sub> = ${f1(g.ne,3)}`,''],
+    ['礫の透水係数（Kozeny–Carman式）',`透水係数は粒径の2乗に比例します。角ばった石は形状係数 ψ（ここでは凹凸係数を流用、砕石0.69・丸い石0.76）で有効径を小さく見ます。土の透水能や地盤の浸透能より何桁も大きいので、礫は流れの「ボトルネック」になりません。`,
+      `k = (g/ν)·(ψd)²·n³ / {180(1−n)²}、ψ = ${p.st.psi} → ${fs(g.k*100)} cm/s = ${Math.round(g.kmmh).toLocaleString('ja-JP')} mm/h`,
+      `比較：植栽土 ${p.ks} mm/h、原地盤 ${p.f} mm/h`],
+    ['ダルシー則が使えるか',`礫の中の流速は浸透速度（単位面積あたりの流量）で、レイノルズ数が1程度以下なら流れは層流でダルシー則が成り立ちます。`,
+      `Re = v·d/ν = ${s.maxFluxG.toExponential(2)} m/s × ${f1(g.de*1000,1)} mm / 1.0×10⁻⁶ m²/s = ${fs(Re)}`,''],
+    ['フィルター則（目詰まりの判定）',`土の細かい粒が礫の隙間に落ちないためには、礫の D15 が土の D85 の約5倍以下であること（Terzaghi の条件）。満たさないときは透水シートか砂のフィルター層を挟みます。`,
+      `D15(礫) / D85(土) = ${f1(g.D15,1)} / ${D85S} = ${f1(ratio,1)} ${ratio<=5?'≤ 5 OK':'> 5'}${ratio>5?(p.sheet?' → 透水シートで対応':' → 対策が必要'):''}`,''],
+    ['簡易法と時間計算の比較',`簡易法は「流入 − 降雨中に地盤へ抜ける量」と容量を比べるだけです。時間計算では、土へ入る速さの上限も考えます。`,
+      `簡易法：V<sub>in</sub> − f·A<sub>g</sub>·T = ${fs(s.Vin)} − ${fs(Vf)} = ${fs(s.Vin-Vf)} m³ ${s.Vin-Vf<=s.cap?'≤':'>'} V<sub>cap</sub> ${fs(s.cap)} m³`,
+      `時間計算：越流 ${fs(s.Vover)} m³、土への入口の上限 k<sub>s</sub>·A<sub>g</sub>${p.aged?'×'+p.clog:''} = ${fs(p.ks*p.clog*p.Ag/1000)} m³/h（流入ピーク ${fs(qpk)} m³/h）`],
+    ['目詰まり（数年後）',`屋根や道路から流れ込む泥は、土の表面に薄い膜を作り、年々しみ込みにくくします。表層の砂利は土が削れるのを防ぎますが、泥は砂利のすき間にもたまるので、砂利だけでは目詰まりは止まりません。効くのは、泥を雨庭に入れる前に落とす沈砂部（前処理）と、たまった泥や砂利を取り替える維持管理です。ここでは数年後の表面の透水能を、何もしないと 0.4倍、表層礫で +0.1、沈砂部で +0.3 と仮定し、沈砂部がないと表層礫の空隙率が 0.38 から 0.20 に減るとしました（学習用の仮定）。`,
+      `${p.aged?`今は「数年後」：k<sub>s</sub>(表面) = ${p.ks} × ${p.clog.toFixed(1)} = ${fs(p.ks*p.clog)} mm/h、表層礫の空隙率 n<sub>m</sub> = ${p.nm}`:'「数年後を見る」をオンにすると、この低下を計算に入れます'}`,''],
+    ['排水時間',`雨がやんだあと、全体の水が抜ける速さは一番遅い層、たいていは原地盤で決まります。`,
+      `目安 ≈ (D<sub>s</sub>·n<sub>s</sub> + D<sub>g</sub>·n<sub>e</sub> + 湛水) / f`,`時間計算：湛水が引くまで ${hrs(s.pondDrain,s.stillPond)}、全層が空になるまで ${hrs(s.allDrain,s.stillWet)}`]
+  ];
+  $('calc').innerHTML=steps.map((st,j)=>`<div class="st"><i>${j+1}</i><div><p><b>${st[0]}</b>　${st[1]}</p><div class="eq">${st[2]}</div>${st[3]?`<div class="eq">${st[3]}</div>`:''}</div></div>`).join('');
+}
+
+/* ---------- 断面図 ---------- */
+let gravelDots=null,gKey='';
+function rng(seed){let s=seed;return()=>{s=(s*1664525+1013904223)%4294967296;return s/4294967296;};}
+function curT(){return (+$('tsl').value/1000)*XMAX;}
+function sample(t){
+  const R=S.R; const dtR=R.t[1]-R.t[0]||1/30; let j=Math.min(R.t.length-1,Math.max(0,Math.round(t/dtR)));
+  return {r:R.r[j],qin:R.qin[j],qout:R.qout[j],qov:R.qov[j],Sp:R.Sp[j],Ss:R.Ss[j],Sg:R.Sg[j],Sm:R.Sm[j]};
+}
+function renderSection(){
+  const svg=$('sec'); const t=curT(); const v=sample(t); const p=P; const g=S.g;
+  const ink=css('--ink'),blue=css('--blue'),mid=css('--mid'),red=css('--red'),soil=css('--soil'),soil2=css('--soil2'),nat=css('--native'),paper=css('--paper'),navy=css('--navy'),line=css('--line');
+  const y0=120, gx0=360, gx1=780, avail=200;
+  const totalCm=Math.max(40,p.hp+p.Ds+p.Dg); const sc=avail/totalCm;
+  const totalCm2=Math.max(40,p.hp+p.Dm+p.Ds+p.Dg); const sc2=avail/totalCm2; const hpPx=p.hp*sc2, dmPx=p.Dm*sc2, dsPx=p.Ds*sc2, dgPx=p.Dg*sc2;
+  const yb=y0+hpPx, ym1=yb+dmPx, ys1=ym1+dsPx, yg1=ys1+dgPx;
+  let o='';
+  o+=`<defs><clipPath id="cg"><rect x="${gx0+18}" y="${ys1}" width="${gx1-gx0-36}" height="${dgPx}"/></clipPath>
+  <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="${ink}" stroke-opacity=".25" stroke-width="2"/></pattern>
+  <pattern id="soilp" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="${soil2}"/><circle cx="5.5" cy="5" r=".8" fill="${soil2}"/></pattern></defs>`;
+  // 原地盤
+  o+=`<rect x="0" y="${y0}" width="820" height="${390-y0}" fill="${nat}" fill-opacity=".35"/><rect x="0" y="${y0}" width="820" height="${390-y0}" fill="url(#hatch)"/>`;
+  // 集水面
+  const isRoof=p.surf==='roof';
+  if(isRoof){
+    o+=`<rect x="40" y="${y0-70}" width="200" height="70" fill="${paper}" stroke="${ink}" stroke-width="1.5"/>`;
+    o+=`<path d="M24 ${y0-66} L140 ${y0-118} L256 ${y0-66} Z" fill="${mid}" stroke="${ink}" stroke-width="1.5"/>`;
+    o+=`<path d="M252 ${y0-66} L262 ${y0-66} L262 ${y0-6} L345 ${y0-6}" fill="none" stroke="${ink}" stroke-width="3"/>`;
+  } else {
+    o+=`<path d="M0 ${y0-24} L340 ${y0} L340 ${y0+10} L0 ${y0-14} Z" fill="${ink}" fill-opacity=".75"/>`;
+    o+=`<path d="M30 ${y0-22} l60 4 M140 ${y0-14} l60 4 M250 ${y0-7} l60 4" stroke="${paper}" stroke-width="2" stroke-dasharray="10 8"/>`;
+  }
+  o+=`<text x="20" y="${y0+40}" font-size="13" fill="${navy}" font-weight="700">集水面 A<tspan font-size="10" dy="3">c</tspan><tspan dy="-3"> = ${fs(p.Ac)} m²（${SURF[p.surf][1]}）</tspan></text>`;
+  o+=`<text x="20" y="${y0+58}" font-size="12" fill="${ink}">雨庭への流入 <tspan font-family="IBM Plex Mono" font-weight="600">${fs(v.qin)}</tspan> m³/h</text>`;
+  // 雨粒
+  const nd=Math.round(Math.min(1,v.r/150)*70); const rr=rng(7);
+  for(let k=0;k<nd;k++){const x=rr()*800+10; const yy=((rr()*110+t*600)%110)+2; o+=`<line x1="${x}" y1="${yy}" x2="${x-3}" y2="${yy+9}" stroke="${blue}" stroke-width="1.6" stroke-linecap="round"/>`;}
+  // 流入矢印
+  if(v.qin>0) o+=`<path d="M300 ${y0-16} L350 ${y0-4}" stroke="${blue}" stroke-width="${2+Math.min(6,v.qin/Math.max(S.maxQin,1e-9)*6)}" marker-end="url(#ah)" fill="none"/>`;
+  o+=`<defs><marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10Z" fill="${blue}"/></marker><marker id="ahr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10Z" fill="${red}"/></marker><marker id="ahn" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10Z" fill="${navy}"/></marker></defs>`;
+  // 掘削部（雨庭本体）背景を紙色で抜く
+  o+=`<path d="M${gx0} ${y0} L${gx0+18} ${yb} L${gx0+18} ${yg1} L${gx1-18} ${yg1} L${gx1-18} ${yb} L${gx1} ${y0} Z" fill="${paper}"/>`;
+  // 植栽土
+  if(dmPx>0){
+    o+=`<rect x="${gx0+18}" y="${yb}" width="${gx1-gx0-36}" height="${dmPx}" fill="${paper}"/>`;
+    const fm=S.caps.find(l=>l.name==='m'); const fq=fm&&fm.cap>0?v.Sm/fm.cap:0;
+    if(fq>0) o+=`<rect x="${gx0+18}" y="${ym1-dmPx*fq}" width="${gx1-gx0-36}" height="${dmPx*fq}" fill="${blue}" fill-opacity=".55"/>`;
+    const r3=rng(5); const rr=Math.max(1.5,Math.min(4,dmPx/3)); for(let xx=gx0+20;xx<gx1-20;xx+=rr*2.1){for(let yy=yb+rr;yy<ym1;yy+=rr*1.8){o+=`<circle cx="${(xx+(r3()-.5)*rr).toFixed(1)}" cy="${yy.toFixed(1)}" r="${(rr*(0.75+r3()*0.3)).toFixed(1)}" fill="${css('--leaf')}" stroke="${ink}" stroke-opacity=".5" stroke-width=".6"/>`;}}
+    if(p.aged&&!p.pre) o+=`<rect x="${gx0+18}" y="${yb}" width="${gx1-gx0-36}" height="${dmPx}" fill="${soil2}" fill-opacity=".45"/>`;
+  }
+  if(dsPx>0){
+    o+=`<rect x="${gx0+18}" y="${ym1}" width="${gx1-gx0-36}" height="${dsPx}" fill="${soil}"/><rect x="${gx0+18}" y="${ym1}" width="${gx1-gx0-36}" height="${dsPx}" fill="url(#soilp)"/>`;
+    if(p.aged) o+=`<line x1="${gx0+18}" x2="${gx1-18}" y1="${ym1+1}" y2="${ym1+1}" stroke="${soil2}" stroke-width="${p.pre?1:3}"/>`;
+    const fr=S.caps.find(l=>l.name==='s'); const ff=fr&&fr.cap>0?v.Ss/fr.cap:0;
+    if(ff>0) o+=`<rect x="${gx0+18}" y="${ys1-dsPx*ff}" width="${gx1-gx0-36}" height="${dsPx*ff}" fill="${blue}" fill-opacity=".45"/>`;
+  }
+  // 礫
+  if(dgPx>0){
+    o+=`<rect x="${gx0+18}" y="${ys1}" width="${gx1-gx0-36}" height="${dgPx}" fill="${paper}"/>`;
+    const fr=S.caps.find(l=>l.name==='g'); const ff=fr&&fr.cap>0?v.Sg/fr.cap:0;
+    if(ff>0) o+=`<rect x="${gx0+18}" y="${yg1-dgPx*ff}" width="${gx1-gx0-36}" height="${dgPx*ff}" fill="${blue}" fill-opacity=".55"/>`;
+    const key=p.d+'|'+p.stone+'|'+Math.round(dgPx)+'|'+Math.round(ys1);
+    if(key!==gKey){ gKey=key; gravelDots=[]; const R0=Math.max(1.6,Math.min(9,1.4+3.2*Math.log10(p.d))); const r2=rng(11); const step=R0*2.05;
+      for(let yy=ys1+R0*0.6;yy<yg1+R0;yy+=step*0.88){ for(let xx=gx0+18+(Math.floor((yy-ys1)/step)%2?step/2:0);xx<gx1-18+R0;xx+=step){ let rr2=R0*(0.8+r2()*0.25); if(p.st.mix){ rr2=R0*(0.35+r2()*0.85);} gravelDots.push([xx+(r2()-.5)*R0*0.3,yy+(r2()-.5)*R0*0.3,rr2,r2()*6.28]); if(p.st.mix&&r2()<0.6) gravelDots.push([xx+step/2,yy+step/3,R0*0.3,r2()*6.28]); } } }
+    const angular=p.st.shape==='角ばった';
+    const poly=c=>{let q='';for(let k=0;k<5;k++){const a=c[3]+k*1.2566, r=c[2]*(0.8+0.25*((k*7+Math.round(c[0]))%3)/2);q+=(k?'L':'M')+(c[0]+r*Math.cos(a)).toFixed(1)+' '+(c[1]+r*Math.sin(a)).toFixed(1);}return q+'Z';};
+    o+=`<g clip-path="url(#cg)">`+gravelDots.map(c=>angular?`<path d="${poly(c)}" fill="${mid}" fill-opacity=".9" stroke="${ink}" stroke-opacity=".55" stroke-width=".8"/>`:`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${c[2].toFixed(1)}" fill="${mid}" fill-opacity=".9" stroke="${ink}" stroke-opacity=".55" stroke-width=".8"/>`).join('')+`</g>`;
+    if(p.sheet&&dsPx>0) o+=`<line x1="${gx0+18}" x2="${gx1-18}" y1="${ys1}" y2="${ys1}" stroke="${red}" stroke-width="2" stroke-dasharray="3 3"/>`;
+  }
+  // 湛水
+  if(hpPx>0){
+    const dep=p.Ag>0?v.Sp/p.Ag*100:0; const wpx=dep*sc2;
+    if(wpx>0.3){const wy=yb-wpx; const slope=18/hpPx; o+=`<path d="M${gx0+18-slope*wpx} ${wy} L${gx1-18+slope*wpx} ${wy} L${gx1-18} ${yb} L${gx0+18} ${yb} Z" fill="${blue}" fill-opacity=".75"/>`;}
+    // 植物
+    for(const px of [gx0+70,gx0+190,gx1-110]){o+=`<path d="M${px} ${yb} q-6 -26 -14 -34 M${px} ${yb} q2 -30 0 -44 M${px} ${yb} q8 -22 16 -30" stroke="${css('--ok')}" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;}
+  }
+  o+=`<path d="M${gx0} ${y0} L${gx0+18} ${yb} L${gx0+18} ${yg1} L${gx1-18} ${yg1} L${gx1-18} ${yb} L${gx1} ${y0}" fill="none" stroke="${ink}" stroke-width="1.6"/>`;
+  o+=`<line x1="340" x2="${gx0}" y1="${y0}" y2="${y0}" stroke="${ink}" stroke-width="1.6"/><line x1="${gx1}" x2="820" y1="${y0}" y2="${y0}" stroke="${ink}" stroke-width="1.6"/>`;
+  // 越流
+  if(v.qov>0) o+=`<path d="M${gx1-6} ${y0-4} q24 -14 34 6" stroke="${red}" stroke-width="5" fill="none" marker-end="url(#ahr)"/><text x="${gx1-30}" y="${y0-24}" font-size="13" fill="${red}" font-weight="700">越流 ${fs(v.qov)} m³/h</text>`;
+  // 浸透矢印
+  if(v.qout>0){const w=1.5+Math.min(5,v.qout/Math.max(1e-9,p.f/1000*p.Ag)*3.5); for(const ax of [gx0+80,gx0+210,gx1-90]) o+=`<path d="M${ax} ${yg1+6} L${ax} ${yg1+34}" stroke="${navy}" stroke-width="${w}" marker-end="url(#ahn)"/>`;}
+  o+=`<text x="${gx0+20}" y="${Math.min(380,yg1+56)}" font-size="12" fill="${navy}">原地盤（${NAT[p.f]}）へ浸透 <tspan font-family="IBM Plex Mono" font-weight="600">${fs(v.qout)}</tspan> m³/h</text>`;
+  // 寸法
+  const dx=gx1+6; const lab=(y1,y2,txt)=>{ if(y2-y1<1) return ''; return `<line x1="${dx}" x2="${dx}" y1="${y1}" y2="${y2}" stroke="${ink}" stroke-width="1"/><line x1="${dx-3}" x2="${dx+3}" y1="${y1}" y2="${y1}" stroke="${ink}"/><line x1="${dx-3}" x2="${dx+3}" y1="${y2}" y2="${y2}" stroke="${ink}"/><text x="${dx+6}" y="${(y1+y2)/2+4}" font-size="11.5" fill="${ink}">${txt}</text>`; };
+  // 寸法は右端に収まらないので左側にも：本体の内側左に文字
+  const inl=(y1,y2,txt)=> (y2-y1>=12)?`<text x="${gx0+26}" y="${(y1+y2)/2+4}" font-size="12" fill="${navy}" font-weight="700" paint-order="stroke" stroke="${paper}" stroke-width="3">${txt}</text>`:'';
+  o+=inl(y0,yb,`湛水 ${p.hp} cm`)+inl(yb,ym1,`表層の礫 ${p.Dm} cm`)+inl(ym1,ys1,`植栽土 ${p.Ds} cm`)+inl(ys1,yg1,`礫 ${p.Dg} cm（d = ${fs(p.d)} mm）`);
+  o+=`<text x="${(gx0+gx1)/2}" y="${y0-50}" font-size="13" fill="${navy}" font-weight="700" text-anchor="middle">雨庭 A<tspan font-size="10" dy="3">g</tspan><tspan dy="-3"> = ${fs(p.Ag)} m²</tspan></text>`;
+  o+=`<text x="${(gx0+gx1)/2}" y="${y0-34}" font-size="12" fill="${ink}" text-anchor="middle">降雨強度 <tspan font-family="IBM Plex Mono" font-weight="600">${fs(v.r)}</tspan> mm/h・貯留 <tspan font-family="IBM Plex Mono" font-weight="600">${fs(v.Sp+v.Ss+v.Sg+v.Sm)}</tspan> / ${fs(S.cap)} m³</text>`;
+  svg.innerHTML=o;
+  const tt=t; $('tnow').textContent=`${Math.floor(tt)}時間${String(Math.round((tt%1)*60)).padStart(2,'0')}分`+(tt<P.T?'（降雨中）':'');
+  setCursor($('c1'),t); setCursor($('c2'),t);
+}
+
+/* ---------- 全体更新 ---------- */
+function labels(p){
+  $('i_v').textContent=p.i; $('T_v').textContent=p.T; $('R_v').textContent=fs(p.i*p.T);
+  $('Ac_v').textContent=fs(p.Ac); $('Ag_v').textContent=fs(p.Ag); $('ratio_v').textContent=f1(p.Ag/p.Ac*100,1);
+  $('hp_v').textContent=p.hp; $('Dm_v').textContent=p.Dm; $('Ds_v').textContent=p.Ds; $('Dg_v').textContent=p.Dg; $('d_v').textContent=fs(p.d);
+  $('ks_v').textContent=p.ks; $('stone_info').textContent=`${p.st.mix?'粒径まちまち':p.st.lo+'〜'+p.st.hi+' mm'}・${p.st.shape}・空隙率 ${p.st.por.toFixed(2)}。${p.st.src}`; $('ns_v').textContent=p.ns.toFixed(2);
+}
+let pending=false;
+function update(){ if(pending) return; pending=true; requestAnimationFrame(()=>{pending=false;run();}); }
+function run(){
+  P=read(); labels(P); S=sim(P,true); REQ=reqArea(P);
+  const end=S.stillWet?S.H:S.wetEnd; XMAX=Math.min(S.H,Math.max(P.T+1,end*1.12,P.T*1.5)); XMAX=Math.ceil(XMAX*2)/2;
+  renderSummary(P,S,REQ); renderTS(); renderSweep(); renderCalc(); renderSection();
+}
+$('stone').innerHTML=Object.entries(STONES).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('');
+$('stone').addEventListener('change',()=>{$('d').value=toLog('d',STONES[$('stone').value].d);});
+document.querySelectorAll('.ctl input,.ctl select').forEach(el=>el.addEventListener('input',()=>{clearPreset();update();}));
+['shape'].forEach(id=>$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;setSeg(id,b.dataset.v);clearPreset();update();}));
+function clearPreset(){document.querySelectorAll('#presets button').forEach(b=>b.classList.remove('on'));}
+$('presets').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;apply(PRESETS[b.dataset.p]);document.querySelectorAll('#presets button').forEach(x=>x.classList.toggle('on',x===b));$('tsl').value=Math.round(1000*Math.min(1,PRESETS[b.dataset.p].T*0.9/ (XMAX||2)));run();const s2=Math.round(1000*Math.min(1,P.T*0.9/XMAX));$('tsl').value=s2;renderSection();});
+$('swk').addEventListener('change',renderSweep);
+$('tsl').addEventListener('input',()=>{stop();renderSection();});
+let playing=false,raf=0,last=0;
+function stop(){playing=false;cancelAnimationFrame(raf);$('play').textContent='▶ 再生';}
+$('play').addEventListener('click',()=>{ if(playing){stop();return;} playing=true;$('play').textContent='❚❚ 停止'; if(+$('tsl').value>=1000) $('tsl').value=0; last=performance.now();
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tick=now=>{ if(!playing) return; const dtms=now-last; last=now; let v=+$('tsl').value+dtms/12000*1000*(reduce?3:1); if(v>=1000){v=1000;$('tsl').value=v;renderSection();stop();return;} $('tsl').value=v; renderSection(); raf=requestAnimationFrame(tick);};
+  raf=requestAnimationFrame(tick);});
+let rz=0; new ResizeObserver(()=>{clearTimeout(rz);rz=setTimeout(()=>{if(S){renderTS();renderSweep();renderSection();}},120);}).observe(document.querySelector('.res'));
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{gKey='';run();});
+new MutationObserver(()=>{gKey='';run();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+apply(PRESETS.house); run(); $('tsl').value=Math.round(1000*Math.min(1,P.T*0.9/XMAX)); renderSection();
+})();
+</script>
+
+</body></html>
