@@ -1025,7 +1025,7 @@ const PCOL=['#C62422','#3286BE','#12286B','#C9A227','#5E9A5A','#8A5CB0'];
 const SHARED=[['力のつりあい','構造・地盤・水理','どの分野でも、止まっている物はつりあう。'],['フックの法則（弾性）','構造・地盤','部材も地盤も、押せば比例して縮む。'],['質量保存','地盤・水理','水は消えない。圧密も連続の式も同じ考え。'],['ダルシーの法則','地盤・水理','土の中の水の流れ。透水・圧密・井戸。'],['エネルギー保存','構造・水理','仕事＝ひずみエネルギー、ベルヌーイの定理。'],['運動の法則・運動量','構造・水理','振動、噴流の力、跳水、津波。']];
 function taikei(byP){
   const P=DPR.list, col=k=>PCOL[P.findIndex(x=>x[0]===k)%PCOL.length];
-  const uname=id=>{ const u=U.find(x=>x.id===id); return u?u.name:id; };
+  const uname=id=>{ const u=U.find(x=>x.id===id)||XU().find(x=>x.id===id); return u?u.name:id; };
   return `<section class="tk" id="taikei"><h2 class="tkh">体系図：<b>基本原理</b> → <b>単元</b> → <b>使う場面</b></h2>
    <p class="tkl">原理をタップすると、その原理を使う単元が光ります。単元をタップすると、その導出に飛びます。</p>
    <div class="tkp">${P.map(([k,t,e,d])=>`<button class="tkpc" data-p="${k}" style="--c:${col(k)}"><b>${t}</b>${m(e)}<small>${d}</small></button>`).join('')}</div>
@@ -1035,6 +1035,7 @@ function taikei(byP){
    ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
+const XU=()=>typeof DXU!=='undefined'?DXU:[];
 function deriveView(){
   if(typeof DER==='undefined') return;
   cur=null; $crumb.textContent=TH?'理論ラボ':'導出ノート（理論）';
@@ -1043,13 +1044,13 @@ function deriveView(){
   $main.innerHTML=`<div class="dv"><h1>${nm}の式は、<b>${DPR.title}</b>から全部作れる。</h1>
    <p class="lead">${DPR.lead}</p>
    ${taikei(byP)}
-   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}</div>
-   ${U.map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; return `<section class="dch" id="d-${u.id}"><h2>${String(i+1).padStart(2,'0')} ${u.name}</h2>
+   <div class="dtoc">${U.filter(u=>DER[u.id]).map(u=>`<a href="#d-${u.id}">${String(U.indexOf(u)+1).padStart(2,'0')} ${u.name}</a>`).join('')}${XU().map(u=>`<a href="#d-${u.id}">${u.no} ${u.name}</a>`).join('')}</div>
+   ${[...U,...XU()].map((u,i)=>{ const d=DER[u.id]; if(!d) return ''; const ex=i>=U.length; return `<section class="dch" id="d-${u.id}"><h2>${ex?u.no:String(i+1).padStart(2,'0')} ${u.name}</h2>${ex&&u.lead?`<p class="lead">${u.lead}</p>`:''}
      <p class="from">出発点：${d.p.map(k=>{ const x=DPR.list.find(y=>y[0]===k); return `<span>${x?x[1]:k}</span>`; }).join('')}</p>
      ${d.it.map((it,j)=>`<div class="dit" id="d-${u.id}-${j}"><h3>${it.t}${it.goal?`　<em>${it.goal}</em>`:''}</h3><div>${it.fig||''}${it.cap?`<p class="dfcap">${it.cap}</p>`:''}</div>
        <div><ol class="dst" data-k="${u.id}-${j}">${it.s.map((s,k)=>`<li class="${typeof s==='object'&&s.q?'q':''} ${k>0?'hide':''}">${typeof s==='object'?(s.q||s.s):s}</li>`).join('')}</ol>
        <div class="dnav"><button class="b main" data-nx="${u.id}-${j}">次の一歩 →</button><button class="b" data-all="${u.id}-${j}">全部見る</button></div>${it.key?`<span class="dkey">${it.key}</span>`:''}</div></div>`).join('')}
-     <div class="dnav"><a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a><a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
+     <div class="dnav">${ex?'':`<a class="b" href="${TH?TH.main+'#u'+(i+1):'#u'+(i+1)}"${TH?' target="_blank" rel="noopener"':''}>この単元の謎と問題へ →</a>`}<a class="b" href="#taikei">体系図に戻る ↑</a></div></section>`; }).join('')}</div>`;
   const step=(k,all)=>{ const ol=$main.querySelector(`.dst[data-k="${k}"]`); const h=[...ol.querySelectorAll('li.hide')]; (all?h:h.slice(0,1)).forEach(li=>li.classList.remove('hide')); if(!ol.querySelector('li.hide')){ const b=$main.querySelector(`[data-nx="${k}"]`); b.textContent='導出完了 ✓'; b.disabled=true; } };
   $main.querySelectorAll('.tkpc').forEach(b=>b.onclick=()=>{ const k=b.dataset.p, tk=$main.querySelector('.tk'); const on=b.classList.contains('on'); $main.querySelectorAll('.tkpc').forEach(x=>x.classList.remove('on')); tk.classList.toggle('hl',!on); if(!on) b.classList.add('on'); $main.querySelectorAll('.tkuc').forEach(c=>c.classList.toggle('lit',!on&&c.dataset.ps.split(' ').includes(k))); });
   $main.querySelectorAll('[data-nx]').forEach(b=>b.onclick=()=>step(b.dataset.nx,false));
@@ -1300,7 +1301,7 @@ const GLOSS=[
   // 本文の索引
   const IDX=[];
   U.forEach((u,i)=>IDX.push({kind:'単元',t:`${String(i+1).padStart(2,'0')} ${u.name}`,x:strip(u.ds),to:'u'+(i+1)}));
-  if(typeof DER!=='undefined') U.forEach(u=>{ const d=DER[u.id]; if(!d) return; d.it.forEach((it,j)=>{
+  if(typeof DER!=='undefined') [...U,...(typeof DXU!=='undefined'?DXU:[])].forEach(u=>{ const d=DER[u.id]; if(!d) return; d.it.forEach((it,j)=>{
     const body=[it.goal,it.cap,...(it.s||[]).map(z=>typeof z==='string'?z:z.q),it.key].map(strip).join(' ');
     IDX.push({kind:'導出',t:`${u.name}：${strip(it.t)}`,x:body,to:`d-${u.id}-${j}`}); }); });
   const G=(typeof GLOSS!=='undefined'?GLOSS:[]).map(([t,y,d,to])=>({t,y,d,to,k:norm(t+' '+y),kd:norm(d)}));
