@@ -1,0 +1,384 @@
+<title>仮想仕事ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one-screen lab. Header strip, structure canvas in the middle, a "work ledger" sheet at the bottom. Risograph palette shared with ぶっ壊し構造ラボ. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent}
+#app{height:100%;display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:12px;padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#stageName{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#score{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+#wrap{position:relative;flex:1;min-height:150px}
+canvas#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;cursor:grab}
+#hintq{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:var(--navy);color:var(--paper);font-size:13px;font-weight:700;padding:5px 12px;white-space:nowrap;pointer-events:none;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#panel{background:var(--sheet);border-top:2px solid var(--navy);padding-block:10px 14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-height:56%;overflow-y:auto}
+#panel h2{font-family:var(--f-disp);font-weight:400;font-size:18px;margin:0 0 4px;color:var(--navy);text-wrap:balance}
+#panel p{margin:0 0 8px;font-size:14px;line-height:1.7;max-width:70ch}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:7px 13px;cursor:pointer;min-height:38px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button.b.on{background:var(--navy);color:var(--paper)}
+button.b:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible,.card:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.slider{display:flex;align-items:center;gap:10px;margin:4px 0 8px;font-weight:900;font-size:13px}
+.slider input{flex:1;min-width:0;accent-color:var(--blue)}
+.ledger{width:100%;border-collapse:collapse;font-size:13px}
+.ledger th{font-size:11px;color:var(--muted);text-align:left;font-weight:700;border-bottom:2px solid var(--navy);padding:3px 6px}
+.ledger td{padding:4px 6px;border-bottom:1px solid var(--line);font-weight:700}
+.ledger td.n{font-family:var(--f-body);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ledger tr.unk td{color:var(--red)}
+.ledger tr.hin td{color:var(--blue)}
+.ledger tr.sum td{border-bottom:0;border-top:2px solid var(--navy)}
+.ledwrap{overflow-x:auto}
+.eq{font-family:var(--f-body);font-weight:700;font-size:14px;background:var(--paper);border:1.5px solid var(--navy);padding:6px 10px;margin:6px 0;overflow-x:auto;white-space:nowrap}
+.g{font-family:"Times New Roman",Times,serif;font-style:italic;font-weight:700;font-size:1.12em;padding:0 1px}
+.locked{border:2px dashed var(--line);padding:14px;font-size:13px;color:var(--muted);font-weight:700;text-align:center}
+.ans{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;font-weight:900}
+.ans input{font-family:var(--f-num);font-size:18px;width:120px;padding:6px 8px;border:2px solid var(--navy);background:var(--paper);color:var(--ink)}
+.verdict{font-family:var(--f-disp);font-size:24px;line-height:1.15}
+.verdict.ok{color:var(--red)} .verdict.near{color:var(--blue)} .verdict.ng{color:var(--muted)}
+.lesson{border-left:4px solid var(--blue);padding-left:10px}
+.kw{display:inline-block;font-size:11px;font-weight:900;border:1.5px solid var(--ink);padding:0 6px;margin:0 4px 4px 0}
+.mech{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.mlist{font-size:13px;margin:4px 0 8px;padding-left:18px}
+.balance{display:flex;align-items:center;gap:10px;margin:8px 0}
+.balance .beam{width:150px;height:6px;background:var(--navy);position:relative;transition:transform .8s cubic-bezier(.3,1.6,.5,1)}
+.balance .beam:before,.balance .beam:after{content:"";position:absolute;top:6px;width:30px;height:12px;border:2px solid var(--navy);border-top:0}
+.balance .beam:before{left:-4px}.balance .beam:after{right:-4px}
+.balance .pivot{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:14px solid var(--navy);margin:0 auto}
+.balance small{font-size:12px;font-weight:700;color:var(--muted)}
+/* home */
+#home{position:absolute;inset:0;overflow-y:auto;background:var(--paper);padding-block:20px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hero{max-width:920px;margin:0 auto 18px}
+.hero h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(32px,6.5vw,60px);line-height:1.08;margin:0;color:var(--navy);text-wrap:balance}
+.hero h1 b{color:var(--red);font-weight:400}
+.hero p{font-size:15px;line-height:1.8;max-width:62ch;margin:10px 0 0}
+.law{max-width:920px;margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.law .formula{font-family:var(--f-num);font-weight:700;font-size:20px;background:var(--navy);color:var(--paper);padding:6px 14px}
+.law span{font-size:13px;font-weight:700;max-width:52ch;line-height:1.6}
+.steps{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.steps span{font-weight:900;font-size:13px;background:var(--paper);border:2px solid var(--navy);padding:3px 10px}
+.grid{max-width:920px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.card{background:var(--sheet);border:2px solid var(--navy);padding:0;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column}
+.card canvas{width:100%;height:96px;background:var(--paper);border-bottom:2px solid var(--navy);display:block}
+.card .ct{padding:8px 10px 10px;display:flex;flex-direction:column;gap:2px}
+.card .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em}
+.card .nm{font-weight:900;font-size:16px}
+.card .ds{font-size:12px;color:var(--muted)}
+.card .rs{font-size:12px;font-weight:900;color:var(--blue)}
+.foot{max-width:920px;margin:18px auto 0;font-size:12px;color:var(--muted);line-height:1.7}
+@media (max-width:520px){.logo{font-size:15px}#panel p{font-size:13px}}
+</style>
+
+<div id="app">
+  <header>
+    <button class="logo" id="logo" title="ステージ一覧へ">仮想<b>仕事</b>ラボ</button>
+    <div id="stageName"></div>
+    <div id="score"></div>
+  </header>
+  <div id="wrap"><canvas id="cv"></canvas><div id="hintq" hidden></div></div>
+  <section id="panel"></section>
+</div>
+
+<div id="home">
+  <div class="hero">
+    <h1>ほんの少し<b>動かせば</b>、<br>力が分かる。</h1>
+    <p>つりあっている構造物を、頭の中でほんの少しだけ動かしてみます（仮想変位）。そのとき、すべての力がする仕事を足し合わせると、必ず0になります。これが仮想仕事の原理です。この原理を使って、てこから骨組みの崩壊まで、見えない力の大きさを当ててください。</p>
+    <div class="steps"><span>1 構造物を少し動かす</span><span>2 仕事の帳簿を読む</span><span>3 未知の力を計算して入力</span><span>4 仕事の合計が0になれば正解</span></div>
+  </div>
+  <div class="law"><div class="formula">Σ F·δ = 0</div><span>仕事 ＝ 力 × 力の向きに動いた距離。力と同じ向きに動けば＋、逆向きなら−。</span></div>
+  <div class="grid" id="grid"></div>
+  <p class="foot">変位は分かりやすいように大きく描いています。仮想仕事の原理で考えるのは、本当は「ごくわずかな」動きです。部材は曲がったり伸びたりしない剛体として扱っています。</p>
+</div>
+
+<script>
+"use strict";
+// ---------- geometry helpers ----------
+const perp=(x,y)=>[-y,x];
+function vel(body,p){ if(!body) return [0,0]; const v0=body.v0||[0,0], p0=body.p0||[0,0], w=body.w||0; const q=perp(p[0]-p0[0],p[1]-p0[1]); return [v0[0]+w*q[0], v0[1]+w*q[1]]; }
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
+const fmt=(x,d=2)=>{ const r=Math.round(x*10**d)/10**d; return (Object.is(r,-0)?0:r).toString(); };
+const sgnTerm=(c,s)=>{ if(Math.abs(c)<1e-9) return ''; return (c<0?' − ':' + ')+fmt(Math.abs(c))+s; };
+
+// ---------- stages ----------
+// Every stage: loads (known forces), unknown parts (direction × X), and one or more mechanisms.
+// A mechanism lists rigid bodies with a velocity field v(p)=v0+w·perp(p−p0); body −1 is the ground.
+const PORTAL_V=(Mp)=>({});
+const STAGES=[
+{ key:'lever', name:'てこ', sub:'右端を何kNで押せばつりあう？', q:'θ', vis:.18, view:[-4,-.6,5,2.6],
+  kws:['てこの原理','モーメント','仮想仕事'],
+  intro:'支点で支えた棒の左に60 kNの重りがあります。右端を下向きに押してつりあわせるには、何kNの力Pが必要でしょう。棒を少し傾けて、それぞれの点がどれだけ動くかを見てください。',
+  supports:[{t:'fulcrum',at:[0,1]}],
+  loads:[{at:[-2,1],F:[0,-60],label:'60 kN'}],
+  unknown:{label:'P',unit:'kN',parts:[{at:[3,1],dir:[0,-1]}]},
+  mechs:[{name:'支点を中心に回す',bodies:[{pts:[[-3,1],[4,1]],p0:[0,1],w:1}],lb:[0],ub:[0]}],
+  lesson:'棒を角度θだけ傾けると、支点から2 m の重りは2θ、3 m の点は3θ動きます。重りがする仕事 60×2θ と、Pがする仕事 −P×3θ の合計が0なので、P＝40 kN。「力×支点からの距離」が等しいという、てこの原理と同じ答えです。つりあいの式を、動きと仕事で言い換えたものが仮想仕事の原理です。'
+},
+{ key:'simple', name:'単純梁の反力', sub:'右の支点はどれだけの力で支えている？', q:'θ', vis:.12, view:[-1,-1,9,2.8],
+  kws:['単純梁','支点反力','支点を外す'],
+  intro:'長さ8 m の梁に40 kNと60 kNの荷重がかかっています。右の支点を外して、代わりに上向きの反力Rを置きました。梁は左の支点を中心に回れるようになります。Rはいくつでしょう。',
+  supports:[{t:'pin',at:[0,1]},{t:'removed',at:[8,1]}],
+  loads:[{at:[2,1],F:[0,-40],label:'40 kN'},{at:[6,1],F:[0,-60],label:'60 kN'}],
+  unknown:{label:'R',unit:'kN',parts:[{at:[8,1],dir:[0,1]}]},
+  mechs:[{name:'左の支点を中心に回す',bodies:[{pts:[[0,1],[8,1]],p0:[0,1],w:1}],lb:[0,0],ub:[0]}],
+  lesson:'求めたい支点を外し、その代わりに反力Rを力として置くのがコツです。梁を左端まわりにθ回すと、各点は「左端からの距離×θ」だけ上がります。−40×2θ −60×6θ ＋ R×8θ ＝ 0 から R＝55 kN。支点の力を「動けるようにして仕事で測る」のが仮想仕事の考え方です。'
+},
+{ key:'gerber', name:'ゲルバー梁', sub:'ヒンジでつないだ梁の中間支点の反力は？', q:'θ', vis:.09, view:[-1,-1,13,2.8],
+  kws:['ゲルバー梁','ヒンジ','影響線'],
+  intro:'2本の梁をヒンジ（ちょうつがい）でつないだゲルバー梁です。中間の支点を外し、反力Rに置きかえました。左の梁は左端を、右の梁は右端を中心に回り、ヒンジで折れ曲がるように動きます。Rはいくつでしょう。',
+  supports:[{t:'pin',at:[0,1]},{t:'removed',at:[6,1]},{t:'roller',at:[12,1]}],
+  joints:[[8,1]],
+  loads:[{at:[3,1],F:[0,-20],label:'20 kN'},{at:[10,1],F:[0,-30],label:'30 kN'}],
+  unknown:{label:'R',unit:'kN',parts:[{at:[6,1],dir:[0,1]}]},
+  mechs:[{name:'ヒンジで折れ曲がる',bodies:[{pts:[[0,1],[8,1]],p0:[0,1],w:1},{pts:[[8,1],[12,1]],p0:[12,1],w:-2}],lb:[0,1],ub:[0]}],
+  lesson:'左の梁をθ回すと、ヒンジは8θ上がり、右の梁はその分だけ右端まわりに傾きます（10 m の点は4θ）。−20×3θ −30×4θ ＋ R×6θ ＝ 0 から R＝30 kN。部材がいくつあっても、動き方さえ描ければ式は1本で済みます。この動いた形は、橋の設計で使う「影響線」そのものです。'
+},
+{ key:'pulley', name:'組み合わせ滑車', sub:'200 kNの荷物を何kNで引けば持ち上がる？', q:'δ', vis:.45, view:[-3.2,.2,5.4,9.6],
+  kws:['滑車','ロープの本数','仕事は得しない'],
+  intro:'上の滑車は天井に固定、下の滑車は荷物と一緒に動きます。下の滑車は4本のロープで吊られています。ロープの端を引く力Pはいくつでつりあうでしょう。荷物を少し持ち上げたとき、ロープの端がどれだけ動くかを見てください。',
+  supports:[{t:'ceiling',at:[.7,9]}],
+  loads:[{at:[.7,2.05],F:[0,-200],label:'200 kN',hang:true}],
+  unknown:{label:'P',unit:'kN',parts:[{at:[3,4.6],dir:[0,-1]}]},
+  mechs:[{name:'荷物を持ち上げる',bodies:[
+      {pts:[[.7,4],[.7,3.2]],circ:[[0,4,.5],[1.4,4,.5]],box:[.7,2.6,1.6,1.1],p0:[0,0],v0:[0,1]},
+      {pts:[[3,5.2],[3,4.6]],p0:[0,0],v0:[0,-4],handle:true}],
+    static:{circ:[[0,8,.5],[1.4,8,.5],[2.6,8.4,.4]]},
+    links:[[[-.5,8],-1,[-.5,4],0],[[.5,8],-1,[.5,4],0],[[.9,8],-1,[.9,4],0],[[1.9,8],-1,[1.9,4],0],[[3,8.4],-1,[3,5.2],1]],
+    lb:[0],ub:[1]}],
+  lesson:'荷物が δ 上がると、4本のロープがそれぞれ δ ずつ縮むので、ロープの端は4δ引き出されます。−200×δ ＋ P×4δ ＝ 0 から P＝50 kN。力は4分の1で済みますが、引く距離は4倍。仕事（力×距離）はまったく得をしていません。クレーンも同じ仕組みで重い桁を吊り上げています。'
+},
+{ key:'truss', name:'トラスの部材力', sub:'下の部材は何kNで引っ張られている？', q:'θ', vis:.1, view:[-1,-.4,9,5],
+  kws:['トラス','部材を切る','引張・圧縮'],
+  intro:'三角形のトラスの頂点に60 kNの荷重があります。下の部材を切り、代わりに部材力N（引っ張る向きを正）を両端に置きました。すると左の部材は左の支点を、右の部材はローラーを滑らせながら動けます。Nはいくつでしょう。',
+  supports:[{t:'pin',at:[0,1]},{t:'roller',at:[8,1]}],
+  joints:[[4,4]],
+  loads:[{at:[4,4],F:[0,-60],label:'60 kN'}],
+  unknown:{label:'N',unit:'kN',parts:[{at:[8,1],dir:[-1,0]},{at:[0,1],dir:[1,0]}]},
+  mechs:[{name:'部材を切って動かす',bodies:[{pts:[[0,1],[4,4]],p0:[0,1],w:1},{pts:[[4,4],[8,1]],p0:[4,4],v0:[-3,4],w:-1}],
+    cut:[[0,1],[8,1]],lb:[0],ub:[1,0]}],
+  lesson:'左の部材をθ回すと頂点は左へ3θ、下へ4θ動き、ローラー側の端は左へ6θ滑ります。−60×4θ ＋ N×6θ ＝ 0 から N＝40 kN。プラスなので引張です。求めたい部材だけを切って動かすので、ほかの部材の力を計算しなくても答えが出ます。'
+},
+{ key:'portal', name:'ラーメンの崩壊荷重', sub:'横から何kNで押すと骨組みが倒れる？', q:'θ', vis:.12, view:[-2,-.8,8,5.3], plastic:true,
+  kws:['塑性ヒンジ','全塑性モーメント','崩壊荷重'],
+  intro:'柱と梁を固くつないだ門形ラーメンです。どの部材も曲げモーメントが Mp＝100 kN·m に達すると、そこが「塑性ヒンジ」になって回り始めます。4か所にヒンジができると横に倒れます。倒れる瞬間の水平力Hはいくつでしょう。',
+  supports:[{t:'fixed',at:[0,0]},{t:'fixed',at:[6,0]}],
+  loads:[],
+  unknown:{label:'H',unit:'kN',parts:[{at:[0,4],dir:[1,0]}]},
+  mechs:[{name:'横に倒れる（層メカニズム）',bodies:[{pts:[[0,0],[0,4]],p0:[0,0],w:-1},{pts:[[0,4],[6,4]],p0:[0,4],v0:[4,0]},{pts:[[6,0],[6,4]],p0:[6,0],w:-1}],
+    hinges:[[[0,0],0,-1],[[0,4],0,1],[[6,4],1,2],[[6,0],2,-1]],lb:[],ub:[1]}],
+  Mp:100,
+  lesson:'柱がθ傾くと、梁は横に4θ動き、4つのヒンジはそれぞれθずつ回ります。ヒンジは回るたびに Mp×θ の仕事を吸収するので、H×4θ − 4×100×θ ＝ 0 から H＝100 kN。外からの仕事とヒンジが吸収する仕事が等しくなる荷重が崩壊荷重です。'
+},
+{ key:'mech', name:'崩壊メカニズムを探せ', sub:'3つの壊れ方のうち、本当の崩壊荷重は？', q:'θ', vis:.1, view:[-2,-.8,8,5.3], plastic:true,
+  kws:['崩壊メカニズム','上界定理','梁降伏型'],
+  intro:'同じ門形ラーメン（Mp＝100 kN·m）に、横からP、梁の真ん中に下向きに2Pの荷重がかかります。壊れ方は「梁」「横倒れ」「複合」の3通りが考えられます。それぞれ動かしてPを計算し、本当に壊れるときのPを答えてください。',
+  supports:[{t:'fixed',at:[0,0]},{t:'fixed',at:[6,0]}],
+  loads:[],
+  unknown:{label:'P',unit:'kN',parts:[{at:[0,4],dir:[1,0],lab:'P'},{at:[3,4],dir:[0,-2],lab:'2P'}]},
+  mechs:[
+    {name:'梁メカニズム',bodies:[{pts:[[0,0],[0,4]]},{pts:[[0,4],[3,4]],p0:[0,4],w:-1},{pts:[[3,4],[6,4]],p0:[6,4],w:1},{pts:[[6,0],[6,4]]}],
+      hinges:[[[0,4],0,1],[[3,4],1,2],[[6,4],2,3]],lb:[],ub:[1,1]},
+    {name:'層メカニズム',bodies:[{pts:[[0,0],[0,4]],p0:[0,0],w:-1},{pts:[[0,4],[6,4]],p0:[0,4],v0:[4,0]},{pts:[[6,0],[6,4]],p0:[6,0],w:-1}],
+      hinges:[[[0,0],0,-1],[[0,4],0,1],[[6,4],1,2],[[6,0],2,-1]],lb:[],ub:[1,1]},
+    {name:'複合メカニズム',bodies:[{pts:[[0,0],[0,4],[3,4]],p0:[0,0],w:-1},{pts:[[3,4],[6,4]],p0:[3,4],v0:[4,-3],w:1},{pts:[[6,0],[6,4]],p0:[6,0],w:-1}],
+      hinges:[[[0,0],0,-1],[[3,4],0,1],[[6,4],1,2],[[6,0],2,-1]],lb:[],ub:[0,0]},
+  ],
+  Mp:100, minOf:true,
+  lesson:'3つの壊れ方で計算すると、梁メカニズム 66.7 kN、層メカニズム 100 kN、複合メカニズム 60 kN。仮定した壊れ方から出る荷重は、本当の崩壊荷重以上になります（上界定理）。だから、いちばん小さい60 kNが本当の答えです。建物の耐震設計では、柱より梁に先にヒンジができる壊れ方になるよう部材の強さを決めています。'
+},
+];
+
+// ---------- virtual work ----------
+function analyze(st,mi){
+  const m=st.mechs[mi], B=i=>i<0?null:m.bodies[i];
+  const rows=[]; let K=0;
+  st.loads.forEach((L,i)=>{ const v=vel(B(m.lb[i]),L.at); const Fm=Math.hypot(...L.F); const d=dot(v,L.F)/Fm; const W=Fm*d; K+=W; rows.push({kind:'load',label:L.label,F:Fm,d,W}); });
+  let Wh=0;
+  (m.hinges||[]).forEach(([p,a,b])=>{ const wa=a<0?0:(B(a).w||0), wb=b<0?0:(B(b).w||0); const r=Math.abs(wa-wb); const W=-st.Mp*r; Wh+=W; rows.push({kind:'hinge',label:'塑性ヒンジ',F:st.Mp,d:r,W}); });
+  let Wx=0; st.unknown.parts.forEach((P,i)=>{ const v=vel(B(m.ub[i]),P.at); const dm=Math.hypot(...P.dir); const d=dot(v,P.dir)/dm; Wx+=dm*d; rows.push({kind:'unk',label:(P.lab||st.unknown.label),F:dm,d,W:dm*d}); });
+  const X=-(K+Wh)/Wx;
+  return {rows,K:K+Wh,Wx,X};
+}
+function answerOf(st){ if(st.minOf){ return Math.min(...st.mechs.map((m,i)=>analyze(st,i).X)); } return analyze(st,0).X; }
+
+// ---------- state ----------
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), $=id=>document.getElementById(id);
+let stage=null, mi=0, q=0, moved=false, mode='home', anim=0, userX=null, verdict=null, explored=new Set();
+let view={s:1,ox:0,oy:0,dpr:1};
+let best={}; try{ best=JSON.parse(localStorage.getItem('vw-best')||'{}'); }catch(e){ best={}; }
+const saveBest=()=>{ try{ localStorage.setItem('vw-best',JSON.stringify(best)); }catch(e){} };
+
+function loadStage(i){ stage=STAGES[i]; stage.idx=i; mi=0; q=0; moved=false; userX=null; verdict=null; anim=0; explored=new Set();
+  $('home').hidden=true; $('stageName').textContent=`${i+1}. ${stage.name}`; mode='play'; render(); resize(); }
+function goHome(){ mode='home'; $('home').hidden=false; $('stageName').textContent=''; $('panel').innerHTML=''; drawThumbs(); updScore(); }
+function updScore(){ const n=STAGES.filter(s=>best[s.key]==='ok').length; $('score').textContent=`正解 ${n} / ${STAGES.length}`; }
+
+function ledgerHTML(a,X){
+  const st=stage, qn=st.q, U=st.unknown;
+  let h=`<div class="ledwrap"><table class="ledger"><thead><tr><th>力</th><th>大きさ</th><th>力の向きに動いた量</th><th>仕事</th></tr></thead><tbody>`;
+  for(const r of a.rows){
+    if(r.kind==='load') h+=`<tr><td>荷重</td><td class="n">${r.label}</td><td class="n">${sgnTerm(r.d,qn).replace(/^ \+ /,'+').replace(/^ − /,'−')||'0'}</td><td class="n">${sgnTerm(r.W,qn).replace(/^ \+ /,'+').replace(/^ − /,'−')||'0'}</td></tr>`;
+    else if(r.kind==='hinge') h+=`<tr class="hin"><td>${r.label}</td><td class="n">Mp=${st.Mp}</td><td class="n">${fmt(r.d)}${qn} 回転</td><td class="n">−${fmt(-r.W)}${qn}</td></tr>`;
+    else { const coef=r.W; const disp = X==null? `${sgnTerm(coef,'').replace(/^ \+ /,'+').replace(/^ − /,'−')||'0'}×${U.label}${qn}` : `${sgnTerm(coef*X,qn).replace(/^ \+ /,'+').replace(/^ − /,'−')||'0'}`;
+      h+=`<tr class="unk"><td>未知の力</td><td class="n">${r.label}${X==null?'':` (=${fmt(X*r.F)} ${U.unit})`}</td><td class="n">${sgnTerm(r.d,qn).replace(/^ \+ /,'+').replace(/^ − /,'−')||'0'}</td><td class="n">${disp}</td></tr>`; }
+  }
+  const sumTxt = X==null ? `${fmt(a.K)}${qn}${sgnTerm(a.Wx,U.label+qn)} = 0` : `${fmt(a.K+a.Wx*X)}${qn}`;
+  h+=`<tr class="sum"><td colspan="3">合計${X==null?'（つりあいなら0）':''}</td><td class="n">${X==null?'?':sumTxt}</td></tr></tbody></table></div>`;
+  if(X==null) h+=`<div class="eq">${sumTxt}</div>`;
+  return h.replace(/θ/g,'<i class="g">θ</i>');
+}
+
+function render(){
+  updScore(); requestAnimationFrame(resize);
+  const P=$('panel'), st=stage, a=analyze(st,mi);
+  const hq=$('hintq'); hq.hidden = moved || mode!=='play'; hq.textContent='図を左右にドラッグして、少し動かしてみよう';
+  const mechBtns = st.mechs.length>1 ? `<div class="mech">${st.mechs.map((m,i)=>`<button class="b ${i===mi?'on':''}" data-m="${i}">${m.name}</button>`).join('')}</div>` : '';
+  const slider = `<div class="slider"><span>仮想変位</span><input type="range" id="qs" min="-100" max="100" value="${Math.round(q*100)}" aria-label="仮想変位"><button class="b" id="wig">ゆらす</button></div>`;
+  if(mode==='play'){
+    const led = moved ? ledgerHTML(a,null) : `<div class="locked">構造物を少し動かすと、各力が「どれだけ動いたか」と「仕事」がこの帳簿に表示されます</div>`;
+    P.innerHTML=`<div class="cols"><div><h2>${st.sub}</h2><p>${st.intro}</p>${mechBtns}${slider}
+      <div class="ans"><label for="ansIn">${st.unknown.label} =</label><input id="ansIn" type="number" inputmode="decimal" step="any" placeholder="?"><span>${st.unknown.unit}</span><button class="b main" id="chk">答え合わせ</button></div></div>
+      <div><h2 style="font-size:15px">仕事の帳簿 <span style="font-family:var(--f-body);font-size:12px;color:var(--muted)">（${st.q}＝1 動かしたとき）</span></h2>${led}</div></div>`;
+    $('chk').onclick=()=>{ const v=parseFloat($('ansIn').value); if(!isFinite(v)){ $('ansIn').focus(); return; } check(v); };
+    $('ansIn').onkeydown=e=>{ if(e.key==='Enter') $('chk').click(); };
+  } else if(mode==='result'){
+    const ans=answerOf(st), aUser=analyze(st,mi);
+    const res=aUser.K+aUser.Wx*userX; const tilt=Math.max(-14,Math.min(14,res/Math.max(1,Math.abs(aUser.K))*30));
+    const vt= verdict==='ok'?'<div class="verdict ok">大正解！ 仕事の合計が0になった</div>': verdict==='near'?'<div class="verdict near">おしい！ あと少し</div>':'<div class="verdict ng">つりあわない…</div>';
+    let ml=''; if(st.minOf){ ml=`<ul class="mlist">${st.mechs.map((m,i)=>`<li>${m.name}：P = ${fmt(analyze(st,i).X,1)} kN</li>`).join('')}</ul>`; }
+    P.innerHTML=`<div class="cols"><div>${vt}
+      <div class="balance"><small>荷重の仕事</small><div><div class="beam" style="transform:rotate(${(-tilt).toFixed(1)}deg)"></div><div class="pivot"></div></div><small>${st.unknown.label}の仕事</small></div>
+      <p>あなたの答え：<b>${st.unknown.label} = ${fmt(userX)} ${st.unknown.unit}</b>　正解：<b>${fmt(ans,1)} ${st.unknown.unit}</b></p>${ml}
+      <p class="lesson">${st.lesson}</p><div>${st.kws.map(k=>`<span class="kw">${k}</span>`).join('')}</div>
+      <div class="row" style="margin-top:6px"><button class="b main" id="nextB">${st.idx<STAGES.length-1?'次のステージへ':'ステージ一覧へ'}</button><button class="b" id="againB">もう一度</button></div></div>
+      <div>${mechBtns}${slider}<h2 style="font-size:15px">あなたの答えを入れた帳簿</h2>${ledgerHTML(aUser,userX)}</div></div>`;
+    $('nextB').onclick=()=>{ if(st.idx<STAGES.length-1) loadStage(st.idx+1); else goHome(); };
+    $('againB').onclick=()=>loadStage(st.idx);
+  }
+  P.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ mi=+b.dataset.m; explored.add(mi); render(); });
+  const qs=$('qs'); if(qs){ qs.oninput=()=>{ q=qs.value/100; anim=0; markMoved(); }; $('wig').onclick=()=>{ anim=anim?0:performance.now(); markMoved(); }; }
+}
+function markMoved(){ if(Math.abs(q)>.05||anim){ if(!moved){ moved=true; render(); } } }
+function check(v){ userX=v; const ans=answerOf(stage); const e=Math.abs(v-ans)/Math.max(1e-6,Math.abs(ans));
+  verdict= e<.02?'ok': e<.15?'near':'ng';
+  if(stage.minOf){ mi=stage.mechs.findIndex((m,i)=>Math.abs(analyze(stage,i).X-ans)<1e-6); }
+  const rank={ok:3,near:2,ng:1}; if(!best[stage.key]||rank[verdict]>rank[best[stage.key]]){ best[stage.key]=verdict; saveBest(); }
+  mode='result'; if(Math.abs(q)<.3) q=.6; render(); }
+
+// ---------- drawing ----------
+const C={paper:'#F4F3EF',ink:'#1C3A7E',navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',ghost:'#BFC3CE',earth:'#D8CFBE',earth2:'#B9AD95'};
+function resize(){ if(mode==='home'||!stage) return; const r=cv.getBoundingClientRect(), dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr);
+  const [x0,y0,x1,y1]=stage.view, pad=18, top=moved?8:34; const s=Math.min((r.width-pad*2)/(x1-x0),(r.height-pad-top)/(y1-y0));
+  view={s:s*dpr,dpr,ox:(r.width/2-(x0+x1)/2*s)*dpr,oy:(top+(r.height-pad-top)/2+(y0+y1)/2*s)*dpr}; }
+window.addEventListener('resize',resize);
+function W2S(p){ return [view.ox+p[0]*view.s, view.oy-p[1]*view.s]; }
+function disp(m,bi,p,qq){ const v=vel(bi<0?null:m.bodies[bi],p); return [p[0]+v[0]*qq*stage.vis*1, p[1]+v[1]*qq*stage.vis]; }
+
+function drawStage(c,st,mi,qq,opt){
+  const m=st.mechs[mi], px=view.dpr, S=W2S;
+  const line=(a,b,col,w,dash)=>{ c.strokeStyle=col; c.lineWidth=w; c.setLineDash(dash||[]); c.beginPath(); const A=S(a),B=S(b); c.moveTo(A[0],A[1]); c.lineTo(B[0],B[1]); c.stroke(); c.setLineDash([]); };
+  const circle=(p,r,fill,stroke,w)=>{ const P=S(p); c.beginPath(); c.arc(P[0],P[1],r,0,7); if(fill){c.fillStyle=fill;c.fill();} if(stroke){c.strokeStyle=stroke;c.lineWidth=w||2*px;c.stroke();} };
+  const lw=Math.max(4*px, .16*view.s);
+  // ground & supports
+  const gy=S([0,0])[1];
+  if(st.key!=='pulley'){ c.fillStyle=C.earth; c.fillRect(0,gy,c.canvas.width,c.canvas.height-gy); c.fillStyle=C.navy; c.fillRect(0,gy-1.5*px,c.canvas.width,3*px); }
+  for(const sp of st.supports){ const P=S(sp.at), u=.45*view.s;
+    c.fillStyle=C.navy; c.strokeStyle=C.navy;
+    if(sp.t==='pin'||sp.t==='roller'||sp.t==='fulcrum'||sp.t==='removed'){
+      const h = sp.t==='fulcrum'? (gy-P[1]) : u*1.1;
+      c.beginPath(); c.moveTo(P[0],P[1]+lw*.3); c.lineTo(P[0]-u*.8,P[1]+h); c.lineTo(P[0]+u*.8,P[1]+h); c.closePath();
+      if(sp.t==='removed'){ c.setLineDash([5*px,4*px]); c.lineWidth=2*px; c.strokeStyle=C.ghost; c.stroke(); c.setLineDash([]); tag(c,P[0],P[1]+h+14*px,'外した支点','#8A90A0',px); }
+      else c.fill();
+      if(sp.t==='roller'){ for(const dx of [-.45,.45]){ c.beginPath(); c.arc(P[0]+dx*u,P[1]+h+u*.2,u*.18,0,7); c.fill(); } }
+      if(sp.t!=='fulcrum' && sp.t!=='removed'){ c.fillStyle=C.navy; c.fillRect(P[0]-u,P[1]+h+(sp.t==='roller'?u*.38:0),2*u,3*px); }
+      if(sp.t!=='fulcrum' && sp.t!=='removed') { const yb=P[1]+h+(sp.t==='roller'?u*.38:0); if(yb<gy-3*px){ c.fillStyle=C.earth; c.fillRect(P[0]-u,yb+3*px,2*u,gy-yb-3*px); } }
+    } else if(sp.t==='fixed'){ c.fillStyle=C.navy; c.fillRect(P[0]-u,P[1]-2*px,2*u,5*px); }
+    else if(sp.t==='ceiling'){ const cy=S([0,9.3])[1]; c.fillStyle=C.earth; c.fillRect(0,0,c.canvas.width,cy); c.fillStyle=C.navy; c.fillRect(0,cy-1.5*px,c.canvas.width,3*px);
+      line([0,9.3],[0,8],C.navy,3*px); line([1.4,9.3],[1.4,8],C.navy,3*px); line([2.6,9.3],[2.6,8.4],C.navy,3*px); }
+  }
+  // ghost (original)
+  if(Math.abs(qq)>.01){
+    for(const b of m.bodies){ if(b.pts) for(let i=0;i<b.pts.length-1;i++) line(b.pts[i],b.pts[i+1],C.ghost,lw*.8,[6*px,5*px]); }
+  }
+  // static parts
+  if(m.static) for(const cc of m.static.circ) circle([cc[0],cc[1]],cc[2]*view.s,C.paper,C.navy,3*px);
+  // links (ropes / cut member)
+  for(const L of (m.links||[])){ const a=disp(m,L[1],L[0],qq), b=disp(m,L[3],L[2],qq); line(a,b,C.ink,2.2*px); }
+  if(m.cut){ const a=m.cut[0], b=disp(m,1,m.cut[1],qq); const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2]; line(a,[mid[0]-.35,mid[1]],C.ghost,lw*.6,[4*px,4*px]); line([mid[0]+.35,mid[1]],b,C.ghost,lw*.6,[4*px,4*px]); const M=S(mid); tag(c,M[0],M[1]-14*px,'切った部材','#8A90A0',px); }
+  // bodies
+  m.bodies.forEach((b,bi)=>{
+    if(b.pts){ const ps=b.pts.map(p=>disp(m,bi,p,qq)); c.strokeStyle=b.handle?C.ink:C.navy; c.lineWidth=b.handle?2.2*px:lw; c.lineCap='round'; c.lineJoin='round'; c.beginPath(); ps.forEach((p,i)=>{ const P=S(p); i?c.lineTo(P[0],P[1]):c.moveTo(P[0],P[1]); }); c.stroke(); }
+    if(b.circ) for(const cc of b.circ){ circle(disp(m,bi,[cc[0],cc[1]],qq),cc[2]*view.s,C.paper,C.navy,3*px); }
+    if(b.box){ const [x,y,w,h]=b.box; const p=disp(m,bi,[x,y],qq); const P=S([p[0]-w/2,p[1]+h/2]); c.fillStyle=C.navy; c.fillRect(P[0],P[1],w*view.s,h*view.s); c.fillStyle=C.paper; c.font=`900 ${12*px}px "Zen Kaku Gothic New",sans-serif`; c.textAlign='center'; c.textBaseline='middle'; const Q=S(p); c.fillText('荷物',Q[0],Q[1]); }
+    if(b.handle){ const p=disp(m,bi,b.pts[1],qq); circle(p,6*px,C.red,null); }
+  });
+  // regular hinges (gerber / truss apex)
+  for(const j of (st.joints||[])){ const bi=m.bodies.findIndex(b=>b.pts&&b.pts.some(p=>p[0]===j[0]&&p[1]===j[1])); circle(disp(m,bi,j,qq),5*px,C.paper,C.navy,2.5*px); }
+  // plastic hinges
+  if(m.hinges && Math.abs(qq)>.01) for(const [p,a] of m.hinges){ circle(disp(m,a<0?m.hinges.find(h=>h[0]===p)[2]:a,p,qq),7*px,C.paper,C.red,3*px); }
+  // loads
+  const arrow=(p,dir,len,col,label,dash,hang)=>{ let P=S(p); const d=Math.hypot(dir[0],dir[1]); const ux=dir[0]/d, uy=-dir[1]/d; if(hang) P=[P[0]+ux*len,P[1]+uy*len]; const T=[P[0]-ux*len,P[1]-uy*len];
+    c.strokeStyle=col; c.fillStyle=col; c.lineWidth=3.2*px; c.setLineDash(dash||[]); c.beginPath(); c.moveTo(T[0],T[1]); c.lineTo(P[0]-ux*8*px,P[1]-uy*8*px); c.stroke(); c.setLineDash([]);
+    const a=Math.atan2(uy,ux); c.beginPath(); c.moveTo(P[0],P[1]); c.lineTo(P[0]-11*px*Math.cos(a-.42),P[1]-11*px*Math.sin(a-.42)); c.lineTo(P[0]-11*px*Math.cos(a+.42),P[1]-11*px*Math.sin(a+.42)); c.fill();
+    if(label){ c.font=`900 ${13*px}px "Zen Kaku Gothic New",sans-serif`; c.textAlign='center'; c.textBaseline='middle'; const lx=hang?P[0]+ux*14*px:T[0]-ux*10*px, ly=hang?P[1]+uy*14*px:T[1]-uy*10*px; const w=c.measureText(label).width+8*px; c.fillStyle=C.paper; c.fillRect(lx-w/2,ly-9*px,w,18*px); c.fillStyle=col; c.fillText(label,lx,ly); } };
+  st.loads.forEach((L,i)=>{ const p=disp(m,m.lb[i],L.at,qq); arrow(p,L.F,48*px,C.navy,L.label,null,L.hang); });
+  st.unknown.parts.forEach((U,i)=>{ const p=disp(m,m.ub[i],U.at,qq); const lab=(U.lab||st.unknown.label)+(mode==='result'&&userX!=null?` = ${fmt(userX*Math.hypot(...U.dir),1)}`:(st.minOf?'':' = ?'));
+    arrow(p,U.dir,(st.minOf&&U.lab==='2P'?60:48)*px,C.red,lab); });
+  // displacement arrows (virtual displacement at each force point)
+  if(Math.abs(qq)>.05 && opt.disp){
+    const pts=[...st.loads.map((L,i)=>[L.at,m.lb[i]]),...st.unknown.parts.map((U,i)=>[U.at,m.ub[i]])];
+    for(const [p,bi] of pts){ const a=p, b=disp(m,bi,p,qq); if(Math.hypot(b[0]-a[0],b[1]-a[1])<.02) continue; const A=S(a),B=S(b);
+      c.strokeStyle=C.blue; c.fillStyle=C.blue; c.lineWidth=2*px; c.beginPath(); c.moveTo(A[0],A[1]); c.lineTo(B[0],B[1]); c.stroke(); circle(a,3*px,C.blue,null);
+      const v=vel(bi<0?null:m.bodies[bi],p); const mag=Math.hypot(v[0],v[1]); c.font=`700 ${12*px}px "JetBrains Mono",monospace`; c.textAlign='left'; c.textBaseline='middle'; c.fillStyle=C.blue;
+      c.font=`italic 700 ${14*px}px "Times New Roman",Times,serif`; c.fillText(`${fmt(mag)}${st.q}`, B[0]+8*px, B[1]+(st.key==='pulley'?0:14*px)); }
+  }
+}
+function tag(c,x,y,t,col,px){ c.font=`900 ${11*px}px "Zen Kaku Gothic New",sans-serif`; const w=c.measureText(t).width+10*px; c.fillStyle=col; c.fillRect(x-w/2,y-8*px,w,16*px); c.fillStyle='#fff'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(t,x,y+.5*px); }
+
+function frame(now){
+  if(mode!=='home' && stage){
+    if(anim){ q=Math.sin((now-anim)/500)*.8; const qs=$('qs'); if(qs) qs.value=Math.round(q*100); }
+    const c=ctx; c.setTransform(1,0,0,1,0,0); c.fillStyle=C.paper; c.fillRect(0,0,cv.width,cv.height);
+    drawStage(c,stage,mi,q,{disp:true});
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---------- input: drag to displace ----------
+let drag=null;
+cv.addEventListener('pointerdown',e=>{ if(mode==='home') return; drag={x:e.clientX,y:e.clientY,q0:q}; anim=0; cv.setPointerCapture(e.pointerId); cv.style.cursor='grabbing'; });
+cv.addEventListener('pointermove',e=>{ if(!drag) return; const d=((e.clientX-drag.x)-(e.clientY-drag.y)*.6)/Math.max(160,cv.clientWidth*.35); q=Math.max(-1,Math.min(1,drag.q0+d)); const qs=$('qs'); if(qs) qs.value=Math.round(q*100); markMoved(); });
+const endDrag=()=>{ drag=null; cv.style.cursor='grab'; };
+cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
+$('logo').onclick=goHome;
+
+// ---------- home ----------
+function drawThumbs(){
+  const g=$('grid'); if(!g.children.length){ STAGES.forEach((s,i)=>{ const b=document.createElement('button'); b.className='card';
+    b.innerHTML=`<canvas></canvas><div class="ct"><span class="no">STAGE ${i+1}</span><span class="nm">${s.name}</span><span class="ds">${s.sub}</span><span class="rs"></span></div>`; b.onclick=()=>loadStage(i); g.appendChild(b); }); }
+  [...g.children].forEach((b,i)=>{ const s=STAGES[i], r=best[s.key]; b.querySelector('.rs').textContent= r==='ok'?'◎ 正解':r==='near'?'○ おしい':r==='ng'?'× 挑戦済み':'';
+    const cvs=b.querySelector('canvas'), rr=cvs.getBoundingClientRect(), d=Math.min(2,window.devicePixelRatio||1); cvs.width=(rr.width||200)*d; cvs.height=(rr.height||96)*d;
+    const c=cvs.getContext('2d'); const [x0,y0,x1,y1]=s.view; const sc=Math.min(cvs.width/(x1-x0),cvs.height/(y1-y0))*.92; const sv=view, sm=mode, ss=stage;
+    view={s:sc,dpr:d*.6,ox:cvs.width/2-(x0+x1)/2*sc,oy:cvs.height/2+(y0+y1)/2*sc}; mode='thumb'; stage=s;
+    c.fillStyle=C.paper; c.fillRect(0,0,cvs.width,cvs.height); drawStage(c,s,s.mechs.length>2?2:0,s.plastic?.7:.5,{disp:false});
+    view=sv; mode=sm; stage=ss; });
+}
+updScore(); drawThumbs(); window.addEventListener('load',drawThumbs);
+requestAnimationFrame(frame);
+window.__vw={STAGES,analyze,answerOf};
+</script>

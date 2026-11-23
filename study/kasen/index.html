@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>河川工学ラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--soft:#EAF2F8;--soil:#D8CFBE;--muted:#5E6B86;--sheet:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Zen Kaku Gothic New",sans-serif}
+[hidden]{display:none!important}
+button{font:inherit;cursor:pointer}
+header{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:3px solid var(--navy);background:var(--paper);position:sticky;top:0;z-index:5}
+.logo{font-family:"Dela Gothic One";font-size:18px;color:var(--navy);background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+.star-total{margin-left:auto;font-weight:900;color:var(--red)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.hero{border:3px solid var(--navy);background:var(--sheet);padding:18px;position:relative;overflow:hidden}
+.hero h1{font-family:"Dela Gothic One";font-weight:400;font-size:clamp(24px,5vw,40px);margin:0 0 8px;color:var(--navy);line-height:1.25}
+.hero h1 b{color:var(--red);font-weight:400}
+.hero p{margin:6px 0;line-height:1.8}
+.flow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px;font-weight:900;font-size:14px}
+.flow span{background:var(--soft);border:2px solid var(--navy);padding:4px 8px}
+.flow i{font-style:normal;color:var(--red)}
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+@media(max-width:760px){.fields{grid-template-columns:1fr}}
+.field h2{font-family:"Dela Gothic One";font-weight:400;font-size:20px;margin:0 0 6px;color:var(--navy)}
+.field h2 small{font-family:"Zen Kaku Gothic New";font-size:12px;color:var(--muted);margin-left:6px}
+.mc{display:block;width:100%;text-align:left;border:3px solid var(--navy);background:var(--sheet);padding:0;margin-bottom:10px;color:var(--ink);position:relative}
+.mc svg{display:block;width:100%;height:auto;border-bottom:2px solid var(--navy)}
+.mc .mt{padding:8px 10px}
+.mc .mt b{display:block;font-size:16px;color:var(--navy)}
+.mc .mt span{font-size:13px;line-height:1.6;display:block;margin-top:2px}
+.mc .stars{position:absolute;top:6px;right:8px;background:var(--paper);border:2px solid var(--navy);padding:0 6px;font-weight:900;color:var(--red)}
+.mc.locked{opacity:.5;cursor:not-allowed}
+
+.mc:not(.locked):hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--navy)}
+/* mission */
+.mv{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:860px){.mv{grid-template-columns:1fr}}
+.scene{position:sticky;top:64px;border:3px solid var(--navy);background:var(--sheet)}
+@media(max-width:860px){.scene{position:sticky;top:52px;z-index:3}}
+.scene svg{display:block;width:100%;height:auto}
+.scene svg [data-s],.scene svg [data-rm]{transition:opacity .7s}
+.stagebar{display:flex;gap:0;border-top:2px solid var(--navy);font-size:12px;font-weight:700}
+.stagebar span{flex:1;text-align:center;padding:4px 2px;color:var(--muted);border-right:1px solid var(--mid)}
+.stagebar span.on{background:var(--navy);color:#fff}
+.panel{border:3px solid var(--navy);background:var(--sheet);padding:14px}
+.panel h2{font-family:"Dela Gothic One";font-weight:400;font-size:20px;margin:0 0 4px;color:var(--navy)}
+.kicker{font-size:12px;font-weight:900;color:var(--red);letter-spacing:.05em}
+.panel p{line-height:1.85;margin:8px 0}
+.nazo{background:var(--navy);color:#fff;padding:12px;font-size:17px;font-weight:900;line-height:1.6;margin:8px 0}
+.nazo small{display:block;font-weight:400;font-size:13px;opacity:.85;margin-top:4px}
+.opts{display:grid;gap:8px;margin:10px 0}
+.opt{border:2px solid var(--navy);background:var(--paper);padding:10px;text-align:left;font-weight:700;color:var(--ink)}
+.opt:hover{background:var(--soft)}
+.opt.ok{background:var(--blue);color:#fff;border-color:var(--blue)}
+.opt.ng{background:#f6dcdb;border-color:var(--red);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:2px solid var(--navy);background:var(--paper);padding:7px 12px;border-radius:999px;font-weight:700;color:var(--ink)}
+.chip.gone{text-decoration:line-through;opacity:.45;background:var(--soft)}
+.chip.keep{background:#f6dcdb;border-color:var(--red);animation:shake .3s}
+.msg{border-left:5px solid var(--blue);background:var(--soft);padding:8px 10px;line-height:1.8;margin:8px 0;font-size:14px}
+.msg.ng{border-color:var(--red);background:#fbeaea}
+.next{background:var(--red);color:#fff;border:0;padding:11px 18px;font-weight:900;font-size:16px;margin-top:6px}
+.next:disabled{background:#c9c4b8}
+.ghost{background:none;border:2px solid var(--navy);padding:8px 12px;font-weight:700;color:var(--navy)}
+.given{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;background:var(--paper);border:1px dashed var(--navy);padding:8px 10px;font-size:14px;margin:8px 0}
+.given b{color:var(--navy)}
+.ans{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.ans input{width:130px;font:inherit;font-size:18px;padding:6px 8px;border:2px solid var(--navy)}
+.f{font-family:"Times New Roman",serif;font-style:italic;font-weight:700}
+details.pf{border:1.5px solid var(--navy);margin:8px 0;background:var(--paper)}
+details.pf summary{padding:6px 9px;font-weight:700;cursor:pointer;color:var(--navy)}
+details.pf div{padding:4px 10px 8px;line-height:1.85;font-size:14px}
+.dots{display:flex;gap:5px;margin:0 0 8px}
+.dots i{width:22px;height:6px;background:var(--mid)}
+.dots i.on{background:var(--red)}.dots i.done{background:var(--navy)}
+.clear{text-align:center;border:3px double var(--red);padding:10px;margin:6px 0}
+.clear .big{font-family:"Dela Gothic One";font-size:28px;color:var(--red)}
+.clear .st{font-size:30px;color:var(--red);letter-spacing:4px}
+.real{border:2px solid var(--navy);padding:8px 10px;margin:8px 0;font-size:14px;line-height:1.8}
+.real.walk{border-color:var(--red);background:#fdf3f2}
+.real h3{margin:0 0 4px;font-size:15px;color:var(--navy)}
+.foot{font-size:12px;color:var(--muted);margin:24px 0 8px;line-height:1.8}
+.foot a,.real a{color:var(--blue)}
+.series{border:2px solid var(--navy);background:var(--sheet);padding:10px 14px;margin-top:16px}
+.series h2{font-size:16px;margin:0 0 4px;color:var(--navy)}
+.series li{line-height:1.9}
+.cmap{margin-top:16px;border:3px solid var(--navy);background:var(--sheet);padding:12px}
+.cmap h2,.mh{font-family:"Dela Gothic One";font-weight:400;font-size:22px;color:var(--navy);margin:0 0 8px}
+.mh{margin:20px 0 8px}
+#mapbox{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;align-items:start}
+@media(max-width:760px){#mapbox{grid-template-columns:1fr}}
+#cmap{display:block;width:100%;height:auto}
+.fcard h3{margin:0 0 6px;color:var(--navy);font-size:20px}.fcard h3 small{font-size:12px;color:var(--muted);margin-left:8px}
+.fcard p{line-height:1.8;margin:6px 0;font-size:14px}.fcard ul{margin:4px 0;padding-left:20px;font-size:14px;line-height:1.8}
+.fcard a,.real a{color:var(--blue)}
+.uses{font-size:12px;margin-top:5px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.uses span{background:var(--soft);border:1px solid var(--navy);padding:1px 6px;font-weight:700;color:var(--navy)}
+.uses i{font-style:normal;color:var(--red);font-weight:900}
+.fields{grid-template-columns:repeat(3,1fr)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.mgrid .mc{display:flex;flex-direction:column;margin:0;height:100%}
+.mgrid .mt{display:flex;flex-direction:column;gap:4px;flex:1;padding:10px 12px 12px}
+.mgrid .mt b{font-size:17px;line-height:1.4}
+.mgrid .mt>span{font-size:13.5px;line-height:1.6;margin:0}
+.ftag{align-self:flex-start;font-style:normal;font-size:11.5px;font-weight:900;color:#fff;background:var(--navy);padding:2px 8px;letter-spacing:.05em}
+.mgrid .mt .uses2{margin-top:auto;padding-top:8px;border-top:1px dashed var(--mid);font-size:12px;color:var(--muted);font-weight:700}
+.mgrid .mt .uses2::before{content:"使う勉強　";color:var(--red)}
+.mc.locked .mt>span:nth-of-type(1)::after{content:"（同じ分野の1つ目をクリアで開く）";color:var(--red)}
+.road{border:3px solid var(--navy);background:var(--soft);padding:10px 12px;margin:10px 0}
+.road h3{margin:0 0 2px;color:var(--navy);font-size:16px}.road p{font-size:13px;margin:2px 0 8px}
+.road ol{list-style:none;margin:0;padding:0;counter-reset:r;position:relative}
+.road ol::before{content:"";position:absolute;left:13px;top:10px;bottom:10px;border-left:3px dotted var(--red)}
+.road li{counter-increment:r;position:relative;padding:4px 0 8px 38px;line-height:1.6}
+.road li::before{content:counter(r);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.road li a{font-weight:900;color:var(--navy)}.road li span{display:block;font-size:13px}
+.loop{border:3px solid var(--navy);background:var(--sheet);padding:12px;margin-top:16px}
+.loop h2{font-family:"Dela Gothic One";font-weight:400;font-size:22px;color:var(--navy);margin:0 0 6px}
+.loop .lp{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:8px 0}
+@media(max-width:760px){.loop .lp{grid-template-columns:1fr 1fr}}
+.loop .st{border:2px solid var(--navy);background:var(--paper);padding:8px;position:relative}
+.loop .st b{display:block;color:var(--red);font-family:"Dela Gothic One";font-weight:400;font-size:15px}
+.loop .st span{font-size:13px;line-height:1.6;display:block}
+.loop .st em{font-style:normal;font-size:11px;color:var(--muted);display:block;margin-top:4px}
+.loop .ex{font-size:13.5px;line-height:1.9;background:var(--soft);padding:8px 10px;border-left:5px solid var(--red)}
+.loop .ex a{color:var(--navy);font-weight:700}
+</style></head><body>
+<header><button class="logo" id="home">河川工学<b>ラボ</b></button><span class="star-total" id="tot"></span></header>
+<main id="main"></main>
+<script>
+"use strict";
+// ================= 絵の部品 =================
+const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',paper:'#F4F3EF',soil:'#D8CFBE',soil2:'#B9AD95',gray:'#8C92A0',green:'#6E9E6A',ink:'#1C3A7E'};
+const person=(x,y,c=C.navy,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><circle cx="0" cy="-19" r="4.2" fill="${c}"/><path d="M-4.5,-14 h9 l1,9 h-2.5 v10 h-2.5 l-.5,-8 l-.5,8 h-2.5 v-10 h-2.5z" fill="${c}"/></g>`;
+const tree=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><rect x="-3" y="-22" width="6" height="22" fill="#8a6d4b"/><circle cx="0" cy="-34" r="16" fill="${C.green}"/><circle cx="-9" cy="-26" r="10" fill="${C.green}"/><circle cx="9" cy="-27" r="10" fill="${C.green}"/></g>`;
+const car=(x,y,c=C.red,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M-30,-8 v-10 l10,-2 l8,-10 h22 l10,10 l12,2 v10z" fill="${c}"/><rect x="-10" y="-27" width="10" height="7" fill="#dfe9f2"/><rect x="3" y="-27" width="10" height="7" fill="#dfe9f2"/><circle cx="-17" cy="-6" r="6" fill="#222"/><circle cx="17" cy="-6" r="6" fill="#222"/></g>`;
+const cloud=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})" fill="#fff" stroke="${C.mid}" stroke-width="1.5"><path d="M-30,0 a12,12 0 0 1 10,-16 a16,16 0 0 1 28,-4 a12,12 0 0 1 20,10 a9,9 0 0 1 2,10z"/></g>`;
+function arrowsDown(x1,x2,y1,y2,n,c=C.red){ let s=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y1}" stroke="${c}" stroke-width="2.5"/>`; for(let i=0;i<=n;i++){ const x=x1+(x2-x1)*i/n; s+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2-6}" stroke="${c}" stroke-width="2"/><path d="M${x},${y2} l-4,-8 h8z" fill="${c}"/>`; } return s; }
+function arrowsSide(x,y1,y2,len1,len2,n,dir,c=C.red){ // pressure arrows pointing toward x; dir=-1 means coming from right side to left
+ let pts=`${x},${y1} ${x-dir*len1},${y1} ${x-dir*len2},${y2} ${x},${y2}`; let s=`<polygon points="${pts}" fill="${c}" fill-opacity=".15" stroke="${c}" stroke-width="1.5"/>`;
+ for(let i=0;i<=n;i++){ const t=i/n, y=y1+(y2-y1)*t, L=len1+(len2-len1)*t; if(L<7) continue; s+=`<line x1="${x-dir*L}" y1="${y}" x2="${x-dir*6}" y2="${y}" stroke="${c}" stroke-width="2"/><path d="M${x},${y} l${-dir*8},-4 v8z" fill="${c}"/>`; } return s; }
+const pin=(x,y)=>`<path d="M${x},${y} l-12,20 h24z" fill="#fff" stroke="${C.navy}" stroke-width="2.5"/><line x1="${x-18}" y1="${y+20}" x2="${x+18}" y2="${y+20}" stroke="${C.navy}" stroke-width="2.5"/>${[0,1,2,3,4].map(i=>`<line x1="${x-16+i*8}" y1="${y+20}" x2="${x-22+i*8}" y2="${y+27}" stroke="${C.navy}" stroke-width="1.5"/>`).join('')}`;
+const roller=(x,y)=>`<path d="M${x},${y} l-12,16 h24z" fill="#fff" stroke="${C.navy}" stroke-width="2.5"/><circle cx="${x-7}" cy="${y+20}" r="3.5" fill="#fff" stroke="${C.navy}" stroke-width="2"/><circle cx="${x+7}" cy="${y+20}" r="3.5" fill="#fff" stroke="${C.navy}" stroke-width="2"/><line x1="${x-18}" y1="${y+24}" x2="${x+18}" y2="${y+24}" stroke="${C.navy}" stroke-width="2.5"/>`;
+const fixedWall=(x,y1,y2,side=-1)=>`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${C.navy}" stroke-width="3.5"/>${Array.from({length:Math.floor((y2-y1)/9)+1},(_,i)=>`<line x1="${x}" y1="${y1+i*9}" x2="${x+side*9}" y2="${y1+i*9+7}" stroke="${C.navy}" stroke-width="1.5"/>`).join('')}`;
+const dim=(x1,x2,y,t,c=C.navy)=>`<g stroke="${c}" stroke-width="1.3"><line x1="${x1}" y1="${y-6}" x2="${x1}" y2="${y+6}"/><line x1="${x2}" y1="${y-6}" x2="${x2}" y2="${y+6}"/><line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/></g><path d="M${x1},${y} l8,-3.5 v7z M${x2},${y} l-8,-3.5 v7z" fill="${c}"/><text x="${(x1+x2)/2}" y="${y-6}" text-anchor="middle" font-size="14" font-weight="700" fill="${c}">${t}</text>`;
+const vdim=(x,y1,y2,t,c=C.navy)=>`<g stroke="${c}" stroke-width="1.3"><line x1="${x-6}" y1="${y1}" x2="${x+6}" y2="${y1}"/><line x1="${x-6}" y1="${y2}" x2="${x+6}" y2="${y2}"/><line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}"/></g><path d="M${x},${y1} l-3.5,8 h7z M${x},${y2} l-3.5,-8 h7z" fill="${c}"/><text x="${x+8}" y="${(y1+y2)/2+5}" font-size="14" font-weight="700" fill="${c}">${t}</text>`;
+const label=(x,y,t,c=C.red,a='middle',fs=14)=>`<text x="${x}" y="${y}" text-anchor="${a}" font-size="${fs}" font-weight="900" fill="${c}" stroke="#fff" stroke-width="4" paint-order="stroke">${t}</text>`;
+const S=(r,inner)=>`<g data-s="${r}">${inner}</g>`;     // 段階 r="a-b" のときだけ見える
+const R=(id,inner)=>`<g data-rm="${id}">${inner}</g>`; // そぎ落とせる物
+const DEFS=`<defs><pattern id="hs" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="${C.soil}"/><circle cx="3" cy="3" r="1.2" fill="${C.soil2}"/><circle cx="8" cy="7" r="1" fill="${C.soil2}"/></pattern><pattern id="hc" width="12" height="12" patternUnits="userSpaceOnUse"><rect width="12" height="12" fill="#c7b9a0"/><path d="M0,6 h12" stroke="#a8977a" stroke-width="1.5"/></pattern><pattern id="hsand" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#eadfbf"/><circle cx="2" cy="2" r="1" fill="#c8b682"/><circle cx="6" cy="6" r="1" fill="#c8b682"/></pattern><pattern id="hw" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#9e9a92"/><path d="M0,8 L8,0" stroke="#8a867e" stroke-width="1"/></pattern></defs>`;
+const sky=(h=300)=>`<rect width="600" height="${h}" fill="#EAF2F8"/>`;
+const wsm=(x,y)=>`<path d="M${x-7},${y-10} h14 l-7,10z" fill="none" stroke="${C.blue}" stroke-width="1.8"/><line x1="${x-10}" y1="${y+4}" x2="${x+10}" y2="${y+4}" stroke="${C.blue}" stroke-width="1.5"/><line x1="${x-6}" y1="${y+8}" x2="${x+6}" y2="${y+8}" stroke="${C.blue}" stroke-width="1.5"/>`;
+
+// ================= ミッション =================
+const peopleRow=(x1,x2,y,n)=>Array.from({length:n},(_,i)=>person(x1+(x2-x1)*i/(n-1)+(i%2?2:-2),y,[C.navy,C.red,C.blue,'#5E6B86'][i%4],.95)).join('');
+const M=[
+// ---------------------------------------------------- R1 川原の石（上流）
+{id:'stone',field:'up',uses:['kasen','suiri','jiban'],title:'洪水が運ぶ石',sub:'山の川の洪水。どれくらいの石まで流される？',
+ stages:['実物','水の流れを置きかえ','石を置きかえ','教科書の図'],
+ scene:()=>`${sky()}
+ ${S('0-1',`<path d="M0,140 L120,60 L220,120 L330,40 L460,110 L600,70 V300 H0Z" fill="#6E9E6A"/>${R('tree',tree(80,140,.8)+tree(500,150,.8)+tree(540,160,.7))}`)}
+ ${R('cloud',cloud(260,40,1.2))}
+ <path d="M0,300 V200 Q300,170 600,200 V300Z" fill="#c9b48f"/>
+ ${S('0-3',`<path d="M0,215 Q300,185 600,215 V300 H0Z" fill="${C.mid}" opacity=".85"/>${wsm(470,205)}`)}
+ ${S('0-1',`${[[60,270,14],[140,285,22],[230,262,10],[330,282,26],[420,270,12],[520,288,18]].map(([x,y,r])=>`<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r*.7}" fill="#8C92A0" stroke="${C.navy}" stroke-width="1.5"/>`).join('')}`)}
+ ${R('fish',`<path d="M200,240 q14,-8 28,0 q-14,8 -28,0z M228,240 l8,-6 v12z" fill="${C.red}"/>`)}
+ ${R('bridge',`<rect x="380" y="150" width="200" height="10" fill="${C.red}" stroke="${C.navy}" stroke-width="2"/><rect x="470" y="160" width="10" height="45" fill="#bfbab0" stroke="${C.navy}"/>`)}
+ ${S('1-3',`<g stroke="${C.blue}" stroke-width="3">${[0,1,2,3].map(i=>`<line x1="${40+i*140}" y1="245" x2="${110+i*140}" y2="245"/><path d="M${118+i*140},245 l-10,-5 v10z" fill="${C.blue}"/>`).join('')}</g>`+label(300,180,'水深 h＝2 m、勾配 I＝1/100',C.blue))}
+ ${S('2-3',`<ellipse cx="300" cy="282" rx="22" ry="16" fill="#8C92A0" stroke="${C.navy}" stroke-width="2"/><line x1="230" y1="266" x2="360" y2="266" stroke="${C.red}" stroke-width="3"/><path d="M366,266 l-10,-5 v10z" fill="${C.red}"/>`+label(300,250,'底をこする力 τ₀',C.red))}
+ ${S('3-3',label(120,295,'石の直径 d は？',C.navy))}`,
+ nazo:{q:'山の川で大雨。ふだんは小石ばかりの川原に、大きな石がごろごろ転がってきた。洪水はどれくらいの石まで運べる？',hint:'予想してみよう。',opts:['砂粒まで','こぶしくらい（5 cm）','人の頭くらい（25 cm）'],ans:2},
+ remove:{text:'「どの大きさの石が動くか」を考えるとき、<b>関係ないもの</b>を消そう。',
+  items:[['tree','木',1,'今回は関係ない（流木は別の大問題だけど）。'],['cloud','雲',1,'雨の量は「水深」にまとめて考える。'],['fish','魚',1,'関係ない。'],['bridge','橋',1,'石が動くかとは別の話。'],
+   ['water','水の深さ',0,'深いほど底をこする力が強い。'],['slope','川の傾き',0,'急なほど強い。'],['stone','石の大きさ・重さ',0,'動くかどうかを決める相手。']]},
+ steps:[
+  {q:'流れが川底の石をこする力は、何で決まる？',opts:['水深と川の傾き（τ₀＝ρghI）','水の色','川の長さ'],ans:0,st:1,why:'水の重さの斜面方向の成分が、川底の摩擦とつりあう（水理学ラボ「開水路」の τ₀＝ρgRI）。幅の広い川では R≒水深 h。これを<b>掃流力</b>という。'},
+  {q:'石が動き出す条件は？',opts:['こする力 が 石の動きにくさ を超えたとき','水が濁ったとき'],ans:0,st:2,why:'石の動きにくさ（限界掃流力）は、水中での石の重さ（土質力学の水中単位体積重量と同じ考え）に比例し、直径 d に比例する。目安 τc≒0.05(ρs−ρ)g d。'},
+  {q:'まとめると、教科書の式は？',opts:['ρghI ＝ 0.05(ρs−ρ)g d を d について解く','d＝h'],ans:0,st:3,why:'「動かす力 ＝ 動きにくさ」の境目の d が、ぎりぎり動く石の大きさ。'}],
+ solve:[
+  {q:'川底をこする力（掃流力）τ₀＝ρghI は何 N/m²？',given:[['ρg','9800 N/m³'],['水深','h＝2 m'],['勾配','I＝1/100']],u:'N/m²',v:196,hint:'9800 × 2 × 0.01',pf:'長さ L の水のかたまりの重さの斜面方向成分 <span class="f">ρg(hBL)I</span> が、底の摩擦 <span class="f">τ₀BL</span> とつりあう。'},
+  {q:'ぎりぎり動く石の直径 d は何 cm？ τ₀＝0.05(ρs−ρ)g d',given:[['τ₀','196 N/m²'],['石の密度','ρs＝2650 kg/m³'],['水の密度','ρ＝1000 kg/m³']],u:'cm',v:24.24,tol:.03,hint:'0.05×1650×9.8 ＝ 808.5。d＝196/808.5 m',pf:'石の動きにくさは、水中での重さ（浮力を引いた分）に比例する。係数 0.05 はシールズという人が実験で求めた値（シールズ数）。'}],
+ find:'川原の石の大きさ。上流ほど大きく、下流ほど小さく丸くなっているか。砂防ダムの上流側にたまった石。',
+ clear:{ans:'人の頭くらい（25 cm）',text:'水深 2 m・勾配 1/100 の洪水は、直径 24 cm の石まで転がす。もっと急な谷では、家ほどの岩まで流れ出す（土石流）。',
+  real:'だから山の川には砂防ダムを作って、石や土砂を受け止める。石が下流に流れないと、今度は河口の砂浜がやせる。川は山から海まで1本につながっている。',link:['水理学ラボ「開水路の等流」','../suiri/#u7']}},
+// ---------------------------------------------------- R2 堤防の高さ（中流）
+{id:'levee',field:'mid',uses:['kasen','suiri','toshi'],title:'堤防の高さを決める',sub:'100年に1度の洪水。堤防は何 m いる？',
+ stages:['実物','川を長方形に','流れを式に','教科書の図'],
+ scene:()=>`${sky()}
+ ${R('cloud',cloud(120,40)+cloud(480,30,1.1))}
+ <path d="M0,150 H60 L120,100 H160 L190,150 V300 H0Z M600,150 H540 L480,100 H440 L410,150 V300 H600Z" fill="#a9c79a" stroke="${C.navy}" stroke-width="2"/>
+ ${S('0-0',`<rect x="190" y="150" width="220" height="150" fill="#c9b48f"/>`)}
+ <path d="M190,150 V280 H410 V150" fill="none" stroke="${C.navy}" stroke-width="2"/>
+ <rect x="191" y="180" width="218" height="99" fill="${C.mid}" opacity=".8"/>${wsm(300,180)}
+ ${R('house',`<rect x="10" y="118" width="40" height="32" fill="#e6e1d6" stroke="${C.navy}"/><path d="M5,120 L30,100 L55,120Z" fill="${C.red}"/><rect x="555" y="118" width="40" height="32" fill="#e6e1d6" stroke="${C.navy}"/><path d="M550,120 L575,100 L600,120Z" fill="${C.blue}"/>`)}
+ ${R('bike',`<circle cx="130" cy="94" r="5" fill="none" stroke="${C.navy}" stroke-width="2"/><circle cx="146" cy="94" r="5" fill="none" stroke="${C.navy}" stroke-width="2"/>${person(138,90,C.red,.6)}`)}
+ ${R('grass',`${[200,240,360,390].map(x=>`<path d="M${x},176 v-8 M${x+4},176 v-10" stroke="#4f7a45" stroke-width="2"/>`).join('')}`)}
+ ${S('1-3',`<rect x="190" y="100" width="220" height="180" fill="none" stroke="${C.red}" stroke-width="2" stroke-dasharray="6 4"/>`+dim(190,410,295,'川幅 B＝100 m'))}
+ ${S('2-3',label(300,130,'Q＝1000 m³/s、n＝0.035、I＝1/1000',C.blue))}
+ ${S('3-3',vdim(430,180,280,'h？')+vdim(470,100,180,'余裕高',C.red))}`,
+ nazo:{q:'100年に1度の大洪水でも、あふれないように堤防を作りたい。堤防の高さは、洪水の水位と比べてどうする？',hint:'予想してみよう。',opts:['洪水の水位ぴったり','水位より少し（1 m ほど）高く','水位の2倍'],ans:1},
+ remove:{text:'「洪水の水深」を求めるとき、<b>関係ないもの</b>を消そう。',
+  items:[['cloud','雲',1,'雨の量は「洪水の流量 Q」にまとめる。'],['house','家',1,'守る相手だが、水深の計算には関係しない。'],['bike','自転車の人',1,'関係ない。'],['grass','川の中の草',1,'今回は、草の影響は粗度係数 n にまとめる。'],
+   ['flow','洪水の流量',0,'1秒間に流れる水の量。計画のもと。'],['width','川幅',0,'広いほど水深は浅くてすむ。'],['slopeR','川の勾配',0,'急なほど速く流れて、水深が浅くなる。']]},
+ steps:[
+  {q:'川の断面は、どう置きかえる？',opts:['幅 100 m の長方形','円'],ans:0,st:1,why:'本当の川の断面はでこぼこだが、幅が水深よりずっと広いので、長方形と考える。このとき径深 R≒水深 h。'},
+  {q:'洪水の流れは、どの式で表す？',opts:['マニングの式（等流）','トリチェリの定理'],ans:0,st:2,why:'用水路のミッションと同じマニングの式。Q＝B·h·(1/n)·h^(2/3)·I^(1/2)。'},
+  {q:'求めた水深に、何を足して堤防の高さにする？',opts:['余裕高（波や計算の誤差に備える分）','何も足さない'],ans:0,st:3,why:'風の波、流木、計算の誤差に備えて、流量に応じた「余裕高」を足す。流量 500〜2000 m³/s の川では 1.0 m。'}],
+ solve:[
+  {q:'洪水の<b>水深</b> h は何 m？ Q＝B·h^(5/3)·I^(1/2)/n',given:[['Q','1000 m³/s'],['B','100 m'],['n','0.035'],['I','1/1000（√I＝0.0316）']],u:'m',v:4.23,tol:.03,hint:'h^(5/3)＝Q·n/(B·√I)＝11.07。h＝11.07^(0.6)',pf:'幅の広い川では R≒h なので、<span class="f">Q＝A·v＝(Bh)(1/n)h^(2/3)I^(1/2)＝(B/n)h^(5/3)I^(1/2)</span>。h について解くと 3/5 乗。'},
+  {q:'余裕高 1.0 m を足した<b>堤防の高さ</b>（川底から）は？',given:[['水深','4.23 m'],['余裕高','1.0 m']],u:'m',v:5.23,tol:.02,hint:'足すだけ。',pf:'計画高水位（洪水のときの水位）＋余裕高 ＝ 堤防の高さ。'}],
+ find:'近くの川の堤防の高さと、河川敷の「計画高水位」の看板や、橋脚に書かれた水位の目盛り。',
+ clear:{ans:'水位より少し（1 m ほど）高く',text:'洪水の水深 4.2 m に余裕高 1.0 m を足して、堤防は約 5.2 m。この「100年に1度」を決めるのは、町の大きさや守るものの大切さ（都市工学）。',
+  real:'大きな川ほど、200年に1度の洪水まで考える。でも、それを超える雨は必ずいつか来る。だから堤防だけでなく、ハザードマップで「あふれたらどこまで水が来るか」を知っておくことが大事。',link:['水理学ラボ「開水路の等流」','../suiri/#u7']}},
+// ---------------------------------------------------- R3 堤防の浸透（中流）
+{id:'seep',field:'mid',uses:['kasen','jiban','suiri'],title:'あふれていないのに壊れる堤防',sub:'堤防の裏から水が噴き出した。危ない？',
+ stages:['実物','堤防を土に','水の通り道','教科書の図'],
+ scene:()=>`${sky()}
+ <rect x="0" y="240" width="600" height="60" fill="url(#hs)"/>
+ ${S('2-3',`<rect x="0" y="250" width="600" height="18" fill="url(#hsand)" stroke="${C.navy}" stroke-dasharray="4 3"/>`)}
+ <path d="M60,240 L230,100 H330 L500,240Z" fill="#a9c79a" stroke="${C.navy}" stroke-width="2.5"/>
+ ${S('1-3',`<path d="M60,240 L230,100 H330 L500,240Z" fill="url(#hs)" stroke="${C.navy}" stroke-width="2.5"/>`)}
+ <path d="M0,140 H198 L60,240 H0Z" fill="${C.mid}" opacity=".85"/>${wsm(40,140)}
+ ${R('road',`<rect x="230" y="94" width="100" height="6" fill="#7c808a"/>`+car(280,96,C.red,.5))}
+ ${R('house',`<rect x="520" y="200" width="60" height="40" fill="#e6e1d6" stroke="${C.navy}"/><path d="M512,202 L550,176 L588,202Z" fill="${C.red}"/>`)}
+ ${S('0-0',`<g fill="${C.blue}">${[0,1,2].map(i=>`<path d="M${505+i*6},238 q-3,-14 0,-20 q3,6 0,20z"/>`).join('')}</g>`+label(500,214,'噴き出す水',C.blue,'middle',12))}
+ ${R('people',person(420,240,C.navy,.9)+person(445,240,C.red,.9))}
+ ${S('2-3',`<path d="M40,260 H490 q10,0 14,-20" stroke="${C.blue}" stroke-width="4" fill="none"/><path d="M506,234 l-8,4 l6,6z" fill="${C.blue}"/>`+label(280,290,'砂の層を通る水の道 L＝5 m だけ弱い',C.blue,'middle',12))}
+ ${S('3-3',vdim(560,140,240,'Δh＝4 m',C.red))}`,
+ nazo:{q:'川の水位は堤防の上まで来ていない。なのに堤防の裏側から、砂まじりの水が噴き出している。危ない？',hint:'予想してみよう。',opts:['あふれていないので大丈夫','堤防が壊れる前ぶれかもしれない'],ans:1},
+ remove:{text:'「水が噴き出すと危ないか」を考えるとき、<b>関係ないもの</b>を消そう。',
+  items:[['road','堤防の上の道路と車',1,'重さは堤防に比べて小さい。'],['house','家',1,'守る相手だが、今回の計算には関係ない。'],['people','見ている人',1,'関係ない。'],
+   ['soil','堤防の土',0,'水がしみこむ相手。'],['sand','下の砂の層',0,'水が一番通りやすい「抜け道」。'],['level','川と裏の水位差',0,'水を押し出す力のもと。']]},
+ steps:[
+  {q:'堤防は、何でできていると考える？',opts:['土（すき間があって水がしみこむ）','コンクリートの壁'],ans:0,st:1,why:'日本の堤防のほとんどは土を盛って作られている。土はすき間（間隙）があるので、水位差があると水がゆっくりしみ通る（土質力学の透水）。'},
+  {q:'水は、どこを通ってくる？',opts:['一番通りやすい砂の層','どこも同じ'],ans:0,st:2,why:'粘土より砂のほうが何百倍も水を通しやすい。昔の川の跡（旧河道）の砂の層が抜け道になることが多い。'},
+  {q:'噴き出す強さを表す値は？',opts:['動水勾配 i＝水位差÷通り道の長さ','水の温度'],ans:0,st:3,why:'地盤力学ラボ「透水」のダルシーの法則。i が限界動水勾配 ic（土が浮き上がる境目、約1）に近づくと、砂ごと噴き出す（パイピング・ボイリング）。'}],
+ solve:[
+  {q:'抜け道の<b>動水勾配</b> i＝Δh/L は？',given:[['水位差','Δh＝4 m'],['抜け道の長さ','L＝5 m']],u:'',v:.8,tol:.02,hint:'4÷5',pf:'水頭の差を、水が流れる距離で割る。坂道の傾きのようなもの。'},
+  {q:'限界動水勾配 ic＝1.0 として、<b>安全率</b> F＝ic/i は？',given:[['ic','1.0'],['i','0.8']],u:'',v:1.25,tol:.02,hint:'1.0÷0.8',pf:'上向きの浸透力 <span class="f">γ_w i</span> が、土の水中での重さ <span class="f">γ′</span> と等しくなる i が ic（地盤力学ラボ「透水」の証明）。'}],
+ find:'川の堤防の裏側（住宅側）の足元にある、水がしみ出しにくくする「ドレーン」の石積みや、堤防の下に打たれた鋼の壁の看板。',
+ clear:{ans:'堤防が壊れる前ぶれかもしれない',text:'安全率は 1.25。まだ噴き出しているだけだが、水位が少し上がると 1 を下回り、砂が流れ出して堤防の中に空洞ができ、一気に崩れる（パイピング破壊）。',
+  real:'水防団は、噴き出し口のまわりに土のうを丸く積んで水をため、水位差を小さくする「月の輪工法」で守る。式の Δh を小さくする作戦そのもの。噴き出しを見つけたら、すぐに市町村に知らせることが大事。',link:['地盤力学ラボ「透水」','../jiban/#u4']}},
+// ---------------------------------------------------- R4 遊水地（下流）
+{id:'pond',field:'down',uses:['kasen','suiri','toshi'],title:'洪水を一時預かる遊水地',sub:'川があふれそうな分を、どれだけためられる？',
+ stages:['実物','流量をグラフに','あふれる分','教科書の図'],
+ scene:()=>`${sky()}
+ ${S('0-1',`<rect x="0" y="120" width="600" height="180" fill="#a9c79a"/><path d="M0,180 Q300,150 600,190 L600,215 Q300,175 0,205Z" fill="${C.mid}"/><rect x="300" y="215" width="250" height="70" fill="#cfe3c4" stroke="${C.navy}" stroke-width="2" stroke-dasharray="6 4"/>`)}
+ ${S('0-0',label(425,256,'遊水地（ふだんは野球場）',C.navy,'middle',12))}
+ ${R('ball',`<circle cx="380" cy="250" r="4" fill="#fff" stroke="${C.navy}"/>`+person(400,265,C.red,.7)+person(470,260,C.navy,.7))}
+ ${R('cloud',cloud(150,50,1.2))}
+ ${R('tree',tree(60,130,.7)+tree(560,140,.7))}
+ ${S('1-3',`<g transform="translate(60,40)"><rect x="0" y="0" width="480" height="230" fill="#fff" stroke="${C.navy}" stroke-width="2"/><line x1="30" y1="200" x2="470" y2="200" stroke="${C.navy}" stroke-width="2"/><line x1="30" y1="200" x2="30" y2="10" stroke="${C.navy}" stroke-width="2"/><text x="470" y="220" font-size="12" text-anchor="end" fill="${C.navy}">時間（時）</text><text x="36" y="20" font-size="12" fill="${C.navy}">流量 m³/s</text>
+  <polygon points="30,200 230,20 430,200" fill="${C.blue}" fill-opacity=".25" stroke="${C.blue}" stroke-width="3"/>
+  <text x="230" y="14" font-size="12" text-anchor="middle" fill="${C.blue}" font-weight="700">600</text><text x="430" y="216" font-size="12" text-anchor="middle" fill="${C.navy}">10</text><text x="230" y="216" font-size="12" text-anchor="middle" fill="${C.navy}">5</text>
+  ${S('2-3',`<line x1="30" y1="80" x2="470" y2="80" stroke="${C.red}" stroke-width="2.5" stroke-dasharray="6 4"/><text x="466" y="74" font-size="12" text-anchor="end" fill="${C.red}" font-weight="700">川が流せる 400</text><polygon points="163,80 230,20 297,80" fill="${C.red}" fill-opacity=".45" stroke="${C.red}" stroke-width="2"/>`)}
+  ${S('3-3',`<text x="230" y="100" font-size="13" text-anchor="middle" fill="${C.red}" font-weight="900">ためる量＝赤い三角の面積</text>`)}</g>`)}`,
+ nazo:{q:'大雨で、川の流量が一番多いときは 600 m³/s。川が流せるのは 400 m³/s まで。あふれる分を野球場のような遊水地にためると、どれくらいの量？',hint:'東京ドーム（124万 m³）何杯分？',opts:['0.1 杯分','1 杯分','10 杯分'],ans:1},
+ remove:{text:'「ためる量」を考えるとき、<b>関係ないもの</b>を消そう。',
+  items:[['ball','野球をしている人',1,'洪水のときは避難しているはず。'],['cloud','雲',1,'雨は「川の流量の変化」にまとめる。'],['tree','木',1,'関係ない。'],
+   ['hydro','時間ごとの流量の変化',0,'これがわからないと、ためる量が計算できない。'],['cap','川が流せる量',0,'これを超えた分をためる。']]},
+ steps:[
+  {q:'洪水の流量の変化は、どう表す？',opts:['時間と流量のグラフ（ハイドログラフ）','1つの数字'],ans:0,st:1,why:'洪水は、増えて、ピークを迎えて、減っていく。時間を横軸、流量を縦軸にしたグラフをハイドログラフという。ここでは10時間の三角形とする。'},
+  {q:'ためなければならない水の量は、グラフのどこ？',opts:['川が流せる量（400）を超えた部分の面積','ピークの高さ'],ans:0,st:2,why:'流量（m³/s）× 時間（s）＝ 体積（m³）。グラフの面積が水の体積になる。'},
+  {q:'赤い三角の底辺の長さは？',opts:['10 時間 × (200/600)＝3.33 時間','10 時間'],ans:0,st:3,why:'大きな三角形と、上の赤い三角形は相似（形が同じ）。高さが 200/600＝1/3 なので、底辺も 1/3。'}],
+ solve:[
+  {q:'ためる<b>水の量</b>は何万 m³？（三角形の面積＝½×底辺×高さ）',given:[['高さ','600−400＝200 m³/s'],['底辺','3.33 時間 ＝ 12000 秒']],u:'万m³',v:120,tol:.02,hint:'½ × 12000 × 200 ＝ 1,200,000 m³',pf:'流量は1秒あたりの体積なので、流量 × 秒 ＝ 体積。三角形の分布なので面積は半分。'},
+  {q:'遊水地の広さが 1 km²（100万 m²）なら、<b>水深</b>は何 m になる？',given:[['ためる量','120万 m³'],['広さ','100万 m²']],u:'m',v:1.2,tol:.02,hint:'体積 ÷ 面積',pf:'底が平らな池なら、体積 ＝ 面積 × 水深。'}],
+ find:'河川敷の野球場やサッカー場の「洪水時には水につかります」の看板。大きな遊水地（渡良瀬遊水地など）。',
+ clear:{ans:'1 杯分',text:'120万 m³、ほぼ東京ドーム1杯分。1 km² の野球場や田んぼに 1.2 m の深さでためられる。',
+  real:'遊水地は、ふだんは公園・田んぼ・野球場として使い、洪水のときだけ水をためる。どこに作るかは、土地の使い方を決める都市計画（都市工学）とセット。地下に作る巨大な調整池（首都圏外郭放水路など）もある。',link:['水理学ラボ「洪水と流出」','../suiri/#u12']}},
+// ---------------------------------------------------- R5 内水とポンプ（下流）
+{id:'pump',field:'down',uses:['kasen','josui','toshi','suiri'],title:'川があふれていないのに浸水',sub:'まちの雨を川に出すポンプは何台いる？',
+ stages:['実物','雨を流量に','出口を置きかえ','教科書の図'],
+ scene:()=>`${sky()}
+ ${S('0-2',`<g fill="#7c808a" opacity=".9">${cloud(150,40,1.6).replace('#fff','#9aa3b2')}${cloud(380,35,1.6).replace('#fff','#9aa3b2')}</g>${Array.from({length:26},(_,i)=>`<line x1="${(i*43)%440}" y1="${(i*29)%60+60}" x2="${(i*43)%440-5}" y2="${(i*29)%60+74}" stroke="${C.blue}" stroke-width="2"/>`).join('')}`)}
+ <path d="M0,300 V230 H400 L440,150 H480 L520,230 H600 V300Z" fill="#a9c79a" stroke="${C.navy}" stroke-width="2"/>
+ <rect x="520" y="170" width="80" height="60" fill="${C.mid}"/>${wsm(560,170)}
+ ${S('0-1',`<rect x="0" y="215" width="420" height="15" fill="${C.mid}" opacity=".8"/>`)}${R('houses',[60,160,260].map(x=>`<rect x="${x}" y="180" width="50" height="50" fill="#e6e1d6" stroke="${C.navy}"/><path d="M${x-6},182 L${x+25},160 L${x+56},182Z" fill="${C.red}"/>`).join(''))}
+ ${R('car',car(350,228,C.blue,.7))}
+ ${R('dog',`<g transform="translate(130,228)"><ellipse cx="0" cy="-6" rx="9" ry="5" fill="#8a6d4b"/><circle cx="9" cy="-11" r="4" fill="#8a6d4b"/></g>`)}
+ <rect x="400" y="180" width="40" height="50" fill="#bfbab0" stroke="${C.navy}" stroke-width="2"/><text x="420" y="210" font-size="10" text-anchor="middle" fill="${C.navy}" font-weight="700">ポンプ</text>
+ ${S('1-3',`<path d="M20,250 H395" stroke="${C.blue}" stroke-width="6"/><path d="M400,250 l-12,-7 v14z" fill="${C.blue}"/>`+label(200,275,'まちの雨 Q＝frA/3.6',C.blue))}
+ ${S('2-3',`<path d="M440,190 Q470,140 520,180" stroke="${C.red}" stroke-width="4" fill="none"/><path d="M524,184 l-12,-2 l6,-9z" fill="${C.red}"/>`+label(470,130,'1台 5 m³/s',C.red))}
+ ${S('2-2',label(300,150,'川の水位が高いので、自然には流れ出ない',C.navy,'middle',12))}
+ ${S('3-3',label(200,150,'A＝2 km²、r＝40 mm/h、f＝0.9',C.navy))}`,
+ nazo:{q:'大雨の日、川は堤防の中に収まっているのに、まちが水につかった。なぜ？',hint:'予想してみよう。',opts:['堤防から水がもれた','まちに降った雨が、水位の高い川に出ていけない','下水管が細すぎて、ほかに原因はない'],ans:1},
+ remove:{text:'「ポンプが何台いるか」を考えるとき、<b>関係ないもの</b>を消そう。',
+  items:[['car','車',1,'関係ない。'],['dog','犬',1,'関係ない。'],['houses','家の形',1,'家や道路の割合は「流出係数 f」にまとめる。'],
+   ['rain','まちに降る雨',0,'ポンプでくみ出す水のもと。'],['river','川の水位',0,'高いと自然に流れ出ない。だからポンプが要る。'],['pumpq','ポンプの能力',0,'1台でどれだけくみ出せるか。']]},
+ steps:[
+  {q:'まちに降った雨は、どう置きかえる？',opts:['合理式で、出口に集まる流量にする','雨粒の数'],ans:0,st:1,why:'用水路のミッションと同じ合理式 Q＝frA/3.6。まちは屋根と道路が多く、しみこまないので f が大きい（0.9）。'},
+  {q:'川の水位が高いとき、まちの雨水の出口は？',opts:['水門を閉めて、ポンプで川にくみ上げる','そのまま自然に流れ出る'],ans:0,st:2,why:'川の水位がまちより高いと、水門を開けると川の水が逆流してくる。だから水門を閉め、ポンプでくみ上げる（排水機場）。'},
+  {q:'必要なポンプの台数は？',opts:['集まる流量 ÷ 1台の能力','川の流量 ÷ 1台の能力'],ans:0,st:3,why:'くみ出すのは、まちに降った分だけ。'}],
+ solve:[
+  {q:'まちから集まる<b>雨水の流量</b>は？',given:[['f','0.9'],['r','40 mm/h'],['A','2 km²']],u:'m³/s',v:20,tol:.02,hint:'0.9×40×2÷3.6',pf:'mm/h を m/s、km² を m² に直すと、まとめて 1/3.6 になる（水理学ラボ「洪水と流出」の証明）。'},
+  {q:'1台 5 m³/s のポンプが<b>何台</b>いる？',given:[['集まる流量','20 m³/s'],['1台の能力','5 m³/s']],u:'台',v:4,tol:.001,hint:'20÷5',pf:'足りないと、その分がまちにたまる（内水氾濫）。'}],
+ find:'川沿いの「排水機場」や「ポンプ場」の建物と、川に出ている大きな排水管。マンホールのふたの「雨水」「汚水」の文字。',
+ clear:{ans:'まちに降った雨が、水位の高い川に出ていけない',text:'これを「内水氾濫」という。川があふれる「外水氾濫」より起きやすい。必要なポンプは4台。',
+  real:'まちの雨水を集めるのは下水道（上下水道）、ポンプを動かして川に出すのは河川、どこまで家を建ててよいかを決めるのは都市計画。1つの浸水に、3つの勉強が全部関わっている。',link:['そぎ落としミッション「ゲリラ豪雨と用水路」','../sogi/#channel']}},
+// ---------------------------------------------------- R6 河口の水門（下流）
+{id:'gate',field:'down',uses:['kasen','suiri','kozo','conc'],title:'高潮をせき止める水門',sub:'海の水位が上がった。水門はどれだけ押される？',
+ stages:['実物','水を水圧に','水門を面に','教科書の図'],
+ scene:()=>`${sky()}
+ ${R('cloud',cloud(100,40,1.1))}
+ ${R('gull',`<path d="M420,60 q8,-8 16,0 q8,-8 16,0" stroke="${C.navy}" stroke-width="2.5" fill="none"/>`)}
+ <rect x="0" y="250" width="600" height="50" fill="url(#hs)"/>
+ <rect x="0" y="130" width="280" height="120" fill="${C.mid}" opacity=".85"/>${wsm(60,130)}<text x="20" y="160" font-size="12" font-weight="700" fill="${C.navy}">海（高潮）</text>
+ <rect x="300" y="202" width="300" height="48" fill="${C.mid}" opacity=".85"/>${wsm(540,202)}<text x="590" y="232" font-size="12" font-weight="700" fill="${C.navy}" text-anchor="end">川</text>
+ ${S('0-1',`<rect x="270" y="60" width="16" height="190" fill="#bfbab0" stroke="${C.navy}" stroke-width="2"/><rect x="294" y="60" width="16" height="190" fill="#bfbab0" stroke="${C.navy}" stroke-width="2"/><rect x="262" y="50" width="56" height="14" fill="#bfbab0" stroke="${C.navy}" stroke-width="2"/>`)}
+ <rect x="280" y="110" width="20" height="140" fill="${C.blue}" stroke="${C.navy}" stroke-width="2.5"/>
+ ${R('ship',`<path d="M120,128 h70 l-10,14 h-50z" fill="${C.red}"/><rect x="140" y="112" width="26" height="16" fill="#fff" stroke="${C.navy}"/>`)}
+ ${R('lamp',`<rect x="268" y="30" width="44" height="20" fill="#f2c14e" stroke="${C.navy}"/><text x="290" y="44" font-size="9" text-anchor="middle" fill="${C.navy}">操作室</text>`)}
+ ${S('1-3',arrowsSide(280,130,250,0,110,6,1,C.red)+arrowsSide(300,202,250,0,44,3,-1,C.blue))}
+ ${S('2-3',label(290,98,'幅 B＝10 m',C.navy))}
+ ${S('3-3',vdim(30,130,250,'H₁＝5 m',C.red)+vdim(570,202,250,'H₂＝2 m',C.blue))}`,
+ nazo:{q:'台風の高潮で海の水位が上がった。幅 10 m の水門が、海側から川側へ押される力は？',hint:'重さにするとどのくらい？',opts:['車1台分（約1トン）','トラック10台分（約100トン）','船1隻分（1万トン）'],ans:1},
+ remove:{text:'「水門を押す力」を考えるとき、<b>関係ないもの</b>を消そう。',
+  items:[['cloud','雲',1,'関係ない。'],['gull','カモメ',1,'関係ない。'],['ship','船',1,'浮いているだけ。水門は押さない。'],['lamp','操作室',1,'水門の重さは別に考える。'],
+   ['sea','海の水',0,'水門を押している。'],['riverW','川の水',0,'反対側から押し返している！'],['gateP','水門の扉',0,'力を受ける本体。']]},
+ steps:[
+  {q:'海と川の水は、水門をどう押す？',opts:['両側からそれぞれ三角形の水圧で押す','海側だけが押す'],ans:0,st:1,why:'浸水したドアのミッションと同じ三角形の水圧が、両側からかかる。向きが反対なので差し引きする。'},
+  {q:'水門の扉は、どう置きかえる？',opts:['幅 10 m の鉛直な面','1つの点'],ans:0,st:2,why:'全水圧は幅に比例する。'},
+  {q:'正味の力の式は？',opts:['½ρgB(H₁²−H₂²)','½ρgB(H₁−H₂)²'],ans:0,st:3,why:'海側の ½ρgH₁²B から、川側の ½ρgH₂²B を引く。差の2乗ではないことに注意（水理学ラボ「全水圧」の証明）。'}],
+ solve:[
+  {q:'水門を押す<b>正味の力</b>は何 kN？',given:[['ρg','9.8 kN/m³'],['B','10 m'],['H₁','5 m'],['H₂','2 m']],u:'kN',v:1029,tol:.02,hint:'½×9.8×10×(25−4)',pf:'それぞれの側の全水圧は三角形の面積 × 幅。向きが逆なので引き算。'},
+  {q:'その力の大部分を受け止めるのは扉の両端の柱。1本あたり<b>何 kN</b>？',given:[['正味の力','1029 kN'],['柱','2本で半分ずつ']],u:'kN',v:514.5,tol:.02,hint:'÷2',pf:'扉は両端で支えられた梁（構造力学の単純梁）のように働き、反力は半分ずつ。'}],
+ find:'河口や運河の水門・陸閘（りっこう）。扉の柱がどれだけ太いか、コンクリートのひびや鋼のさびがないか。',
+ clear:{ans:'トラック10台分（約100トン）',text:'1029 kN は約105トン。水門の扉は梁として曲げに耐え（構造力学）、柱はコンクリートで作られ（コンクリート工学）、海水でさびない材料が選ばれている（材料）。',
+  real:'東京の下町は海面より低い「ゼロメートル地帯」。高潮のときは、たくさんの水門と陸閘を一斉に閉めて守っている。閉め忘れが1か所でもあると、そこから水が入る。点検と訓練が欠かせない。',link:['水理学ラボ「平面に働く全水圧」','../suiri/#u2']}},
+];
+const LAB={kozo:'../kozo/',dan:'../dan/',suiri:'../suiri/',jiban:'../jiban/'};
+const FIELDS={
+ kozo:['構造力学','力で形を支える',{x:150,y:85},'橋・建物・ダム、どれも「重さをどう地面まで流すか」で形が決まる。力の流れが読めないと、どこが壊れるかも、どこを点検すべきかもわからない。すべての構造物の設計図は、ここから始まる。',[['構造力学ラボ',LAB.kozo],['断面力図ラボ',LAB.dan]]],
+ conc:['コンクリート工学','いちばん使われる材料',{x:300,y:45},'日本の橋の大半、トンネル、ダム、堤防の護岸、上下水道の施設はコンクリート。引っ張りに弱いことを鉄筋で補う「鉄筋コンクリート」の考え方と、ひび割れ・塩害・中性化で弱っていくしくみを知らないと、作ることも長持ちさせることもできない。',[]],
+ zairyo:['土木材料','鋼・コンクリート・土の性質',{x:450,y:85},'同じ形でも、材料が変われば強さ・重さ・伸び縮み・さびやすさが変わる。構造力学で求めた応力を「その材料が耐えられるか」と比べて、はじめて安全かどうかが決まる。',[]],
+ jiban:['土質力学','土と地下水',{x:110,y:235},'すべての構造物は最後は地面が支える。そして堤防・盛土・埋立地のように土そのものが構造物のことも多い。地震の液状化、大雨の土砂災害、建物の沈下は、どれも土と水の関係で起きる。',[['地盤力学ラボ',LAB.jiban]]],
+ suiri:['水理学','水の重さと流れ',{x:490,y:235},'水は重く、流れると大きな力を出す。浸水したドア、ダムの水門、水道の水圧、用水路の容量、津波。水が関わる施設と災害は、すべて水理学の式で見積もる。',[['水理学ラボ',LAB.suiri]]],
+ josui:['上下水道','くらしの水をめぐらせる',{x:210,y:325},'蛇口の水は高い所から水圧で、トイレの水は下り坂で流れる。浄水・配水・下水処理まで、止まると一日も暮らせない施設。水理学（管路・水圧）と材料（管のさび・劣化）の応用そのもの。',[]],
+ toshi:['都市工学','まちの形を決める',{x:0,y:0},'どこに家を建て、どこに道・公園・避難場所・駅を置くか。洪水や津波の危ない場所（河川・水理）、地盤の弱い場所（土質）を知らずに町を計画すると、災害のたびに同じ被害をくり返す。すべての勉強を「まち」としてまとめる科目。',[]],
+ kotsu:['交通工学','人と車の流れ',{x:0,y:0},'道路・信号・鉄道は、人や物の流れを「量」として計算して作られている。渋滞・事故・避難の遅れは、流れが容量を超えたときに起きる。車の重さは橋の荷重（構造力学）に、道路の舗装は材料に、町の形は都市工学につながる。',[]],
+ eco:['生態工学','生き物と共にくらす',{x:0,y:0},'川・海・森の工事は、魚や鳥や植物のすみかを変えてしまう。魚道や多自然川づくりのように、生き物の能力を数字でつかみ、守りながら作る。人だけが安全なまちは、長く続かない。',[]],
+ forest:['森林工学','森で水と土を守る',{x:0,y:0},'日本の国土の3分の2は森。森は雨をためて洪水をやわらげ、根で斜面の土をつなぎとめる。林道・間伐・治山工事で森を育てることは、下流のまちを守る土木そのもの。',[]],
+ kasen:['河川工学','川と洪水から守る',{x:390,y:325},'日本の人口と財産の約半分は、洪水のとき川の水面より低い土地にある。堤防（土質力学）、洪水の流れ（水理学）、水門や橋（構造・コンクリート）、下水からの雨水（上下水道）が全部集まる総合科目。',[['河川工学ラボ','../kasen/']]],
+};
+const EDGES=[['kozo','conc','M図から鉄筋の量'],['kozo','zairyo','応力 ≦ 材料の強さ'],['conc','zairyo','セメント・骨材・鉄筋'],['kozo','jiban','基礎の支持力'],['jiban','suiri','地下水・浸透'],['suiri','kasen','洪水の流れ'],['suiri','josui','管の水圧・損失'],['jiban','kasen','堤防は土'],['josui','kasen','雨水は川へ'],['conc','josui','管・処理場'],['jiban','conc','擁壁・基礎'],['zairyo','josui','管のさび・劣化'],['toshi','kotsu','人の動きと道路'],['toshi','josui','人口から水の量'],['toshi','kasen','ハザードマップ'],['toshi','jiban','土地の成り立ち'],['kotsu','kozo','車の重さ＝橋の荷重'],['kotsu','zairyo','舗装の材料'],['eco','kasen','魚道・多自然川づくり'],['eco','suiri','魚と流れの速さ'],['forest','kasen','上流の森が洪水を減らす'],['forest','jiban','根が斜面を守る'],['forest','eco','森は生き物のすみか'],['forest','toshi','里山と土地利用']];
+(function(){ const ks=['kozo','conc','zairyo','kotsu','toshi','josui','suiri','kasen','eco','forest','jiban']; ks.forEach((k,i)=>{ const a=-Math.PI/2+2*Math.PI*i/ks.length; FIELDS[k][2]={x:Math.round(300+240*Math.cos(a)),y:Math.round(212+180*Math.sin(a))}; }); })();
+const fieldName=k=>FIELDS[k][0];
+
+// rm ids that are scene groups drawn without R(): map chips to stage groups
+// ================= つながりマップ =================
+function mapSvg(sel){
+ const P0=k=>FIELDS[k][2];
+ let s=`<svg viewBox="0 0 600 425" id="cmap"><rect width="600" height="425" fill="#fff"/>`;
+ s+=`<circle cx="300" cy="212" r="54" fill="${C.paper}" stroke="${C.navy}" stroke-width="2" stroke-dasharray="4 4"/><text x="300" y="206" text-anchor="middle" font-size="14" font-weight="900" fill="${C.navy}">まちを</text><text x="300" y="226" text-anchor="middle" font-size="14" font-weight="900" fill="${C.navy}">支え、守る</text>`;
+ let lab=''; for(const [a,b,t] of EDGES){ const A=P0(a),B=P0(b); const on=sel&&(a===sel||b===sel); const S0p=a===sel?A:B, O0p=a===sel?B:A; const tt=Math.hypot(A.x-B.x,A.y-B.y)<200?0.5:0.66; let mx=S0p.x+(O0p.x-S0p.x)*tt, my=S0p.y+(O0p.y-S0p.y)*tt; if(tt===0.5){ const cx=300-mx, cy=212-my, cl=Math.hypot(cx,cy)||1; mx+=cx/cl*30; my+=cy/cl*30; }
+  s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${on?C.red:C.mid}" stroke-width="${on?4:2.5}"/>`;
+  if(on) lab+=`<text x="${mx}" y="${my+4}" text-anchor="middle" font-size="13" font-weight="900" fill="${C.red}" stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">${t}</text>`; }
+ for(const [k,f] of Object.entries(FIELDS)){ const {x,y}=f[2]; const on=k===sel; const n=M.filter(m=>m.uses.includes(k)).length;
+  s+=`<g data-f="${k}" style="cursor:pointer"><rect x="${x-52}" y="${y-20}" width="104" height="40" rx="20" fill="${on?C.red:C.navy}" stroke="#fff" stroke-width="3"/><text x="${x}" y="${y-1}" text-anchor="middle" font-size="${f[0].length>6?11:13.5}" font-weight="900" fill="#fff">${f[0]}</text><text x="${x}" y="${y+15}" text-anchor="middle" font-size="10.5" fill="#fff">ミッション ${n}</text></g>`; }
+ return s+lab+`</svg>`;
+}
+function fieldCard(k){
+ const f=FIELDS[k]; const ms=M.filter(m=>m.uses.includes(k)); const nb=EDGES.filter(e=>e[0]===k||e[1]===k);
+ return `<h3>${f[0]}<small>${f[1]}</small></h3><p><b>なぜ学ばなければならない？</b><br>${f[3]}</p>
+ <p><b>つながる勉強</b></p><ul>${nb.map(e=>{const o=e[0]===k?e[1]:e[0]; return `<li><a href="#" data-sel="${o}">${fieldName(o)}</a>：${e[2]}</li>`;}).join('')}</ul>
+ <p><b>この勉強を使うミッション</b></p><div class="chips">${ms.map(m=>`<button class="chip" data-m="${m.id}">${m.title}</button>`).join('')||'<span style="font-size:13px">準備中</span>'}</div>
+ <p><b>深く学ぶ</b>：${f[4].length?f[4].map(l=>`<a href="${l[1]}" target="_blank" rel="noopener">${l[0]}</a>`).join('・'):'ラボ準備中（このページのミッションから）'}</p>`;
+}
+function bindMap(sel){
+ const box=document.getElementById('mapbox'); box.innerHTML=`<div class="mapw">${mapSvg(sel)}</div><div class="fcard" id="fcard">${sel?fieldCard(sel):`<h3>どれかの勉強をタップ</h3><p>11の勉強は、ばらばらの科目ではありません。1本の堤防にも、土（土質力学）、川の流れ（水理学）、水門（構造力学・コンクリート・材料）、雨水の排水（上下水道）が全部入っていて、その堤防をどこに、どの高さで作るかを決めるのが都市工学、堤防の上の道路と避難の流れを考えるのが交通工学です。どれか1つが欠けると、まちは守れません。</p><p>線の上の言葉が「どうつながるか」。ミッションを解くと、1つの実物にいくつもの勉強が使われていることがわかります。</p>`}</div>`;
+ box.querySelectorAll('[data-f]').forEach(g=>g.onclick=()=>bindMap(g.dataset.f));
+ box.querySelectorAll('[data-sel]').forEach(a=>a.onclick=e=>{e.preventDefault(); bindMap(a.dataset.sel);});
+ box.querySelectorAll('.fcard [data-m]').forEach(b=>b.onclick=()=>{ if(unlocked(M.find(m=>m.id===b.dataset.m))) open(b.dataset.m); });
+}
+const usesHtml=m=>`<div class="uses">使う勉強：${m.uses.map(k=>`<span>${fieldName(k)}</span>`).join('<i>＋</i>')}</div>`;
+const LABU={"構造力学": ["../kozo/", ["力とモーメント", "支点・反力と構造物の判別", "静定梁の反力と断面力", "ゲルバー梁と静定ラーメン", "静定トラス", "断面の性質", "応力度と組合せ応力", "ひずみと軸方向の変形", "梁のたわみとたわみ角", "座屈", "仕事とエネルギー法", "不静定構造", "影響線と移動荷重", "塑性解析と崩壊荷重", "振動と耐震", "アーチとケーブル"]], "地盤力学": ["../jiban/", ["土の基本的性質", "土の分類とコンシステンシー", "締固め", "透水", "有効応力", "地中応力", "圧密", "せん断強さ", "土圧", "基礎の支持力", "斜面の安定", "地盤調査と液状化"]], "水理学": ["../suiri/", ["静水圧", "面に働く全水圧", "浮力と浮体の安定", "連続の式とベルヌーイの定理", "運動量の式", "管路の流れ", "開水路の等流", "比エネルギーと限界水深", "跳水", "オリフィスとせき", "地下水と井戸", "雨と洪水（水文）", "波と津波"]], "断面力図": ["../dan/", []], "河川工学": ["../kasen/", []]};
+function linkify(h){ return String(h).replace(/(構造力学|地盤力学|水理学|断面力図|河川工学)ラボ(「([^」]+)」)?(?![^<]*<\/a>)/g,(all,lab,q,key)=>{ const L=LABU[lab]; if(!L) return all; let hash=''; if(key){ const k=key.replace(/[（(].*$/,''); const i=L[1].findIndex(n=>n.includes(k)||k.includes(n)); if(i>=0) hash='#u'+(i+1); } return `<a href="${L[0]}${hash}" target="_blank" rel="noopener">${all}</a>`; }).replace(/(歩道橋|ベランダ|浸水したドア|用水路|擁壁|埋立地)のミッション(?![^<]*<\/a>)/g,(all,k)=>{ const id={'歩道橋':'bridge','ベランダ':'balcony','浸水したドア':'door','用水路':'channel','擁壁':'wall','埋立地':'reclaim'}[k]; return `<a href="../sogi/#${id}" target="_blank" rel="noopener">${all}</a>`; }); }
+const PATH={"bridge": [["構造力学ラボ「力とモーメント」", "../kozo/#u1", "人の重さが支点にどう分かれるか（つりあい）"], ["構造力学ラボ「静定梁の反力と断面力」", "../kozo/#u3", "なぜ真ん中の M が最大か、M＝wL²/8 の出どころ"], ["断面力図ラボ", "../dan/", "荷重を動かすと M 図がどう変わるか（触って確かめる）"], ["構造力学ラボ「断面の性質」", "../kozo/#u6", "桁の形で強さが変わるわけ（断面係数 Z）"], ["構造力学ラボ「応力度と組合せ応力」", "../kozo/#u7", "σ＝M/Z で「折れないか」を判定する"]], "balcony": [["構造力学ラボ「静定梁の反力と断面力」", "../kozo/#u3", "片持ち梁の M＝wL²/2"], ["断面力図ラボ", "../dan/", "片持ち梁の M 図が上側に出るのを見る"], ["構造力学ラボ「応力度と組合せ応力」", "../kozo/#u7", "上側が引っ張られる理由（曲げ応力の向き）"], ["構造力学ラボ「梁のたわみとたわみ角」", "../kozo/#u9", "先が下がる量（たわみ）"]], "door": [["水理学ラボ「静水圧」", "../suiri/#u1", "p＝ρgh：深いほど強く押す理由"], ["水理学ラボ「面に働く全水圧」", "../suiri/#u2", "ドア全体の力と作用点（三角形の重心）"]], "channel": [["水理学ラボ「連続の式とベルヌーイの定理」", "../suiri/#u4", "流量＝面積×速さ（連続の式）"], ["水理学ラボ「開水路の等流」", "../suiri/#u7", "水路が流せる量（マニングの式）"], ["水理学ラボ「雨と洪水（水文）」", "../suiri/#u12", "流れ込む量（合理式）"]], "wall": [["地盤力学ラボ「土の基本的性質」", "../jiban/#u1", "土の重さ γ の求め方"], ["地盤力学ラボ「せん断強さ」", "../jiban/#u8", "土の摩擦 φ（モール・クーロン）"], ["地盤力学ラボ「土圧」", "../jiban/#u9", "主働土圧 Ka と作用点 H/3"], ["地盤力学ラボ「透水」", "../jiban/#u4", "水抜き穴が詰まると何が起きるか（透水）"]], "reclaim": [["地盤力学ラボ「有効応力」", "../jiban/#u5", "有効応力：沈下を起こす本当の力"], ["地盤力学ラボ「地中応力」", "../jiban/#u6", "建物の重さが深くまでどう伝わるか"], ["地盤力学ラボ「圧密」", "../jiban/#u7", "何 cm、何年で沈むか（圧密）"]], "rcbeam": [["構造力学ラボ「静定梁の反力と断面力」", "../kozo/#u3", "M＝wL²/8（歩道橋と同じ）"], ["構造力学ラボ「断面の性質」", "../kozo/#u6", "断面の形と強さ"], ["構造力学ラボ「応力度と組合せ応力」", "../kozo/#u7", "引張力 T と鉄筋の量"]], "thermal": [["構造力学ラボ「ひずみと軸方向の変形」", "../kozo/#u8", "温度で伸びる量と温度応力 σ＝EαΔT"], ["構造力学ラボ「支点・反力と構造物の判別」", "../kozo/#u2", "ローラーで逃がす支え方（支点と反力）"]], "water": [["水理学ラボ「静水圧」", "../suiri/#u1", "配水池の高さ＝水圧"], ["水理学ラボ「連続の式とベルヌーイの定理」", "../suiri/#u4", "流れているときのエネルギー（ベルヌーイ）"], ["水理学ラボ「管路の流れ」", "../suiri/#u6", "管の摩擦で圧力が下がる量（損失水頭）"]], "signal": [["水理学ラボ「連続の式とベルヌーイの定理」", "../suiri/#u4", "「流れの量」の考え方（連続の式）は車の流れにも使える"]], "evac": [["水理学ラボ「波と津波」", "../suiri/#u13", "津波の速さ C＝√(gh)：浅くなると遅く高くなる"]], "fish": [["水理学ラボ「連続の式とベルヌーイの定理」", "../suiri/#u4", "落ちる水の速さ v＝√(2gh)（エネルギーの保存）"], ["水理学ラボ「オリフィスとせき」", "../suiri/#u10", "穴や段差から出る水の速さ（トリチェリ）"]], "forest": [["水理学ラボ「雨と洪水（水文）」", "../suiri/#u12", "合理式と流出係数"], ["地盤力学ラボ「透水」", "../jiban/#u4", "森の土に雨がしみこむ速さ（透水）"], ["地盤力学ラボ「斜面の安定」", "../jiban/#u11", "木の根が斜面を守るしくみ（斜面の安定）"]], "stone": [["水理学ラボ「開水路の等流」", "../suiri/#u7", "底をこする力 τ₀＝ρgRI"], ["地盤力学ラボ「土の分類とコンシステンシー」", "../jiban/#u2", "石や砂の粒の大きさ（粒度）"], ["地盤力学ラボ「土の基本的性質」", "../jiban/#u1", "水中での重さ（浮力を引いた重さ）"]], "levee": [["水理学ラボ「開水路の等流」", "../suiri/#u7", "洪水の水深（マニングの式）"], ["水理学ラボ「比エネルギーと限界水深」", "../suiri/#u8", "常流・射流と水面の形"]], "seep": [["地盤力学ラボ「透水」", "../jiban/#u4", "動水勾配と限界動水勾配（パイピング）"], ["地盤力学ラボ「有効応力」", "../jiban/#u5", "上向きの水で土が軽くなるしくみ"], ["地盤力学ラボ「斜面の安定」", "../jiban/#u11", "濡れた堤防の斜面のすべり"]], "pond": [["水理学ラボ「雨と洪水（水文）」", "../suiri/#u12", "洪水の流量の変化（ハイドログラフ・合理式）"]], "pump": [["水理学ラボ「雨と洪水（水文）」", "../suiri/#u12", "まちの雨水の流量（合理式）"], ["水理学ラボ「管路の流れ」", "../suiri/#u6", "ポンプと管の損失"]], "gate": [["水理学ラボ「面に働く全水圧」", "../suiri/#u2", "両側からの全水圧の差"], ["構造力学ラボ「静定梁の反力と断面力」", "../kozo/#u3", "扉を梁として考える"], ["構造力学ラボ「応力度と組合せ応力」", "../kozo/#u7", "扉や柱が耐えられるか"]]};
+// ================= 状態 =================
+const KEY='kasen-progress';
+const GN={up:'上流',mid:'中流',down:'下流'};
+let P={}; try{ P=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(P)); }catch(e){} };
+const $main=document.getElementById('main');
+const totalStars=()=>Object.values(P).reduce((a,b)=>a+(b.stars||0),0);
+function unlocked(m){ const same=M.filter(x=>x.field===m.field); const i=same.indexOf(m); return i===0 || (P[same[i-1].id]&&P[same[i-1].id].stars>0); }
+function thumb(m){ const s=m.scene(); return `<svg viewBox="0 0 600 300">${DEFS}${s.replace(/data-s="(\d)-(\d)"/g,(a,x,y)=>+x===0?a:'data-s="hide" style="display:none"')}</svg>`; }
+function updTot(){ document.getElementById('tot').textContent=`★ ${totalStars()} / ${M.length*3}`; }
+function home(){
+ location.hash=''; updTot();
+ $main.innerHTML=`<section class="hero"><h1>川は、<b>山から海まで1本</b>。</h1>
+ <p>山の川原の石、中流の堤防、下流の遊水地・排水ポンプ・河口の水門。上流から河口まで、川で起きることを6つのミッションでたどります。実物から関係ないものを消していくと、水理学・土質力学・構造力学の問題が姿を現します。河川工学は、それらを全部使って「川とまちを守る」総合科目です。</p>
+ <div class="flow"><span>① 謎を予想</span><i>→</i><span>② いらない物を消す</span><i>→</i><span>③ 記号に置きかえる</span><i>→</i><span>④ 計算で確かめる</span><i>→</i><span>⑤ 本物に戻す</span></div>
+ <p style="font-size:13px;color:var(--muted)">予想が当たる・ノーミス・クリアでそれぞれ★1つ。上流・中流・下流それぞれ、1つ目をクリアすると次が開きます。</p></section>
+ <section class="cmap"><h2>河川工学は、11の勉強の交差点</h2><div id="mapbox"></div></section>
+ <h2 class="mh">上流から河口へ</h2>
+ <div class="mgrid">${['up','mid','down'].flatMap(k=>M.filter(m=>m.field===k)).map(m=>{ const lk=!unlocked(m); const st=P[m.id]?.stars||0; return `<button class="mc${lk?' locked':''}" data-m="${m.id}" ${lk?'disabled':''}>${thumb(m)}<span class="stars">${st?'★'.repeat(st)+'☆'.repeat(3-st):'NEW'}</span><span class="mt"><em class="ftag">${GN[m.field]}</em><b>${m.title}</b><span>${m.sub}</span><span class="uses2">${m.uses.map(fieldName).join(' ＋ ')}</span></span></button>`; }).join('')}</div>
+ <div class="series"><h2>もっと深く学ぶ（シリーズのラボ）</h2><ul>
+ <li><a href="../sogi/" target="_blank" rel="noopener"><b>そぎ落としミッション（入口・つながりマップ）</b></a>・<a href="../kozo/" target="_blank" rel="noopener">構造力学ラボ</a>・<a href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a>・<a href="../suiri/" target="_blank" rel="noopener">水理学ラボ</a>・<a href="../jiban/" target="_blank" rel="noopener">地盤力学ラボ</a></li>
+ <li><a href="../bukkowashi/" target="_blank" rel="noopener">ぶっ壊し構造ラボ</a>：どこが壊れるか予想して確かめるゲーム</li>
+ </ul><h2 style="margin-top:10px">街に出て、本物を探す</h2><ul>
+ <li><a href="../zukan/" target="_blank" rel="noopener">まちの構造図鑑</a>：トラス・アーチ・ラーメンなど、街で見つけた構造形式を記録する</li>
+ <li><a href="../../tokyo/sanpo/" target="_blank" rel="noopener">東京ドボクマップ</a>（<a href="https://tokyowalkingmap.github.io/Walk-map/tokyo/sanpo/" target="_blank" rel="noopener">公開版</a>）：橋・ダム・水門・駅など、ミッションの「本物」を見に行ける</li></ul></div>
+ <p class="foot">数値は学習用に丸めた代表的な値です。実際の設計では、基準に従って自重や安全率なども含めて確かめます。</p>`;
+ $main.querySelectorAll('.mc[data-m]').forEach(b=>b.onclick=()=>open(b.dataset.m));
+ bindMap('kasen');
+ window.scrollTo(0,0);
+}
+// ================= ミッション進行 =================
+let cur=null, S0=null;
+function open(id){
+ const m=M.find(x=>x.id===id); if(!m||!unlocked(m)) return home();
+ location.hash=id; cur=m;
+ S0={step:0,stage:0,removed:new Set(),pred:null,miss:0,hint:false,solveIdx:0};
+ // ステップ一覧: nazo, remove, steps..., solve..., clear
+ S0.list=[{k:'nazo'},{k:'remove'},...m.steps.map((s,i)=>({k:'rep',i})),...m.solve.map((s,i)=>({k:'solve',i})),{k:'clear'}];
+ $main.innerHTML=`<div class="mv"><div class="scene"><svg viewBox="0 0 600 300" id="sv">${DEFS}${m.scene()}</svg><div class="stagebar">${m.stages.map((s,i)=>`<span data-i="${i}">${s}</span>`).join('')}</div></div><div class="panel" id="pn"></div></div>
+ <p class="foot"><button class="ghost" id="back">← ミッション一覧へ</button></p>`;
+ document.getElementById('back').onclick=home;
+ // 名前のない本体グループに data-rm を付けて、消せない物として扱う（触っても消えない）
+ render(); window.scrollTo(0,0);
+}
+function applyStage(){
+ const sv=document.getElementById('sv'); if(!sv) return;
+ sv.querySelectorAll('[data-s]').forEach(g=>{ const [a,b]=g.dataset.s.split('-').map(Number); g.style.opacity=(S0.stage>=a&&S0.stage<=b)?1:0; });
+ sv.querySelectorAll('[data-rm]').forEach(g=>{ g.style.opacity=(S0.removed.has(g.dataset.rm)||(S0.stage>=1&&g.dataset.rm))?0:1; });
+ document.querySelectorAll('.stagebar span').forEach(s=>s.classList.toggle('on',+s.dataset.i===S0.stage));
+}
+function dots(){ return `<div class="dots">${S0.list.map((x,i)=>`<i class="${i<S0.step?'done':i===S0.step?'on':''}"></i>`).join('')}</div>`; }
+function go(){ S0.step++; S0.hint=false; render(); document.getElementById('pn').scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function render(){
+ const m=cur, it=S0.list[S0.step], pn=document.getElementById('pn'); applyStage();
+ const F='河川工学・'+GN[m.field];
+ if(it.k==='nazo'){
+  pn.innerHTML=linkify(`${dots()}<div class="kicker">${F}</div><h2>${m.title}</h2>${usesHtml(m)}<div class="nazo">${m.nazo.q}<small>${m.nazo.hint}</small></div><div class="opts">${m.nazo.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div><p style="font-size:13px;color:var(--muted)">答えは最後にわかります。まずは直感で。クリアすると、この謎の奥にある単元${PATH[m.id]?` ${PATH[m.id].length} つ`:''}への道順が開きます。</p>`);
+  pn.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ S0.pred=+b.dataset.i; go(); });
+ } else if(it.k==='remove'){
+  const R0=m.remove; const need=R0.items.filter(x=>x[2]).map(x=>x[0]);
+  const done=need.every(id=>S0.removed.has(id));
+  pn.innerHTML=linkify(`${dots()}<div class="kicker">STEP 1　そぎ落とす</div><h2>いらない物を消そう</h2><p>${R0.text}</p><div class="chips">${R0.items.map(x=>`<button class="chip${S0.removed.has(x[0])?' gone':''}" data-id="${x[0]}">${x[1]}</button>`).join('')}</div><div id="rmsg"></div><p>残り <b>${need.filter(id=>!S0.removed.has(id)).length}</b> 個</p><button class="next" id="nx" ${done?'':'disabled'}>残った物を記号に置きかえる →</button>`);
+  pn.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{ const x=R0.items.find(y=>y[0]===b.dataset.id); const msg=document.getElementById('rmsg');
+   if(x[2]){ S0.removed.add(x[0]); applyStage(); b.classList.add('gone'); msg.innerHTML=linkify(`<div class="msg">✓ <b>${x[1]}</b>：${x[3]}</div>`); const left=need.filter(id=>!S0.removed.has(id)).length; pn.querySelector('p:nth-of-type(2) b').textContent=left; if(!left) document.getElementById('nx').disabled=false; }
+   else { S0.miss++; b.classList.remove('keep'); void b.offsetWidth; b.classList.add('keep'); msg.innerHTML=linkify(`<div class="msg ng">✗ <b>${x[1]}</b>は消せない！ ${x[3]}</div>`); } });
+  document.getElementById('nx').onclick=go;
+ } else if(it.k==='rep'){
+  const s=m.steps[it.i];
+  pn.innerHTML=linkify(`${dots()}<div class="kicker">STEP 2　置きかえる（${it.i+1}/${m.steps.length}）</div><h2>${s.q}</h2><div class="opts">${s.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div><div id="rmsg"></div>`);
+  pn.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i, msg=document.getElementById('rmsg');
+   if(i===s.ans){ pn.querySelectorAll('.opt').forEach(x=>x.disabled=true); b.classList.add('ok'); S0.stage=s.st; applyStage(); msg.innerHTML=linkify(`<div class="msg">✓ ${s.why}</div><button class="next" id="nx">次へ →</button>`); document.getElementById('nx').onclick=go; }
+   else { S0.miss++; b.classList.remove('ng'); void b.offsetWidth; b.classList.add('ng'); msg.innerHTML=linkify(`<div class="msg ng">✗ もう一度考えてみよう。左の絵がヒント。</div>`); } });
+ } else if(it.k==='solve'){
+  const s=m.solve[it.i];
+  const head=`${dots()}<div class="kicker">STEP 3　計算で確かめる（${it.i+1}/${m.solve.length}）</div>`;
+  if(s.choice){
+   pn.innerHTML=linkify(`${head}<h2>${s.q}</h2><div class="opts">${s.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div><div id="rmsg"></div>`);
+   pn.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{ const i=+b.dataset.i, msg=document.getElementById('rmsg');
+    if(i===s.ans){ pn.querySelectorAll('.opt').forEach(x=>x.disabled=true); b.classList.add('ok'); msg.innerHTML=linkify(`<div class="msg">✓ 正解！ ${s.pf}</div><button class="next" id="nx">次へ →</button>`); document.getElementById('nx').onclick=go; }
+    else { S0.miss++; b.classList.remove('ng'); void b.offsetWidth; b.classList.add('ng'); msg.innerHTML=linkify(`<div class="msg ng">✗ 先が下がると、上と下のどちらが伸びる？</div>`); } });
+   return;
+  }
+  pn.innerHTML=`${head}<h2>${s.q}</h2><div class="given">${s.given.map(g=>`<b>${g[0]}</b><span>${g[1]}</span>`).join('')}</div>
+  <div class="ans"><input id="in" inputmode="decimal" placeholder="答え"><span>${s.u}</span><button class="next" id="ck" style="margin:0">確かめる</button></div>
+  <button class="ghost" id="hb">ヒントを見る</button><div id="hint"></div><div id="rmsg"></div>
+  <details class="pf"><summary>なぜその式になる？</summary><div>${s.pf}</div></details>`;
+  document.getElementById('hb').onclick=()=>{ S0.hint=true; S0.usedHint=true; document.getElementById('hint').innerHTML=`<div class="msg">${s.hint}</div>`; };
+  const check=()=>{ const v=parseFloat(document.getElementById('in').value.replace(/[，,]/g,'').replace(/[０-９．]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))); const msg=document.getElementById('rmsg'); const tol=s.tol||.02;
+   if(isFinite(v)&&Math.abs(v-s.v)<=Math.abs(s.v)*tol){ msg.innerHTML=linkify(`<div class="msg">✓ 正解！ 答えは <b>${+s.v.toFixed(s.v<10?2:1)} ${s.u}</b>。</div><button class="next" id="nx">次へ →</button>`); document.getElementById('ck').disabled=true; document.getElementById('nx').onclick=go; }
+   else { S0.miss++; msg.innerHTML=linkify(`<div class="msg ng">✗ ちがうみたい。${S0.hint?'ヒントの式に数字を入れて、もう一度。':'ヒントを見てもいいよ。'}${S0.miss>=4?`（答え：${+s.v.toFixed(2)}）`:''}</div>`); } };
+  document.getElementById('ck').onclick=check; document.getElementById('in').onkeydown=e=>{ if(e.key==='Enter') check(); };
+ } else if(it.k==='clear'){
+  const c=m.clear; const hit=S0.pred===m.nazo.ans;
+  const stars=1+(hit?1:0)+((S0.miss===0&&!S0.usedHint)?1:0);
+  const prev=P[m.id]?.stars||0; P[m.id]={stars:Math.max(prev,stars)}; save(); updTot();
+  S0.stage=0; S0.removed=new Set(); applyStage();
+  const same=M.filter(x=>x.field===m.field); const nxt=same[same.indexOf(m)+1];
+  pn.innerHTML=`${dots()}<div class="clear"><div class="big">MISSION CLEAR</div><div class="st">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div style="font-size:12px">予想${hit?'的中 ★':'はずれ'}・${S0.miss===0&&!S0.usedHint?'ノーミス・ヒントなし ★':`まちがい ${S0.miss} 回${S0.usedHint?'・ヒントあり':''}`}・クリア ★</div></div>
+  <div class="nazo">謎の答え：${c.ans}<small>あなたの予想：${m.nazo.opts[S0.pred]} ${hit?'→ 当たり！':'→ 残念！'}</small></div>
+  <p>${c.text}</p>
+  <div class="real"><h3>本物に戻すと</h3>${c.real}</div>
+  <p style="font-size:14px">左の絵は本物に戻りました。さっきまでの「教科書の図」が、この中に隠れていたことを思い出してみよう。</p>
+  ${PATH[m.id]?`<div class="road"><h3>この謎を、もっと深く解き明かす道順</h3><p>上から順に単元ページへ。触って確かめ、「なぜそうなる？」の証明で納得し、問題で腕試し。</p><ol>${PATH[m.id].map(p=>`<li><a href="${p[1]}" target="_blank" rel="noopener">${p[0]}</a><span>${p[2]}</span></li>`).join('')}</ol></div>`:''}
+  <div class="real walk"><h3>街で探そう</h3>${m.find}<br><a href="../zukan/" target="_blank" rel="noopener">まちの構造図鑑で記録する →</a>　<a href="../../tokyo/sanpo/" target="_blank" rel="noopener">東京ドボクマップで本物を見に行く →</a></div>
+  <div class="real"><h3>このミッションでつながった勉強</h3>${m.uses.map(k=>`<b>${fieldName(k)}</b>`).join(' ＋ ')}<br>${EDGES.filter(e=>m.uses.includes(e[0])&&m.uses.includes(e[1])).map(e=>`${fieldName(e[0])}と${fieldName(e[1])}：${e[2]}`).join('<br>')}<br><a href="#" id="tomap">つながりマップで見る →</a></div>
+  ${c.link[1].startsWith('http')?`<p style="font-size:14px">もっと深く：<a href="${c.link[1]}" target="_blank" rel="noopener">${c.link[0]}</a></p>`:''}
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${nxt?`<button class="next" id="nm">次のミッション「${nxt.title}」→</button>`:''}<button class="ghost" id="hm">ミッション一覧へ</button><button class="ghost" id="rp">もう一度</button></div>`;
+  if(nxt) document.getElementById('nm').onclick=()=>open(nxt.id);
+  document.getElementById('hm').onclick=home; document.getElementById('tomap').onclick=e=>{e.preventDefault(); home(); bindMap('kasen'); document.querySelector('.cmap').scrollIntoView();}; document.getElementById('rp').onclick=()=>open(m.id);
+ }
+}
+document.getElementById('home').onclick=home;
+window.addEventListener('hashchange',()=>{ const h=location.hash.slice(1); if(!h&&cur){ cur=null; home(); } });
+updTot();
+const h0=location.hash.slice(1); if(h0&&M.find(x=>x.id===h0)) open(h0); else home();
+window.__sogi={M,P};
+</script>
+</body></html>

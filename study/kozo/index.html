@@ -1,0 +1,925 @@
+<title>構造力学ラボ</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* Layout: a study hub. Home = syllabus grid of 16 units; unit view = key points (left) + generated problem card (right). Shared risograph palette of the lab series. */
+:root{
+  --paper:#F4F3EF; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --sheet:#FFFFFF; --line:#D9D6CC; --muted:#5E6B86; --soft:#EAF2F8;
+  --f-disp:"Dela Gothic One","Hiragino Kaku Gothic StdN","Noto Sans JP",sans-serif;
+  --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light;
+}
+[hidden]{display:none!important}
+html,body{background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+body{-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;align-items:center;gap:12px;padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:2px solid var(--navy)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.logo{font-family:var(--f-disp);font-size:18px;color:var(--navy);white-space:nowrap;cursor:pointer;background:none;border:0;padding:0}
+.logo b{color:var(--red);font-weight:400}
+#crumb{font-weight:900;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#prog{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+main{max-width:1080px;margin:0 auto;padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(30px,6vw,54px);line-height:1.1;margin:0;color:var(--navy);text-wrap:balance}
+h1 b{color:var(--red);font-weight:400}
+.lead{font-size:15px;line-height:1.8;max-width:64ch;margin:10px 0 14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 16px}
+.chip{font-family:var(--f-body);font-weight:900;font-size:13px;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:5px 12px;cursor:pointer}
+.chip.on{background:var(--navy);color:var(--paper)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.unit{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px 12px;text-align:left;cursor:pointer;font-family:var(--f-body);color:var(--ink);display:flex;flex-direction:column;gap:4px}
+.unit .no{font-size:11px;font-weight:900;color:var(--red);letter-spacing:.08em;display:flex;justify-content:space-between;gap:6px}
+.unit .nm{font-weight:900;font-size:17px}
+.unit .ds{font-size:12px;color:var(--muted);line-height:1.6}
+.unit .bar{height:5px;background:var(--line);margin-top:6px}
+.unit .bar i{display:block;height:100%;background:var(--blue)}
+.tag{font-size:10px;font-weight:900;padding:0 5px;border:1.5px solid currentColor;letter-spacing:0}
+.tag.k{color:var(--red)} .tag.d{color:var(--blue)} .tag.c{color:var(--muted)}
+.games{margin-top:22px;border-top:2px solid var(--navy);padding-top:12px}
+.games h2{font-family:var(--f-disp);font-weight:400;font-size:18px;margin:0 0 8px;color:var(--navy)}
+.games ul{margin:0;padding-left:18px;line-height:1.9;font-size:14px}
+a{color:var(--blue);font-weight:700}
+.foot{font-size:12px;color:var(--muted);line-height:1.7;margin-top:16px}
+/* unit view */
+.uhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:12px}
+.uhead h2{font-family:var(--f-disp);font-weight:400;font-size:clamp(22px,4vw,32px);margin:0;color:var(--navy)}
+.ucols{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr);gap:18px;align-items:start}
+@media (max-width:820px){.ucols{grid-template-columns:minmax(0,1fr)}.pcard{order:-1}}
+.points{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px}
+.points h3,.pcard h3{font-size:13px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 6px}
+.points ul{margin:0;padding-left:18px;font-size:14px;line-height:1.85}
+.points li{margin-bottom:2px}
+.f{font-family:"Times New Roman",Times,serif;font-style:italic;font-weight:700;font-size:1.08em;white-space:nowrap}
+.life{margin-top:10px;border-top:2px solid var(--navy);padding-top:6px}
+.life h3{margin:6px 0 4px!important}
+.life p{margin:0;font-size:14px;line-height:1.8;background:var(--soft);padding:6px 9px;border-left:4px solid var(--blue)}
+.points .game{margin-top:8px;font-size:13px;font-weight:700;border-top:1px solid var(--line);padding-top:6px}
+.pcard{background:var(--sheet);border:2px solid var(--navy);padding:10px 14px 14px}
+.types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.types .chip{font-size:12px;padding:3px 9px}
+.fig{background:var(--paper);border:1.5px solid var(--line);margin:4px 0 8px}
+.fig svg{display:block;width:100%;height:auto;max-height:300px}
+.q{font-size:15px;line-height:1.8;margin:0 0 8px}
+.ansrow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:6px 0}
+.ansrow label{display:flex;align-items:center;gap:6px;font-weight:900;font-size:14px}
+.ansrow input{font-family:var(--f-body);font-size:17px;font-weight:700;width:110px;padding:5px 8px;border:2px solid var(--navy);background:var(--paper);color:var(--ink)}
+.ansrow input.ok{border-color:var(--red);background:#FBEDEC}
+.ansrow input.ng{border-color:var(--muted);background:#EEEFF3}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+button.b{font-family:var(--f-body);font-weight:900;font-size:14px;border:2px solid var(--navy);background:var(--paper);color:var(--navy);padding:7px 14px;cursor:pointer;min-height:38px}
+button.b.main{background:var(--red);border-color:var(--red);color:#fff}
+button:focus-visible,input:focus-visible,.unit:focus-visible,.chip:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.res{font-family:var(--f-disp);font-size:20px;margin-top:8px}
+.res.ok{color:var(--red)} .res.ng{color:var(--muted)}
+.sol{margin-top:8px;border-left:4px solid var(--blue);padding:4px 0 4px 10px;font-size:14px;line-height:1.85}
+.sol b{color:var(--navy)}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+@media (max-width:520px){.logo{font-size:15px}}
+.nqmwrap{margin-top:12px;border-top:2px solid var(--navy);padding-top:8px}
+.nqmwrap h3{font-size:13px;font-weight:900;color:var(--red);letter-spacing:.06em;margin:0 0 4px}
+.nqm{display:grid;gap:6px}
+.dgm{background:var(--paper);border:1.5px solid var(--line);padding:4px 6px}
+.dgt{font-weight:900;font-size:13px}.dgt small{font-weight:700;color:var(--muted);font-size:11px;margin-left:4px}
+.dgm svg{display:block;width:100%;height:auto;max-height:320px}
+.dgm.flat svg{max-height:60px}
+.pf{margin-top:10px;border-top:2px solid var(--navy);padding-top:6px}
+.pf h3{margin:6px 0 2px!important}.pf .pfl{margin:0 0 6px;font-size:12px;color:#5E6B86}
+.pf details{border:1.5px solid var(--navy);background:#fff;margin:5px 0}
+.pf summary{cursor:pointer;padding:6px 9px;font-weight:700;font-size:14px;color:var(--navy)}
+.pf details[open] summary{background:var(--soft);border-bottom:1px solid var(--mid)}
+.pf .pfb .f{white-space:normal;font-style:normal}
+.pf .pfb{padding:8px 10px;font-size:14px;line-height:1.9}
+.pf .pff svg{display:block;width:100%;max-width:320px;margin:0 auto 6px;border:1px solid var(--mid)}
+.miss{border:3px solid var(--red);background:#fdf3f2;padding:8px 10px;margin-bottom:10px}
+.miss h3{margin:0 0 4px!important;color:var(--red)!important;font-size:14px}
+.mlink{display:block;text-decoration:none;color:var(--ink);padding:5px 0;border-top:1px dashed #e3b5b3}
+.mlink:first-of-type{border-top:0}.mlink b{display:block;color:var(--navy);font-size:14px}.mlink span{font-size:12.5px;line-height:1.6;display:block}
+.mlink:hover b{text-decoration:underline}
+</style>
+
+<header>
+  <button class="logo" id="logo" title="目次へ">構造力学<b>ラボ</b></button>
+  <div id="crumb"></div>
+  <div id="prog"></div>
+</header>
+<main id="main"></main>
+
+<script>
+"use strict";
+// ================= helpers =================
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function nf(x,sig=3){ if(!isFinite(x)) return '—'; if(x===0) return '0'; const a=Math.abs(x); let d= a>=100?1: a>=10?2: a>=1?2: 3; if(a>=1000) d=0; let s=(Math.round(x*10**d)/10**d).toString(); return s; }
+const F=s=>`<span class="f">${String(s).replace(/_([A-Za-z0-9\u4e00-\u9fff]+)/g,'<sub>$1</sub>')}</span>`;
+const sq=x=>x*x, cube=x=>x*x*x;
+const PI=Math.PI;
+
+// ================= SVG figure builder (world coords, y up) =================
+function Fig(x0,y0,x1,y1,W=520){
+  const s=W/(x1-x0), H=Math.round((y1-y0)*s); const out=[];
+  const X=x=>((x-x0)*s).toFixed(1), Y=y=>((y1-y)*s).toFixed(1);
+  const col={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#5E6B86',g:'#B9AD95',e:'#D8CFBE'};
+  const o={
+    s,
+    line(a,b,c,d,w=5,cl='n',dash){ out.push(`<line x1="${X(a)}" y1="${Y(b)}" x2="${X(c)}" y2="${Y(d)}" stroke="${col[cl]||cl}" stroke-width="${w}" stroke-linecap="round" ${dash?`stroke-dasharray="${dash}"`:''}/>`); return o; },
+    poly(pts,cl='n',w=5,fill='none'){ out.push(`<polyline points="${pts.map(p=>X(p[0])+','+Y(p[1])).join(' ')}" fill="${fill}" stroke="${col[cl]||cl}" stroke-width="${w}" stroke-linejoin="round"/>`); return o; },
+    rect(x,y,w,h,fill='#12286B',stroke='none'){ out.push(`<rect x="${X(x)}" y="${Y(y+h)}" width="${(w*s).toFixed(1)}" height="${(h*s).toFixed(1)}" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`); return o; },
+    circ(x,y,r,fill='#fff',cl='n',w=2.5){ out.push(`<circle cx="${X(x)}" cy="${Y(y)}" r="${r}" fill="${fill}" stroke="${col[cl]||cl}" stroke-width="${w}"/>`); return o; },
+    text(x,y,t,cl='n',size=14,anchor='middle',dy=0){ out.push(`<text x="${X(x)}" y="${(+Y(y)+dy).toFixed(1)}" fill="${col[cl]||cl}" font-size="${size}" font-weight="900" text-anchor="${anchor}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${t}</text>`); return o; },
+    // support at (x,y): pin, roller, fixedL/fixedR (wall), fixedB (ground)
+    sup(t,x,y){ const px=+X(x), py=+Y(y), u=13;
+      if(t==='pin'||t==='roller'){ out.push(`<path d="M${px},${py+3} L${px-u},${py+u*1.5} L${px+u},${py+u*1.5}Z" fill="#12286B"/>`);
+        if(t==='roller') out.push(`<circle cx="${px-u*.55}" cy="${py+u*1.5+4}" r="3.5" fill="#12286B"/><circle cx="${px+u*.55}" cy="${py+u*1.5+4}" r="3.5" fill="#12286B"/>`);
+        const yb=py+u*1.5+(t==='roller'?8:0); out.push(`<line x1="${px-u*1.4}" y1="${yb+1}" x2="${px+u*1.4}" y2="${yb+1}" stroke="#12286B" stroke-width="3"/>`); for(let i=-3;i<=2;i++) out.push(`<line x1="${px+i*8}" y1="${yb+3}" x2="${px+i*8+6}" y2="${yb+9}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      else if(t==='fixedL'||t==='fixedR'){ const d=t==='fixedL'?-1:1; out.push(`<line x1="${px}" y1="${py-22}" x2="${px}" y2="${py+22}" stroke="#12286B" stroke-width="3.5"/>`); for(let i=-22;i<20;i+=7) out.push(`<line x1="${px}" y1="${py+i}" x2="${px+d*9}" y2="${py+i+7}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      else if(t==='fixedB'){ out.push(`<line x1="${px-20}" y1="${py}" x2="${px+20}" y2="${py}" stroke="#12286B" stroke-width="3.5"/>`); for(let i=-20;i<18;i+=7) out.push(`<line x1="${px+i}" y1="${py+2}" x2="${px+i+7}" y2="${py+10}" stroke="#B9AD95" stroke-width="1.5"/>`); }
+      return o; },
+    hinge(x,y){ return o.circ(x,y,5.5,'#fff','n',2.5); },
+    node(x,y){ return o.circ(x,y,4,'#12286B','n',1); },
+    // arrow ending at (x,y) with direction (dx,dy) world; length in px
+    P(x,y,dx,dy,label,cl='r',len=46,lp='tail'){ const px=+X(x),py=+Y(y), d=Math.hypot(dx,dy), ux=dx/d, uy=-dy/d; const tx=px-ux*len, ty=py-uy*len;
+      out.push(`<line x1="${tx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(px-ux*7).toFixed(1)}" y2="${(py-uy*7).toFixed(1)}" stroke="${col[cl]}" stroke-width="3"/>`);
+      const a=Math.atan2(uy,ux); out.push(`<path d="M${px},${py} L${(px-11*Math.cos(a-.42)).toFixed(1)},${(py-11*Math.sin(a-.42)).toFixed(1)} L${(px-11*Math.cos(a+.42)).toFixed(1)},${(py-11*Math.sin(a+.42)).toFixed(1)}Z" fill="${col[cl]}"/>`);
+      if(label){ const lx=tx-ux*12, ly=ty-uy*12; out.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="${col[cl]}" font-size="14" font-weight="900" text-anchor="${Math.abs(ux)>.5?(ux>0?'end':'start'):'middle'}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); }
+      return o; },
+    W(xa,xb,y,label,h=.9,cl='r',tri=false){ const n=Math.max(4,Math.round((xb-xa)*s/34)); const top=[]; for(let i=0;i<=n;i++){ const x=xa+(xb-xa)*i/n, hh= tri? h*i/n : h; if(hh*s>8) o.P(x,y,0,-1,null,cl,hh*s,'tail'); top.push([x,y+hh]); }
+      o.poly(top,cl,2); if(label) o.text((xa+xb)/2+(tri?(xb-xa)*.12:0),y+h+(16/s),label,cl,14); return o; },
+    M(x,y,cw,label,cl='r'){ const px=+X(x),py=+Y(y),r=20; const a0=cw?200:-20, a1=cw?-20:200; const p=a=>[px+r*Math.cos(a*PI/180),py-r*Math.sin(a*PI/180)];
+      const [sx,sy]=p(cw?160:20),[ex,ey]=p(cw?20:160); out.push(`<path d="M${sx.toFixed(1)},${sy.toFixed(1)} A${r},${r} 0 0 ${cw?1:0} ${ex.toFixed(1)},${ey.toFixed(1)}" fill="none" stroke="${col[cl]}" stroke-width="3"/>`);
+      const tx= cw? 1:-1; out.push(`<path d="M${ex.toFixed(1)},${ey.toFixed(1)} l${(-7*tx).toFixed(1)},-9 l${(9*tx).toFixed(1)},-1Z" fill="${col[cl]}"/>`);
+      if(label) out.push(`<text x="${px}" y="${py-r-12}" fill="${col[cl]}" font-size="14" font-weight="900" text-anchor="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    dim(xa,xb,y,label){ const a=+X(xa),b=+X(xb),yy=+Y(y); out.push(`<line x1="${a}" y1="${yy}" x2="${b}" y2="${yy}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${a}" y1="${yy-6}" x2="${a}" y2="${yy+6}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${b}" y1="${yy-6}" x2="${b}" y2="${yy+6}" stroke="#5E6B86" stroke-width="1.2"/>`);
+      out.push(`<text x="${(a+b)/2}" y="${yy-8}" fill="#5E6B86" font-size="13" font-weight="700" text-anchor="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    dimV(x,ya,yb,label){ const xx=+X(x),a=+Y(ya),b=+Y(yb); out.push(`<line x1="${xx}" y1="${a}" x2="${xx}" y2="${b}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${xx-6}" y1="${a}" x2="${xx+6}" y2="${a}" stroke="#5E6B86" stroke-width="1.2"/><line x1="${xx-6}" y1="${b}" x2="${xx+6}" y2="${b}" stroke="#5E6B86" stroke-width="1.2"/>`);
+      out.push(`<text x="${xx-8}" y="${(a+b)/2}" fill="#5E6B86" font-size="13" font-weight="700" text-anchor="end" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif">${label}</text>`); return o; },
+    raw(sv){ out.push(sv); return o; },
+    svg(){ return `<svg viewBox="-30 -30 ${W+60} ${H+60}" xmlns="http://www.w3.org/2000/svg" role="img">${out.join('')}</svg>`; },
+    X,Y
+  };
+  return o;
+}
+// common beam figure: supports [{x,t}], loads, dims
+let lastBeam=null;
+function beamDia(L,sups,loads,opt){ const ext=opt.ext||0; if((opt.dims||[]).some(d=>String(d[2]).includes('k='))) return null;
+  const st={pts:[[0,0],[L+ext,0]],sup:[],hinges:[],loads:[]};
+  for(const s of sups){ if(s.t==='hinge') st.hinges.push(s.x); else st.sup.push({s:s.x,t:s.t.startsWith('fixed')?'fixed':s.t,lab:s.lab||''}); }
+  for(const l of loads){ const v=parseFloat(String(l.label).replace(/^[^0-9.\-]*/,'')); if(!isFinite(v)||l.tri) return null;
+    if(l.t==='P') st.loads.push({k:'P',s:l.x,v,dir:'down'}); else if(l.t==='w') st.loads.push({k:'w',s0:l.x0,s1:l.x1,v,dir:'down'}); else if(l.t==='M') st.loads.push({k:'M',s:l.x,v:l.cw?v:-v}); }
+  const ok=[...st.sup.map(x=>x.s),...st.hinges,...st.loads.flatMap(l=>l.k==='w'?[l.s0,l.s1]:[l.s])].every(x=>Math.abs(x*4-Math.round(x*4))<1e-9); return ok?st:null; }
+function beamFig(L,sups,loads,opt={}){
+  lastBeam=beamDia(L,sups,loads,opt);
+  const ext=opt.ext||0; const f=Fig(-.6,-1.6,L+ext+.6,2.4);
+  f.line(0,0,L+ext,0,7);
+  for(const s of sups){ if(s.t==='hinge') f.hinge(s.x,0); else f.sup(s.t,s.x,0); if(s.lab) f.text(s.x,0,s.lab,'n',14,'middle',s.t==='fixedL'?-30:44); }
+  for(const l of loads){ if(l.t==='P') f.P(l.x,0,0,-1,l.label); else if(l.t==='w') f.W(l.x0,l.x1,0,l.label,.9,'r',l.tri); else if(l.t==='M') f.M(l.x,0,l.cw,l.label); }
+  (opt.dims||[]).forEach(d=>f.dim(d[0],d[1],-1.25,d[2]));
+  return f.svg();
+}
+
+
+// ================= 断面力図エンジン（断面力図ラボと共通） =================
+const NQM=(function(){
+const PI=Math.PI;
+function nf(x,d){ if(!isFinite(x)) return '—'; if(Math.abs(x)<5e-7) return '0'; const a=Math.abs(x); if(d==null) d=a>=100?1:a>=10?2:2; let s=(Math.round(x*10**d)/10**d).toString(); if(s==='-0') s='0'; return s; }
+const F=s=>`<span class="f">${String(s).replace(/_([A-Za-z0-9]+)/g,'<sub>$1</sub>')}</span>`;
+const COL={n:'#12286B',r:'#C62422',b:'#3286BE',m:'#5E6B86',g:'#B9AD95',e:'#D8CFBE',mid:'#93BCD6'};
+// ================= geometry =================
+function mkGeom(pts){ const seg=[]; let S=0; for(let i=0;i<pts.length-1;i++){ const [x0,y0]=pts[i],[x1,y1]=pts[i+1]; const L=Math.hypot(x1-x0,y1-y0); seg.push({x0,y0,x1,y1,L,s0:S,tx:(x1-x0)/L,ty:(y1-y0)/L}); S+=L; }
+  function at(s){ s=Math.max(0,Math.min(S,s)); let g=seg[seg.length-1]; for(const q of seg){ if(s<=q.s0+q.L+1e-9){ g=q; break; } } const u=s-g.s0; return {x:g.x0+g.tx*u,y:g.y0+g.ty*u,tx:g.tx,ty:g.ty,seg:g}; }
+  function atR(s){ for(const q of seg){ if(s<q.s0+q.L-1e-9 && s>=q.s0-1e-9){ const u=s-q.s0; return {x:q.x0+q.tx*u,y:q.y0+q.ty*u,tx:q.tx,ty:q.ty,seg:q}; } } return at(s); }
+  const corners=[0]; seg.forEach(q=>corners.push(q.s0+q.L));
+  return {seg,S,at,atR,corners}; }
+
+// ================= FEM solver (2D frame, EA large) =================
+const H=0.25; // mesh step & snap
+function gdir(dir){ return dir==='down'?[0,-1]:dir==='up'?[0,1]:dir==='right'?[1,0]:[-1,0]; }
+function solve(st,EI=1){
+  const G=mkGeom(st.pts), S=G.S, n=Math.round(S/H)+1; const sv=[]; for(let k=0;k<n;k++) sv.push(k*H);
+  const nodes=sv.map(s=>G.at(s)); const hinge=new Set((st.hinges||[]).map(s=>Math.round(s/H)));
+  let nd=3*n; const extra={}; hinge.forEach(k=>{ extra[k]=nd++; });
+  const EA=EI*1e5; const K=Array.from({length:nd},()=>new Float64Array(nd)); const Fv=new Float64Array(nd);
+  const els=[];
+  for(let e=0;e<n-1;e++){ const a=nodes[e],b=nodes[e+1]; const L=Math.hypot(b.x-a.x,b.y-a.y), c=(b.x-a.x)/L, s=(b.y-a.y)/L;
+    const dof=[3*e,3*e+1,(hinge.has(e)&&e>0)?extra[e]:3*e+2, 3*(e+1),3*(e+1)+1,3*(e+1)+2];
+    const k1=EA/L,k2=12*EI/L**3,k3=6*EI/L**2,k4=4*EI/L,k5=2*EI/L;
+    const kl=[[k1,0,0,-k1,0,0],[0,k2,k3,0,-k2,k3],[0,k3,k4,0,-k3,k5],[-k1,0,0,k1,0,0],[0,-k2,-k3,0,k2,-k3],[0,k3,k5,0,-k3,k4]];
+    const T=[[c,s,0,0,0,0],[-s,c,0,0,0,0],[0,0,1,0,0,0],[0,0,0,c,s,0],[0,0,0,-s,c,0],[0,0,0,0,0,1]];
+    // distributed load on this element
+    let qt=0,qn=0; const sm=(sv[e]+sv[e+1])/2;
+    for(const l of st.loads) if(l.k==='w' && sm>Math.min(l.s0,l.s1) && sm<Math.max(l.s0,l.s1)){ const [gx,gy]=gdir(l.dir); qt+=l.v*(gx*c+gy*s); qn+=l.v*(-gx*s+gy*c); }
+    const fe=[qt*L/2,qn*L/2,qn*L*L/12,qt*L/2,qn*L/2,-qn*L*L/12];
+    // global
+    const kg=Array.from({length:6},()=>new Float64Array(6)); for(let i=0;i<6;i++)for(let j=0;j<6;j++){ let v=0; for(let p=0;p<6;p++)for(let q=0;q<6;q++) v+=T[p][i]*kl[p][q]*T[q][j]; kg[i][j]=v; }
+    const fg=new Float64Array(6); for(let i=0;i<6;i++){ let v=0; for(let p=0;p<6;p++) v+=T[p][i]*fe[p]; fg[i]=v; }
+    for(let i=0;i<6;i++){ Fv[dof[i]]+=fg[i]; for(let j=0;j<6;j++) K[dof[i]][dof[j]]+=kg[i][j]; }
+    els.push({e,a,b,L,c,s,dof,kl,T,fe,qt,qn,s0:sv[e],s1:sv[e+1]}); }
+  for(const l of st.loads){ if(l.k==='P'){ const k=Math.round(l.s/H); const [gx,gy]=gdir(l.dir); Fv[3*k]+=l.v*gx; Fv[3*k+1]+=l.v*gy; } else if(l.k==='M'){ const k=Math.round(l.s/H); Fv[3*k+2]+=-l.v; } }
+  // constraints
+  const fix=new Set(); const reac=[];
+  for(const sp of st.sup){ const k=Math.round(sp.s/H); const p=nodes[k];
+    const dofs= sp.t==='fixed'?[3*k,3*k+1,3*k+2]: sp.t==='pin'?[3*k,3*k+1]:[3*k+1]; dofs.forEach(d=>fix.add(d)); reac.push({sp,k,p,dofs}); }
+  const free=[]; for(let i=0;i<nd;i++) if(!fix.has(i)) free.push(i);
+  // solve reduced
+  const m=free.length; const A=free.map(i=>{ const r=new Float64Array(m+1); free.forEach((j,jj)=>r[jj]=K[i][j]); r[m]=Fv[i]; return r; });
+  let maxd=0; for(let i=0;i<m;i++) maxd=Math.max(maxd,Math.abs(A[i][i]));
+  let unstable=false;
+  for(let col=0;col<m;col++){ let piv=col,best=Math.abs(A[col][col]); for(let r=col+1;r<m;r++){ const v=Math.abs(A[r][col]); if(v>best){best=v;piv=r;} }
+    if(best<maxd*1e-11){ unstable=true; break; } if(piv!==col){ const t=A[piv];A[piv]=A[col];A[col]=t; }
+    const d=A[col][col]; for(let r=col+1;r<m;r++){ const f=A[r][col]/d; if(f===0) continue; const Ar=A[r],Ac=A[col]; for(let j=col;j<=m;j++) Ar[j]-=f*Ac[j]; } }
+  const D=new Float64Array(nd);
+  if(!unstable){ const x=new Float64Array(m); for(let i=m-1;i>=0;i--){ let v=A[i][m]; for(let j=i+1;j<m;j++) v-=A[i][j]*x[j]; x[i]=v/A[i][i]; } free.forEach((i,ii)=>D[i]=x[ii]); }
+  // element end forces
+  for(const el of els){ const dg=el.dof.map(i=>D[i]); const dl=el.T.map(r=>r.reduce((a,v,j)=>a+v*dg[j],0)); const f=el.kl.map((r,i)=>r.reduce((a,v,j)=>a+v*dl[j],0)-el.fe[i]);
+    el.Ni=-f[0]; el.Qi=f[1]; el.Mi=-f[2]; el.Nj=f[3]; el.Qj=-f[4]; el.Mj=f[5]; }
+  // reactions: K D - F at fixed dofs
+  for(const r of reac){ r.val=r.dofs.map(d=>{ let v=0; for(let j=0;j<nd;j++) v+=K[d][j]*D[j]; return v-Fv[d]; }); r.Rx=0;r.Ry=0;r.Mz=0; r.dofs.forEach((d,i)=>{ const t=d%3; if(t===0) r.Rx=r.val[i]; else if(t===1) r.Ry=r.val[i]; else r.Mz=r.val[i]; }); }
+  // determinacy (open chain): reactions - 3 - hinges
+  const nr=reac.reduce((a,r)=>a+r.dofs.length,0); const deg=nr-3-hinge.size;
+  const disp=nodes.map((p,k)=>({x:p.x,y:p.y,ux:D[3*k],uy:D[3*k+1],rz:D[3*k+2]}));
+  return {G,S,nodes,els,reac,unstable,deg,disp,D,sv};
+}
+function valAt(el,u,kind){ if(kind==='N') return el.Ni-el.qt*u; if(kind==='Q') return el.Qi+el.qn*u; return el.Mi+el.Qi*u+el.qn*u*u/2; }
+function valS(R,s,kind,side){ // side: -1 just before, +1 just after
+  let el=R.els.find(e=> side<0? (s>e.s0+1e-9 && s<=e.s1+1e-9) : (s>=e.s0-1e-9 && s<e.s1-1e-9)); if(!el) el= side<0? R.els[0]:R.els[R.els.length-1];
+  return valAt(el,Math.max(0,Math.min(el.L,s-el.s0)),kind); }
+
+// ================= SVG helpers =================
+function view(G,pad,W){ let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; for(const q of G.seg){ x0=Math.min(x0,q.x0,q.x1); x1=Math.max(x1,q.x0,q.x1); y0=Math.min(y0,q.y0,q.y1); y1=Math.max(y1,q.y0,q.y1); }
+  x0-=pad[3]; x1+=pad[1]; y0-=pad[2]; y1+=pad[0]; const sc=W/(x1-x0); const Hh=(y1-y0)*sc; return {x0,x1,y0,y1,sc,W,H:Hh,X:x=>((x-x0)*sc),Y:y=>((y1-y)*sc),inv:(px,py)=>[px/sc+x0, y1-py/sc]}; }
+const fx=v=>v.toFixed(1);
+function arrowSvg(px,py,ux,uy,len,cl,label,lw=3){ // arrow ends at (px,py) screen, pointing along (ux,uy) screen
+  const tx=px-ux*len,ty=py-uy*len; const a=Math.atan2(uy,ux); let s=`<line x1="${fx(tx)}" y1="${fx(ty)}" x2="${fx(px-ux*8)}" y2="${fx(py-uy*8)}" stroke="${cl}" stroke-width="${lw}"/>`;
+  s+=`<path d="M${fx(px)},${fx(py)} L${fx(px-12*Math.cos(a-.42))},${fx(py-12*Math.sin(a-.42))} L${fx(px-12*Math.cos(a+.42))},${fx(py-12*Math.sin(a+.42))}Z" fill="${cl}"/>`;
+  if(label){ const lx=tx-ux*12,ly=ty-uy*12; s+=txt(lx,ly,label,cl,13,Math.abs(ux)>.5?(ux>0?'end':'start'):'middle'); } return s; }
+function txt(x,y,t,cl='#12286B',size=13,anchor='middle',w=900,halo=true){ return `<text x="${fx(x)}" y="${fx(y)}" fill="${cl}" font-size="${size}" font-weight="${w}" text-anchor="${anchor}" dominant-baseline="middle" font-family="Zen Kaku Gothic New, sans-serif" ${halo?'paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round"':''}>${t}</text>`; }
+function momArc(px,py,cw,cl,label,r=18){ const p=a=>[px+r*Math.cos(a*PI/180),py-r*Math.sin(a*PI/180)]; const [sx,sy]=p(cw?150:30),[ex,ey]=p(cw?30:150);
+  let s=`<path d="M${fx(sx)},${fx(sy)} A${r},${r} 0 1 ${cw?1:0} ${fx(ex)},${fx(ey)}" fill="none" stroke="${cl}" stroke-width="3"/>`;
+  // arrow head at end, tangent direction
+  const ang=(cw?30:150)*PI/180; const tdx=cw? Math.sin(ang):-Math.sin(ang), tdy=cw? Math.cos(ang):Math.cos(ang); // screen tangent approx
+  const hx=ex,hy=ey; const dx=cw?-1:1; s+=`<path d="M${fx(hx+dx*0)},${fx(hy)} l${fx(dx*-1+ (cw?-9:9))},${fx(-4)} l${fx(cw?4:-4)},${fx(10)}Z" fill="${cl}"/>`;
+  if(label) s+=txt(px,py-r-12,label,cl,13); return s; }
+function supSvg(t,px,py,orient){ const u=12; let s='';
+  if(t==='pin'||t==='roller'){ s+=`<path d="M${fx(px)},${fx(py+3)} L${fx(px-u)},${fx(py+u*1.5)} L${fx(px+u)},${fx(py+u*1.5)}Z" fill="#12286B"/>`;
+    if(t==='roller') s+=`<circle cx="${fx(px-u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/><circle cx="${fx(px+u*.55)}" cy="${fx(py+u*1.5+4)}" r="3.5" fill="#12286B"/>`;
+    const yb=py+u*1.5+(t==='roller'?8:0); s+=`<line x1="${fx(px-u*1.5)}" y1="${fx(yb+1)}" x2="${fx(px+u*1.5)}" y2="${fx(yb+1)}" stroke="#12286B" stroke-width="3"/>`; for(let i=-3;i<=2;i++) s+=`<line x1="${fx(px+i*8)}" y1="${fx(yb+3)}" x2="${fx(px+i*8+6)}" y2="${fx(yb+9)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else if(orient==='L'||orient==='R'){ const d=orient==='L'?-1:1; s+=`<line x1="${fx(px)}" y1="${fx(py-22)}" x2="${fx(px)}" y2="${fx(py+22)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px)}" y1="${fx(py+i)}" x2="${fx(px+d*10)}" y2="${fx(py+i+7)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  else { s+=`<line x1="${fx(px-22)}" y1="${fx(py)}" x2="${fx(px+22)}" y2="${fx(py)}" stroke="#12286B" stroke-width="4"/>`; for(let i=-22;i<20;i+=7) s+=`<line x1="${fx(px+i)}" y1="${fx(py+2)}" x2="${fx(px+i+7)}" y2="${fx(py+11)}" stroke="#B9AD95" stroke-width="1.5"/>`; }
+  return s; }
+function fixedOrient(G,s){ const p=G.at(s); const end= s<1e-9?-1:1; if(Math.abs(p.ty)>.5) return 'B'; return (p.tx*end)<0?'L':'R'; }
+function structSvg(G,st,V,opt={}){ let s='';
+  const dim=opt.dimAfter; // dim part after cut
+  for(const q of G.seg){ s+=`<line x1="${fx(V.X(q.x0))}" y1="${fx(V.Y(q.y0))}" x2="${fx(V.X(q.x1))}" y2="${fx(V.Y(q.y1))}" stroke="${opt.thin?'#B9AD95':'#12286B'}" stroke-width="${opt.thin?3:7}" stroke-linecap="round"/>`; }
+  if(!opt.thin){ for(const sp of st.sup){ const p=G.at(sp.s); s+=supSvg(sp.t,V.X(p.x),V.Y(p.y),sp.t==='fixed'?fixedOrient(G,sp.s):null); }
+    for(const h of (st.hinges||[])){ const p=G.at(h); s+=`<circle cx="${fx(V.X(p.x))}" cy="${fx(V.Y(p.y))}" r="6" fill="#fff" stroke="#12286B" stroke-width="2.5"/>`; } }
+  return s; }
+
+function vw(){ return 560; }
+function sidePad(G){ return G.seg.length>1?2.6:1.4; }
+let R=null; const S={st:null,cut:null};
+function diagSvg(kind,opt={}){ const G=R.G; const sp=sidePad(G); const flat=!R.unstable&&R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,kind))<1e-6)); let vt=flat?1.1:2.3, vb=flat?0.4:vt; if(!flat&&G.seg.length===1&&!R.unstable){ const sg2= kind==='M'?-1:1; let up=0,dn=0; for(const e of R.els) for(const u of [0,e.L/2,e.L]){ const v=valAt(e,u,kind)*sg2; if(v>1e-6) up=1; if(v<-1e-6) dn=1; } vt=up?2.3:0.6; vb=dn?2.3:0.6; }
+  const Vd=view(G,[vt,sp,vb,sp],vw()); let s=structSvg(G,S.st,Vd,{thin:true});
+  if(R.unstable){ return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}${txt(Vd.W/2,Vd.H/2,'不安定','#C62422',16)}</svg>`; }
+  let mx=0; for(const el of R.els){ for(const u of [0,el.L/2,el.L]) mx=Math.max(mx,Math.abs(valAt(el,u,kind))); }
+  const span=Math.max(Vd.x1-Vd.x0,Vd.y1-Vd.y0); const k= mx>1e-6? (G.seg.length>1?1.3:1.5)/mx:0;
+  const sideSign= kind==='M'?-1:1; const fill= kind==='M'?'rgba(198,36,34,.22)':kind==='Q'?'rgba(50,134,190,.24)':'rgba(18,40,107,.18)'; const st= kind==='M'?'#C62422':kind==='Q'?'#3286BE':'#12286B';
+  const lim= opt.upto!=null? opt.upto : 1e9;
+  let path='';
+  for(const el of R.els){ if(el.s0>=lim-1e-9) break; const L=Math.min(el.L,lim-el.s0); const nx=-el.s,ny=el.c; const us=[0,L/4,L/2,3*L/4,L]; const base=us.map(u=>[el.a.x+el.c*u,el.a.y+el.s*u]); const off=us.map((u,i)=>{ const v=valAt(el,u,kind)*k*sideSign; return [base[i][0]+nx*v,base[i][1]+ny*v]; });
+    const poly=[...base,...off.slice().reverse()]; s+=`<polygon points="${poly.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="${fill}" stroke="none"/>`;
+    path+=`<polyline points="${off.map(q=>fx(Vd.X(q[0]))+','+fx(Vd.Y(q[1]))).join(' ')}" fill="none" stroke="${st}" stroke-width="2.2"/>`;
+    // vertical connectors at ends
+    path+=`<line x1="${fx(Vd.X(base[0][0]))}" y1="${fx(Vd.Y(base[0][1]))}" x2="${fx(Vd.X(off[0][0]))}" y2="${fx(Vd.Y(off[0][1]))}" stroke="${st}" stroke-width="0.8" stroke-opacity=".7"/>`; }
+  s+=path;
+  // labels
+  if(mx>1e-6 && opt.upto==null){ const keys=new Set([0,R.S]); R.G.corners.forEach(c=>keys.add(c)); S.st.sup.forEach(p=>keys.add(p.s)); (S.st.hinges||[]).forEach(h=>keys.add(h)); S.st.loads.forEach(l=>{ if(l.k==='w'){ keys.add(l.s0); keys.add(l.s1);} else keys.add(l.s); });
+    const cand=[]; [...keys].sort((a,b)=>a-b).forEach(sk=>{ for(const side of [-1,1]){ if((side<0&&sk<1e-9)||(side>0&&sk>R.S-1e-9)) continue; const v=valS(R,sk,kind,side); cand.push({s:sk,v,side}); } });
+    // local extrema inside elements (Q=0 for M)
+    if(kind==='M') for(const el of R.els){ if(Math.abs(el.qn)>1e-9){ const u=-el.Qi/el.qn; if(u>1e-6&&u<el.L-1e-6) cand.push({s:el.s0+u,v:valAt(el,u,'M'),side:0,ext:true}); } }
+    const placed=[]; cand.sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+    for(const c of cand){ if(Math.abs(c.v)<mx*0.03) continue; const g= c.side<0? G.at(c.s): G.atR(c.s); const nx=-g.ty,ny=g.tx; const vv=c.v*k*sideSign; const sh=c.side*0.0; const ux=g.x+g.tx*(c.side*0.28)+nx*(vv+Math.sign(vv||1)*0.42), uy=g.y+g.ty*(c.side*0.28)+ny*(vv+Math.sign(vv||1)*0.42); const px=Vd.X(ux),py=Vd.Y(uy);
+      if(placed.some(q=>Math.hypot(q[0]-px,q[1]-py)<30 || (Math.abs(q[2]-c.v)<1e-6 && Math.hypot(q[0]-px,q[1]-py)<70))) continue; placed.push([px,py,c.v]);
+      s+=txt(px,py,(kind==='M'?nf(Math.abs(c.v)):(c.v>0?'+':'−')+nf(Math.abs(c.v))),st,G.seg.length>1?22:14); }
+  }
+  if(mx<=1e-6) s+=txt(Vd.W/2,Vd.Y(R.G.seg[0].y0)-16,`${kind}＝0（どこでも）`,st,14);
+  if(S.cut!=null && opt.upto==null){ const g=G.at(S.cut); const v=valS(R,S.cut,kind,1)*k*sideSign; const nx=-g.ty,ny=g.tx; s+=`<line x1="${fx(Vd.X(g.x))}" y1="${fx(Vd.Y(g.y))}" x2="${fx(Vd.X(g.x+nx*v))}" y2="${fx(Vd.Y(g.y+ny*v))}" stroke="#C62422" stroke-width="2.5" stroke-dasharray="4 3"/><circle cx="${fx(Vd.X(g.x+nx*v))}" cy="${fx(Vd.Y(g.y+ny*v))}" r="4.5" fill="#C62422"/>`; }
+  if(opt.upto!=null){ const g=G.at(Math.min(lim,R.S)); s+=`<circle cx="${fx(Vd.X(g.x))}" cy="${fx(Vd.Y(g.y))}" r="6" fill="#C62422"/>`; }
+  return `<svg viewBox="0 0 ${fx(Vd.W)} ${fx(Vd.H)}">${s}</svg>`; }
+return function(st){ S.st={pts:st.pts,sup:st.sup,hinges:st.hinges||[],loads:st.loads}; R=solve(S.st); if(R.unstable) return '';
+  const dg=k=>{ const flat=R.els.every(e=>[0,e.L].every(u=>Math.abs(valAt(e,u,k))<1e-6)); return `<div class="dgm${flat?' flat':''}"><div class="dgt">${k}図<small>${k==='N'?'（軸方向力・引張＋）':k==='Q'?'（せん断力）':'（曲げモーメント・引張側に描く）'}</small></div>${diagSvg(k)}</div>`; };
+  return `<div class="nqm">${dg('N')}${dg('Q')}${dg('M')}</div>`; };
+})();
+
+// ================= problem generators =================
+// each: {t:title, tag:'c'|'k'|'d', g:()=>({fig,q,ans:[{l,u,v}],sol})}
+const U=[];
+function unit(o){ U.push(o); }
+
+// ---- 1 力とモーメント
+unit({id:'force',name:'力とモーメント',tag:'c',ds:'力の合成・分解、モーメント、つりあいの3条件',
+ pts:[`力は大きさ・向き・作用線の3要素で決まる`,`合力 ${F('R = √(F₁²＋F₂²＋2F₁F₂cosθ)')}`,`分解 ${F('Fx = F cosα, Fy = F sinα')}`,`モーメント ＝ 力 × 腕の長さ（作用線までの垂直距離）。本シリーズでは時計回りを＋`,`偶力：大きさが等しく逆向きの平行な2力。どの点まわりでも ${F('M = P·d')}`,`つりあい ${F('ΣX = 0, ΣY = 0, ΣM = 0')}`],
+ gens:[
+ {t:'2力の合成',tag:'c',g(){ const F1=pick([30,40,50,60]),F2=pick([30,40,50,80]),th=pick([60,90,120]); const R=Math.sqrt(F1*F1+F2*F2+2*F1*F2*Math.cos(th*PI/180));
+   const f=Fig(-1,-1,5,4); f.node(0,0); f.P(3.2,0,1,0,`F₁=${F1}kN`,'n',140,'h'); const ex=Math.cos(th*PI/180),ey=Math.sin(th*PI/180); f.P(0.2+2.6*ex,2.6*ey,ex,ey,null,'b',130); f.text(2.6*ex-0.2,2.6*ey+.4,`F₂=${F2}kN`,'b'); f.text(.8,.35,`${th}°`,'m',13);
+   return {fig:f.svg(),q:`点Oに働く2つの力 F₁＝${F1} kN と F₂＝${F2} kN のなす角が ${th}° のとき、合力の大きさ R は？`,ans:[{l:'R',u:'kN',v:R}],
+   sol:`余弦定理を使います。${F('R = √(F₁²＋F₂²＋2F₁F₂cosθ)')} ＝ √(${F1}²＋${F2}²＋2×${F1}×${F2}×cos${th}°) ＝ <b>${nf(R)} kN</b>`}; }},
+ {t:'力の分解',tag:'c',g(){ const Fv=pick([20,40,50,60,100]),a=pick([30,45,60]); const fx=Fv*Math.cos(a*PI/180),fy=Fv*Math.sin(a*PI/180);
+   const f=Fig(-1,-.6,5,3.6); f.line(-.5,0,4.5,0,1.5,'m','5 4'); f.node(0,0); const ex=Math.cos(a*PI/180),ey=Math.sin(a*PI/180); f.P(3.2*ex,3.2*ey,ex,ey,null,'r',150); f.text(3.2*ex+.4,3.2*ey+.2,`F=${Fv}kN`,'r',14,'start'); f.text(1,.32,`${a}°`,'m',13);
+   return {fig:f.svg(),q:`水平から ${a}° の向きに働く力 F＝${Fv} kN を、水平成分と鉛直成分に分解しなさい。`,ans:[{l:'水平成分',u:'kN',v:fx},{l:'鉛直成分',u:'kN',v:fy}],
+   sol:`${F('Fx = F cos'+a+'°')} ＝ ${Fv}×${nf(Math.cos(a*PI/180),3)} ＝ <b>${nf(fx)} kN</b>、${F('Fy = F sin'+a+'°')} ＝ ${Fv}×${nf(Math.sin(a*PI/180),3)} ＝ <b>${nf(fy)} kN</b>`}; }},
+ {t:'点まわりのモーメント',tag:'c',g(){ const a=ri(1,3),b=ri(1,3),c=ri(1,2),P1=pick([10,20,30]),P2=pick([10,20,40]),P3=pick([10,20]);
+   // P1 down at x=a; P2 up at x=-b; P3 rightward at height c (point (0,c))
+   const M=P1*a + P2*b + P3*c; // clockwise +: down force right of O cw; up force left of O cw; right force above O cw
+   const f=Fig(-4,-1.2,4.5,4); f.line(-b-.3,0,a+.3,0,1.5,'m','5 4'); f.line(0,0,0,c+.3,1.5,'m','5 4'); f.node(0,0); f.text(0,0,'O','n',15,'middle',18);
+   f.P(a,0,0,-1,`${P1}kN`,'r',60); f.P(-b,0,0,1,`${P2}kN`,'b',60); f.P(0,c,1,0,`${P3}kN`,'n',70);
+   f.dim(0,a,-.8,`${a}m`); f.dim(-b,0,-.8,`${b}m`); f.dimV(-.5,0,c,`${c}m`);
+   return {fig:f.svg(),q:`図の3つの力による、点Oまわりのモーメントの合計は？（時計回りを＋）`,ans:[{l:'M',u:'kN·m',v:M}],
+   sol:`右下向き ${P1}kN（腕${a}m）は時計回り ＋${P1*a}、左の上向き ${P2}kN（腕${b}m）も時計回り ＋${P2*b}、上の右向き ${P3}kN（腕${c}m）も時計回り ＋${P3*c}。合計 <b>${M} kN·m</b>`}; }},
+ ]});
+
+// ---- 2 構造物の判別
+const JUD=[
+ {nm:'単純梁',n:3,s:1,r:0,k:2,draw(f){ f.line(0,0,6,0,7); f.sup('pin',0,0); f.sup('roller',6,0); }},
+ {nm:'片持ち梁',n:3,s:1,r:0,k:2,draw(f){ f.line(0,0,6,0,7); f.sup('fixedL',0,0); }},
+ {nm:'両端固定梁',n:6,s:1,r:0,k:2,draw(f){ f.line(0,0,6,0,7); f.sup('fixedL',0,0); f.sup('fixedR',6,0); }},
+ {nm:'固定＋ローラー',n:4,s:1,r:0,k:2,draw(f){ f.line(0,0,6,0,7); f.sup('fixedL',0,0); f.sup('roller',6,0); }},
+ {nm:'3点支持の連続梁',n:4,s:2,r:1,k:3,draw(f){ f.line(0,0,6,0,7); f.sup('pin',0,0); f.sup('roller',3,0); f.sup('roller',6,0); }},
+ {nm:'ゲルバー梁',n:4,s:3,r:1,k:4,draw(f){ f.line(0,0,6,0,7); f.sup('pin',0,0); f.sup('roller',2.5,0); f.hinge(4,0); f.sup('roller',6,0); }},
+ {nm:'門形ラーメン（ピン＋ローラー）',n:3,s:3,r:2,k:4,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0]],'n',7); f.sup('pin',1,0); f.sup('roller',5,0); }},
+ {nm:'門形ラーメン（両端ピン）',n:4,s:3,r:2,k:4,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0]],'n',7); f.sup('pin',1,0); f.sup('pin',5,0); }},
+ {nm:'門形ラーメン（両端固定）',n:6,s:3,r:2,k:4,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0]],'n',7); f.sup('fixedB',1,0); f.sup('fixedB',5,0); }},
+ {nm:'3ヒンジラーメン',n:4,s:4,r:2,k:5,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0]],'n',7); f.sup('pin',1,0); f.sup('pin',5,0); f.hinge(3,3); }},
+ {nm:'門形ラーメン（両端ローラー）',n:2,s:3,r:2,k:4,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0]],'n',7); f.sup('roller',1,0); f.sup('roller',5,0); }},
+ {nm:'三角形トラス',n:3,s:3,r:0,k:3,truss:true,draw(f){ f.poly([[0,0],[3,2.6],[6,0],[0,0]],'n',4); [[0,0],[3,2.6],[6,0]].forEach(p=>f.hinge(...p)); f.sup('pin',0,0); f.sup('roller',6,0); }},
+ {nm:'四角形トラス（斜材なし）',n:3,s:4,r:0,k:4,truss:true,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0],[1,0]],'n',4); [[1,0],[1,3],[5,3],[5,0]].forEach(p=>f.hinge(...p)); f.sup('pin',1,0); f.sup('roller',5,0); }},
+ {nm:'四角形トラス（斜材1本）',n:3,s:5,r:0,k:4,truss:true,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0],[1,0]],'n',4); f.line(1,0,5,3,4); [[1,0],[1,3],[5,3],[5,0]].forEach(p=>f.hinge(...p)); f.sup('pin',1,0); f.sup('roller',5,0); }},
+ {nm:'四角形トラス（斜材2本）',n:3,s:6,r:0,k:4,truss:true,draw(f){ f.poly([[1,0],[1,3],[5,3],[5,0],[1,0]],'n',4); f.line(1,0,5,3,4); f.line(1,3,5,0,4); [[1,0],[1,3],[5,3],[5,0]].forEach(p=>f.hinge(...p)); f.sup('pin',1,0); f.sup('roller',5,0); }},
+];
+unit({id:'judge',name:'支点・反力と構造物の判別',tag:'c',ds:'安定・不安定、静定・不静定、不静定次数',
+ pts:[`支点の反力数：ローラー1、ピン2、固定3`,`判別式 ${F('m = n + s + r − 2k')}（n 反力数、s 部材数、r 剛接接合数、k 節点数）`,`r は剛接合された節点ごとに「集まる部材数 − 1」を足す`,`${F('m < 0')} 不安定、${F('m = 0')} 静定、${F('m > 0')} 不静定（m が不静定次数）`,`トラスは ${F('m = n + s − 2k')}`,`m ≥ 0 でも、部材の並び方によっては不安定になることがある`],
+ gens:[{t:'不静定次数',tag:'c',g(){ const T=pick(JUD); const f=Fig(-.8,-1,6.8,3.6); T.draw(f); const m=T.n+T.s+T.r-2*T.k; const j=m<0?'不安定':m===0?'静定':`${m}次の不静定`;
+   return {fig:f.svg(),q:`図の構造物（${T.nm}）の判別式 m を求めなさい。（○はピン接合）`,ans:[{l:'m',u:'',v:m}],
+   sol:`反力数 n＝${T.n}、部材数 s＝${T.s}、剛接接合数 r＝${T.r}、節点数 k＝${T.k}。${F('m = n+s+r−2k')} ＝ ${T.n}＋${T.s}＋${T.r}−2×${T.k} ＝ <b>${m}</b>（${j}）`}; }}]});
+
+// ---- 3 静定梁
+unit({id:'beam',name:'静定梁の反力と断面力',tag:'c',ds:'単純梁・片持ち梁・張出し梁のQ図・M図',
+ pts:[`反力はつりあいの3式で求める（モーメントは支点まわりでとると楽）`,`せん断力 Q：ある断面より左の力の合計（上向き＋）`,`曲げモーメント M：断面より左の力の、断面まわりのモーメント（下側引張を＋）`,`${F('dM/dx = Q')}：Q＝0 の位置で M が最大`,`単純梁 中央集中 ${F('M = PL/4')}、任意位置 ${F('M = Pab/L')}`,`単純梁 等分布 ${F('M = wL²/8')}、片持ち梁 先端集中 ${F('M = PL')}、等分布 ${F('M = wL²/2')}`,`三角形分布の合力は面積、作用点は重心（1/3の位置）`],
+ game:[{name:'断面力図ラボ（荷重を動かしてN図・Q図・M図を見る）',url:'../dan/'},{name:'ぶっ壊し構造ラボ（トラス橋・アーチ橋）',url:'../bukkowashi/'}],
+ gens:[
+ {t:'単純梁・集中荷重',tag:'c',g(){ const L=pick([4,5,6,8,10]),a=ri(1,L-1),b=L-a,P=pick([10,20,30,40,60]); const RA=P*b/L, M=P*a*b/L;
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'P',x:a,label:`${P}kN`}],{dims:[[0,a,`${a}m`],[a,L,`${b}m`]]}),
+   q:`単純梁に集中荷重 ${P} kN が作用している。支点Aの鉛直反力と、最大曲げモーメントは？`,ans:[{l:'R<sub>A</sub>',u:'kN',v:RA},{l:'M<sub>max</sub>',u:'kN·m',v:M}],
+   sol:`B点まわりのモーメントのつりあい：${F('R_A × '+L+' = '+P+' × '+b)} → R<sub>A</sub>＝<b>${nf(RA)} kN</b>。最大は荷重点で ${F('M = R_A × a')}＝${nf(RA)}×${a}＝<b>${nf(M)} kN·m</b>（${F('Pab/L')} と同じ）`}; }},
+ {t:'単純梁・等分布荷重',tag:'c',g(){ const L=pick([4,6,8,10]),w=pick([2,4,5,6,10]); const R=w*L/2, M=w*L*L/8;
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),
+   q:`単純梁全体に等分布荷重 ${w} kN/m。最大せん断力と最大曲げモーメントは？`,ans:[{l:'Q<sub>max</sub>',u:'kN',v:R},{l:'M<sub>max</sub>',u:'kN·m',v:M}],
+   sol:`全荷重 ${w}×${L}＝${w*L} kN を両支点で半分ずつ：Q<sub>max</sub>＝<b>${nf(R)} kN</b>（支点）。中央で Q＝0、${F('M = wL²/8')}＝${w}×${L}²/8＝<b>${nf(M)} kN·m</b>`}; }},
+ {t:'片持ち梁',tag:'c',g(){ const L=pick([2,3,4,5]),P=pick([5,10,20]),w=pick([2,4,6]); const M=P*L+w*L*L/2, V=P+w*L;
+   return {fig:beamFig(L,[{x:0,t:'fixedL',lab:'A'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`},{t:'P',x:L,label:`${P}kN`}],{dims:[[0,L,`${L}m`]]}),
+   q:`片持ち梁の先端に ${P} kN、全長に ${w} kN/m。固定端Aの鉛直反力と曲げモーメントの大きさは？`,ans:[{l:'V<sub>A</sub>',u:'kN',v:V},{l:'|M<sub>A</sub>|',u:'kN·m',v:M}],
+   sol:`V<sub>A</sub>＝${P}＋${w}×${L}＝<b>${nf(V)} kN</b>。${F('M_A = PL + wL²/2')}＝${P}×${L}＋${w}×${L}²/2＝<b>${nf(M)} kN·m</b>（上側引張）`}; }},
+ {t:'張出し梁',tag:'c',g(){ const L=pick([4,6,8]),a=pick([1,2,3]),P=pick([10,20,30]); const RB=P*(L+a)/L, RA=-P*a/L, MB=P*a;
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'P',x:L+a,label:`${P}kN`}],{ext:a,dims:[[0,L,`${L}m`],[L,L+a,`${a}m`]]}),
+   q:`張出し部の先端に ${P} kN。支点Bの反力と、支点Aの反力（上向きを＋）、B点の曲げモーメントの大きさは？`,ans:[{l:'R<sub>B</sub>',u:'kN',v:RB},{l:'R<sub>A</sub>',u:'kN',v:RA},{l:'|M<sub>B</sub>|',u:'kN·m',v:MB}],
+   sol:`A点まわり：${F('R_B × '+L+' = '+P+' × '+(L+a))} → R<sub>B</sub>＝<b>${nf(RB)} kN</b>。鉛直のつりあいで R<sub>A</sub>＝${P}−${nf(RB)}＝<b>${nf(RA)} kN</b>（下向き）。B点は先端の荷重だけを考えて ${P}×${a}＝<b>${MB} kN·m</b>（上側引張）`}; }},
+ {t:'モーメント荷重',tag:'c',g(){ const L=pick([4,5,6,8]),a=ri(1,L-1),b=L-a,M0=pick([20,30,40,60]); const R=M0/L, Mmax=M0*Math.max(a,b)/L;
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'M',x:a,cw:true,label:`${M0}kN·m`}],{dims:[[0,a,`${a}m`],[a,L,`${b}m`]]}),
+   q:`単純梁に時計回りのモーメント荷重 ${M0} kN·m。支点反力の大きさと、曲げモーメントの最大値（絶対値）は？`,ans:[{l:'|R<sub>A</sub>|',u:'kN',v:R},{l:'|M|<sub>max</sub>',u:'kN·m',v:Mmax}],
+   sol:`反力は偶力になり ${F('R = M₀/L')}＝${M0}/${L}＝<b>${nf(R)} kN</b>（Aは下向き、Bは上向き）。荷重点の左で ${nf(R)}×${a}＝${nf(R*a)}、右で ${nf(R)}×${b}＝${nf(R*b)}。最大 <b>${nf(Mmax)} kN·m</b>（荷重点でM図が ${M0} だけ跳ぶ）`}; }},
+ {t:'三角形分布荷重',tag:'k',g(){ const L=pick([3,6,9]),w=pick([6,9,12]); const W=w*L/2, RA=W/3, RB=2*W/3, xm=L/Math.sqrt(3), Mm=w*L*L/(9*Math.sqrt(3));
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'w',x0:0,x1:L,tri:true,label:`最大${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),
+   q:`A側で0、B側で ${w} kN/m の三角形分布荷重。支点反力 R<sub>A</sub>、R<sub>B</sub> は？`,ans:[{l:'R<sub>A</sub>',u:'kN',v:RA},{l:'R<sub>B</sub>',u:'kN',v:RB}],
+   sol:`合力は面積 ${w}×${L}/2＝${nf(W)} kN、作用点は重心（Bから ${L}/3 m）。B点まわり：${F('R_A × '+L+' = '+nf(W)+' × '+nf(L/3))} → R<sub>A</sub>＝<b>${nf(RA)} kN</b>、R<sub>B</sub>＝<b>${nf(RB)} kN</b>。（最大M＝${F('wL²/9√3')}＝${nf(Mm)} kN·m、Aから ${nf(xm)} m）`}; }},
+ ]});
+
+// ---- 4 ゲルバー梁・静定ラーメン
+unit({id:'frame',name:'ゲルバー梁と静定ラーメン',tag:'c',ds:'ヒンジでの分解、門形・3ヒンジラーメン',
+ pts:[`ヒンジでは曲げモーメントが0。ヒンジで切り分けて「乗っている梁」から先に解く`,`静定ラーメンも反力→断面力の順。柱のM図は柱の外側・内側どちらが引張かに注意`,`節点（剛接）では、つながる部材の端モーメントがつりあう`,`3ヒンジラーメン：ヒンジ点まわりのモーメント＝0 が4つ目の式になり、水平反力が求まる`,`3ヒンジ・等分布 ${F('H = wL²/(8h)')}`],
+ game:{name:'断面力図ラボ（荷重を動かしてN図・Q図・M図を見る）',url:'../dan/'},
+ gens:[
+ {t:'ゲルバー梁',tag:'c',g(){ const a=pick([2,3,4]),b=pick([4,6]),P=pick([20,40,60]); const RC=P/2, MA=P/2*a;
+   const f=beamFig(a+b,[{x:0,t:'fixedL',lab:'A'},{x:a,t:'hinge'},{x:a+b,t:'roller',lab:'C'}],[{t:'P',x:a+b/2,label:`${P}kN`}],{dims:[[0,a,`${a}m`],[a,a+b/2,`${b/2}m`],[a+b/2,a+b,`${b/2}m`]]});
+   return {fig:f,q:`固定端A、ヒンジ（○）、ローラーCのゲルバー梁。ヒンジの右の梁の中央に ${P} kN。Cの反力と、固定端Aの曲げモーメントの大きさは？`,ans:[{l:'R<sub>C</sub>',u:'kN',v:RC},{l:'|M<sub>A</sub>|',u:'kN·m',v:MA}],
+   sol:`ヒンジの右は単純梁として解ける：R<sub>C</sub>＝ヒンジの力＝${P}/2＝<b>${nf(RC)} kN</b>。ヒンジの力 ${nf(RC)} kN が片持ち梁AHの先端に下向きにかかるので ${F('M_A')}＝${nf(RC)}×${a}＝<b>${nf(MA)} kN·m</b>`}; }},
+ {t:'門形ラーメン（水平力）',tag:'c',g(){ const h=pick([3,4,5]),L=pick([4,6,8]),P=pick([10,20,30]); const RD=P*h/L, MB=P*h;
+   const f=Fig(-1.5,-1.4,L+1.5,h+1.2); f.poly([[0,0],[0,h],[L,h],[L,0]],'n',7); f.sup('pin',0,0); f.sup('roller',L,0); f.P(0,h,1,0,`${P}kN`,'r',60); f.text(0,0,'A','n',14,'middle',44); f.text(L,0,'D','n',14,'middle',44); f.text(0,h,'B','n',14,'middle',-16); f.dim(0,L,-1.05,`${L}m`); f.dimV(-.9,0,h,`${h}m`);
+   return {dia:{pts:[[0,0],[0,h],[L,h],[L,0]],sup:[{s:0,t:'pin',lab:'A'},{s:2*h+L,t:'roller',lab:'D'}],loads:[{k:'P',s:h,v:P,dir:'right'}]},fig:f.svg(),q:`ピン支点A、ローラー支点Dの門形ラーメンの左上Bに水平力 ${P} kN。Dの鉛直反力と、B点（柱の上端）の曲げモーメントの大きさは？`,ans:[{l:'V<sub>D</sub>',u:'kN',v:RD},{l:'|M<sub>B</sub>|',u:'kN·m',v:MB}],
+   sol:`水平反力はAだけで H<sub>A</sub>＝${P} kN（左向き）。A点まわり：${F('V_D × '+L+' = '+P+' × '+h)} → V<sub>D</sub>＝<b>${nf(RD)} kN</b>（上向き、Aは下向き）。柱ABは H<sub>A</sub> だけを受けるので ${F('M_B = H_A × h')}＝<b>${nf(MB)} kN·m</b>`}; }},
+ {t:'3ヒンジラーメン',tag:'c',g(){ const h=pick([3,4,5]),L=pick([6,8,10]),w=pick([2,4,6]); const H=w*L*L/(8*h), V=w*L/2, MB=H*h;
+   const f=Fig(-1.5,-1.4,L+1.5,h+2.3); f.poly([[0,0],[0,h],[L,h],[L,0]],'n',7); f.sup('pin',0,0); f.sup('pin',L,0); f.hinge(L/2,h); f.W(0,L,h,`${w}kN/m`); f.text(0,0,'A','n',14,'middle',44); f.text(L,0,'E','n',14,'middle',44); f.dim(0,L,-1.05,`${L}m`); f.dimV(-.9,0,h,`${h}m`);
+   return {dia:{pts:[[0,0],[0,h],[L,h],[L,0]],sup:[{s:0,t:'pin',lab:'A'},{s:2*h+L,t:'pin',lab:'E'}],hinges:[h+L/2],loads:[{k:'w',s0:h,s1:h+L,v:w,dir:'down'}]},fig:f.svg(),q:`梁の中央にヒンジがある3ヒンジラーメン。梁全体に ${w} kN/m。支点の水平反力 H と、隅角部（柱の上端）の曲げモーメントの大きさは？`,ans:[{l:'H',u:'kN',v:H},{l:'|M|',u:'kN·m',v:MB}],
+   sol:`鉛直反力は対称で ${nf(V)} kN。ヒンジ点まわり（左半分）：${F('V × L/2 − H × h − w(L/2)²/2 = 0')} → ${F('H = wL²/(8h)')}＝<b>${nf(H)} kN</b>。隅角部は ${F('H × h')}＝<b>${nf(MB)} kN·m</b>（単純梁の wL²/8 と同じ値になる）`}; }},
+ ]});
+
+// ---- 5 トラス
+unit({id:'truss',name:'静定トラス',tag:'c',ds:'節点法・切断法（リッター法）',
+ pts:[`トラスの部材は軸力だけを受ける（引張＋、圧縮−）`,`節点法：1つの節点で ${F('ΣX=0, ΣY=0')}。未知数2つ以下の節点から解く`,`切断法：3本の部材を切り、求めたい部材以外の2本の交点まわりのモーメントをとる`,`平行弦トラスの弦材 ${F('N = M / h')}（M は単純梁としての曲げモーメント）`,`荷重のない節点に2本だけ集まり一直線でないとき、両方とも0（ゼロメンバー）`],
+ game:{name:'ぶっ壊し構造ラボ（トラス橋）',url:'../bukkowashi/'},
+ gens:[
+ {t:'三角形トラス（節点法）',tag:'c',g(){ const [a,h]=pick([[4,3],[3,4],[3,3],[6,8]]); const P=pick([30,60,90,120]); const Ls=Math.hypot(a,h), sin=h/Ls, cos=a/Ls; const C=P/(2*sin), T=P/(2*sin)*cos;
+   const f=Fig(-1,-1.6,2*a+1,h+1.6); f.poly([[0,0],[a,h],[2*a,0],[0,0]],'n',4); [[0,0],[a,h],[2*a,0]].forEach(p=>f.hinge(...p)); f.sup('pin',0,0); f.sup('roller',2*a,0); f.P(a,h,0,-1,`${P}kN`); f.dim(0,a,-1.25,`${a}m`); f.dim(a,2*a,-1.25,`${a}m`); f.dimV(-.6,0,h,`${h}m`);
+   return {fig:f.svg(),q:`頂点に ${P} kN。斜材の軸力の大きさ（圧縮）と、下弦材の軸力（引張）は？`,ans:[{l:'斜材 |N|',u:'kN',v:C},{l:'下弦材 N',u:'kN',v:T}],
+   sol:`反力は ${P/2} kN ずつ。支点の節点で鉛直：${F('N_斜 sinθ = '+P/2)}（sinθ＝${h}/${nf(Ls)}）→ 斜材 <b>${nf(C)} kN（圧縮）</b>。水平：${F('N_下 = N_斜 cosθ')}＝<b>${nf(T)} kN（引張）</b>`}; }},
+ {t:'平行弦トラス（切断法）',tag:'c',g(){ const n=pick([4,6]),d=pick([2,3]),h=pick([2,3]),P=pick([10,20,30]); const R=(n-1)*P/2; const k=ri(0,n/2-1); const xc=(k+1)*d; let M=R*xc; for(let i=1;i<=k;i++) M-=P*(xc-i*d); const N=M/h;
+   const f=Fig(-1,-1.8,n*d+1,h+1); for(let i=0;i<n;i++){ f.line(i*d,0,(i+1)*d,0,4, i===k?'r':'n'); f.line(i*d,h,(i+1)*d,h,4); if(i<n/2) f.line(i*d,0,(i+1)*d,h,3); else f.line(i*d,h,(i+1)*d,0,3); }
+   for(let i=0;i<=n;i++){ f.line(i*d,0,i*d,h,3); f.hinge(i*d,0); f.hinge(i*d,h); } f.sup('pin',0,0); f.sup('roller',n*d,0); for(let i=1;i<n;i++) f.P(i*d,0,0,-1,i===1?`${P}kN`:null,'r',34);
+   f.text((k+.5)*d,0,'X','r',15,'middle',16); for(let i=0;i<n;i++) f.dim(i*d,(i+1)*d,-1.4,`${d}`); f.dimV(-.55,0,h,`${h}m`);
+   return {fig:f.svg(),q:`下弦の各節点に ${P} kN ずつ（${n-1}か所）。赤い下弦材Xの軸力は？（引張を＋、パネル長 ${d} m）`,ans:[{l:'N<sub>X</sub>',u:'kN',v:N}],
+   sol:`反力 R＝${n-1}×${P}/2＝${nf(R)} kN。Xを含むパネルを切ると、斜材と上弦材の交点はXの右端の真上（左端から ${xc} m）。そこまわりのモーメント：${F('M = '+nf(R)+'×'+xc+(k>0?' − '+P+'×('+Array.from({length:k},(_,i)=>xc-(i+1)*d).join('+')+')':''))}＝${nf(M)} kN·m。${F('N = M/h')}＝${nf(M)}/${h}＝<b>${nf(N)} kN（引張）</b>`}; }},
+ ]});
+
+// ---- 6 断面の性質
+unit({id:'section',name:'断面の性質',tag:'c',ds:'図心、断面二次モーメント、断面係数、断面二次半径',
+ pts:[`図心 ${F('y₀ = Σ(A·y) / ΣA')}（断面一次モーメント÷面積）`,`長方形（図心軸） ${F('I = bh³/12')}、断面係数 ${F('Z = bh²/6')}`,`平行軸の定理 ${F('I = I₀ + A·e²')}（底辺まわり ${F('bh³/3')}）`,`H形・箱形は「外側の長方形 − 抜けた部分」で計算できる`,`断面二次半径 ${F('i = √(I/A)')}（長方形は ${F('h/√12')}）`,`曲げに強いのは I が大きい断面。同じ面積なら高さを大きくするほど効く`],
+ gens:[
+ {t:'長方形断面',tag:'c',g(){ const b=pick([10,12,15,20]),h=pick([20,30,40,50]); const I=b*h**3/12, Z=b*h*h/6;
+   const f=Fig(-2,-2,b/10*6+4,h/10*6+2); const sc=.12; f.rect(0,0,b*sc,h*sc,'#93BCD6','#12286B'); f.line(-.6,h*sc/2,b*sc+.6,h*sc/2,1.5,'r','6 4'); f.text(b*sc+.8,h*sc/2,'X','r',14,'start'); f.dim(0,b*sc,-.7,`b=${b}cm`); f.dimV(-.5,0,h*sc,`h=${h}cm`);
+   return {fig:f.svg(),q:`幅 ${b} cm、高さ ${h} cm の長方形断面。図心を通るX軸まわりの断面二次モーメントと断面係数は？`,ans:[{l:'I',u:'cm⁴',v:I},{l:'Z',u:'cm³',v:Z}],
+   sol:`${F('I = bh³/12')}＝${b}×${h}³/12＝<b>${nf(I)} cm⁴</b>、${F('Z = bh²/6')}＝${b}×${h}²/6＝<b>${nf(Z)} cm³</b>`}; }},
+ {t:'T形断面の図心',tag:'c',g(){ const B=pick([20,30,40]),t=pick([4,5,6]),bw=pick([4,6,8]),hw=pick([20,24,30]); const A1=bw*hw,y1=hw/2,A2=B*t,y2=hw+t/2; const y0=(A1*y1+A2*y2)/(A1+A2);
+   const sc=.1; const f=Fig(-2,-1.5,B*sc+2,(hw+t)*sc+1); f.rect(0,hw*sc,B*sc,t*sc,'#93BCD6','#12286B'); f.rect((B-bw)/2*sc,0,bw*sc,hw*sc,'#93BCD6','#12286B'); f.dim(0,B*sc,(hw+t)*sc+.45,`${B}cm`); f.dimV(-.4,0,hw*sc,`${hw}`); f.dimV(-.4,hw*sc,(hw+t)*sc,`${t}`); f.text((B+bw)/2*sc+.15,hw*sc/2,`幅${bw}cm`,'m',12,'start');
+   return {fig:f.svg(),q:`図のT形断面（フランジ ${B}×${t} cm、ウェブ ${bw}×${hw} cm）。底面から図心までの距離 y₀ は？`,ans:[{l:'y₀',u:'cm',v:y0}],
+   sol:`ウェブ A₁＝${A1} cm²（重心 ${y1}）、フランジ A₂＝${A2} cm²（重心 ${y2}）。${F('y₀ = (A₁y₁＋A₂y₂)/(A₁＋A₂)')}＝(${A1}×${y1}＋${A2}×${y2})/${A1+A2}＝<b>${nf(y0)} cm</b>`}; }},
+ {t:'H形断面のI',tag:'c',g(){ const B=pick([20,30]),H=pick([30,40,50]),tf=pick([2,3]),tw=pick([1,2]); const I=(B*H**3-(B-tw)*(H-2*tf)**3)/12;
+   const sc=.09; const f=Fig(-2.2,-1,B*sc+1.5,H*sc+1); f.rect(0,0,B*sc,tf*sc,'#93BCD6','#12286B'); f.rect(0,(H-tf)*sc,B*sc,tf*sc,'#93BCD6','#12286B'); f.rect((B-tw)/2*sc,tf*sc,tw*sc,(H-2*tf)*sc,'#93BCD6','#12286B'); f.dim(0,B*sc,H*sc+.4,`B=${B}`); f.dimV(-.5,0,H*sc,`H=${H}`); f.text(B*sc+.2,(H-tf/2)*sc,`tf=${tf}`,'m',12,'start'); f.text((B+tw)/2*sc+.15,H*sc/2,`tw=${tw}`,'m',12,'start');
+   return {fig:f.svg(),q:`H形断面（単位 cm）。強軸（水平な図心軸）まわりの断面二次モーメントは？`,ans:[{l:'I',u:'cm⁴',v:I}],
+   sol:`外側の長方形から、ウェブの両側の空いた部分を引く：${F('I = [BH³ − (B−tw)(H−2tf)³]/12')}＝[${B}×${H}³−${B-tw}×${H-2*tf}³]/12＝<b>${nf(I)} cm⁴</b>`}; }},
+ {t:'平行軸の定理・断面二次半径',tag:'c',g(){ const b=pick([10,20,30]),h=pick([30,60,90]); const Ib=b*h**3/3, i=h/Math.sqrt(12);
+   const sc=.06; const f=Fig(-2,-1,b*sc+3,h*sc+1); f.rect(0,0,b*sc,h*sc,'#93BCD6','#12286B'); f.line(-.5,0,b*sc+1.2,0,2,'r'); f.text(b*sc+1.3,0,'底辺の軸','r',13,'start'); f.dim(0,b*sc,h*sc+.4,`${b}cm`); f.dimV(-.4,0,h*sc,`${h}cm`);
+   return {fig:f.svg(),q:`幅 ${b} cm、高さ ${h} cm の長方形。底辺まわりの断面二次モーメントと、図心軸に関する断面二次半径は？`,ans:[{l:'I<sub>底</sub>',u:'cm⁴',v:Ib},{l:'i',u:'cm',v:i}],
+   sol:`${F('I = I₀ + A e²')}＝${b}×${h}³/12＋${b*h}×(${h/2})²＝${F('bh³/3')}＝<b>${nf(Ib)} cm⁴</b>。${F('i = √(I₀/A) = h/√12')}＝<b>${nf(i)} cm</b>`}; }},
+ ]});
+
+// ---- 7 応力度
+unit({id:'stress',name:'応力度と組合せ応力',tag:'c',ds:'曲げ応力・せん断応力・偏心荷重・断面の核・主応力',
+ pts:[`軸応力 ${F('σ = N/A')}`,`曲げ応力（縁） ${F('σ = M/Z')}、任意位置 ${F('σ = M·y/I')}`,`長方形の最大せん断応力 ${F('τ = 1.5 Q/A')}（平均の1.5倍、中立軸で最大）`,`偏心圧縮 ${F('σ = N/A ± N·e/Z')}`,`断面の核：引張が出ない偏心の範囲。長方形は中央 ${F('h/6')} 以内（核の幅 h/3）`,`主応力 ${F('σ₁,₂ = (σx+σy)/2 ± √{((σx−σy)/2)² + τ²}')}（モールの応力円）`,`単位：1 N/mm² ＝ 1 MPa。kN·m → N·mm は ×10⁶`],
+ gens:[
+ {t:'曲げ応力度',tag:'c',g(){ const L=pick([4,5,6]),w=pick([5,10,15]),b=pick([100,150,200]),h=pick([300,400,500]); const M=w*L*L/8, Z=b*h*h/6, s=M*1e6/Z;
+   return {fig:beamFig(L,[{x:0,t:'pin'},{x:L,t:'roller'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),
+   q:`単純梁（断面 幅${b} mm × 高さ${h} mm の長方形）に等分布荷重 ${w} kN/m。最大曲げ応力度は？`,ans:[{l:'σ<sub>max</sub>',u:'N/mm²',v:s}],
+   sol:`${F('M = wL²/8')}＝${nf(M)} kN·m＝${nf(M)}×10⁶ N·mm。${F('Z = bh²/6')}＝${nf(Z)} mm³。${F('σ = M/Z')}＝<b>${nf(s)} N/mm²</b>`}; }},
+ {t:'せん断応力度',tag:'c',g(){ const L=pick([4,6,8]),w=pick([10,20,30]),b=pick([100,150,200]),h=pick([300,400,600]); const Q=w*L/2, t=1.5*Q*1000/(b*h);
+   return {fig:beamFig(L,[{x:0,t:'pin'},{x:L,t:'roller'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),
+   q:`単純梁（断面 ${b}×${h} mm）に ${w} kN/m。最大せん断応力度は？`,ans:[{l:'τ<sub>max</sub>',u:'N/mm²',v:t}],
+   sol:`${F('Q_max = wL/2')}＝${nf(Q)} kN。${F('τ = 1.5Q/(bh)')}＝1.5×${nf(Q)}×10³/(${b}×${h})＝<b>${nf(t)} N/mm²</b>`}; }},
+ {t:'偏心圧縮',tag:'c',g(){ const b=pick([200,300,400]),h=pick([300,400,600]),N=pick([300,600,900,1200]),e=pick([20,50,80,100]); const A=b*h,Z=b*h*h/6; const s1=N*1e3/A+N*1e3*e/Z, s2=N*1e3/A-N*1e3*e/Z;
+   const sc=.006; const f=Fig(-1.2,-1,b*sc+1.2,h*sc+.8); f.rect(0,0,b*sc,h*sc,'#93BCD6','#12286B'); f.circ(b*sc/2,h*sc/2+e*sc,5,'#C62422','r'); f.line(-.2,h*sc/2,b*sc+.2,h*sc/2,1.2,'m','5 4'); f.text(b*sc+.25,h*sc/2+e*sc,`e=${e}mm`,'r',12,'start'); f.dim(0,b*sc,-.5,`${b}`); f.dimV(-.35,0,h*sc,`${h}`);
+   return {fig:f.svg(),q:`${b}×${h} mm の柱断面に、図心から ${e} mm 偏心した圧縮力 ${N} kN（●）。最大圧縮応力度と、反対側の縁の応力度（圧縮を＋）は？`,ans:[{l:'最大',u:'N/mm²',v:s1},{l:'反対側',u:'N/mm²',v:s2}],
+   sol:`${F('σ = N/A ± Ne/Z')}。N/A＝${nf(N*1e3/A)}、Ne/Z＝${nf(N*1e3*e/Z)}（Z＝bh²/6）。最大 <b>${nf(s1)}</b>、反対側 <b>${nf(s2)} N/mm²</b>${s2<0?'（負なので引張が生じる。e が h/6＝'+nf(h/6)+' mm を超えている）':'（e ≤ h/6＝'+nf(h/6)+' mm なので引張は生じない）'}`}; }},
+ {t:'主応力（モールの円）',tag:'d',g(){ const sx=pick([40,60,80,100]),sy=pick([-20,0,20]),t=pick([20,30,40]); const c=(sx+sy)/2,r=Math.hypot((sx-sy)/2,t); const s1=c+r,s2=c-r,tmax=r;
+   const f=Fig(-2,-2,6,2.5); f.rect(0,-1,2,2,'#93BCD6','#12286B'); f.P(3.1,0,1,0,`σx=${sx}`,'r',40,'h'); f.P(1,2.1,0,1,`σy=${sy}`,'b',40); f.P(2.15,-.6,0,1,`τ=${t}`,'n',34);
+   return {fig:f.svg(),q:`平面応力状態 σx＝${sx}、σy＝${sy}、τxy＝${t}（N/mm²）。最大主応力・最小主応力・最大せん断応力は？`,ans:[{l:'σ₁',u:'N/mm²',v:s1},{l:'σ₂',u:'N/mm²',v:s2},{l:'τ<sub>max</sub>',u:'N/mm²',v:tmax}],
+   sol:`モールの円の中心 ${F('(σx+σy)/2')}＝${nf(c)}、半径 ${F('√{((σx−σy)/2)²+τ²}')}＝${nf(r)}。σ₁＝<b>${nf(s1)}</b>、σ₂＝<b>${nf(s2)}</b>、τ<sub>max</sub>＝半径＝<b>${nf(tmax)} N/mm²</b>`}; }},
+ ]});
+
+// ---- 8 ひずみと変形
+unit({id:'strain',name:'ひずみと軸方向の変形',tag:'c',ds:'フックの法則、伸び、ポアソン比、温度応力、合成部材',
+ pts:[`ひずみ ${F('ε = ΔL/L')}、フックの法則 ${F('σ = E ε')}`,`伸び ${F('ΔL = NL/(EA)')}（EA：伸び剛性）`,`ポアソン比 ${F('ν = |横ひずみ / 縦ひずみ|')}（鋼 約0.3）`,`両端固定の部材が温度変化 ΔT を受けると ${F('σ = E α ΔT')}`,`並列の部材は変形が等しく、力は EA の比で分担する`,`鋼 ${F('E ≒ 2.05×10⁵')}、コンクリート 約 ${F('2.1〜3×10⁴ N/mm²')}`],
+ gens:[
+ {t:'部材の伸び',tag:'c',g(){ const P=pick([50,100,200,300]),L=pick([2,3,4,5]),A=pick([1000,1500,2000,3000]),E=205000; const d=P*1e3*L*1e3/(E*A);
+   const f=Fig(-.5,-1,7,1.2); f.sup('fixedL',0,0); f.line(0,0,5,0,9,'n'); f.P(6.4,0,1,0,`${P}kN`,'r',60,'h'); f.dim(0,5,-.7,`L=${L}m`);
+   return {fig:f.svg(),q:`断面積 ${A} mm²、長さ ${L} m の鋼棒（E＝2.05×10⁵ N/mm²）を ${P} kN で引っ張る。伸びは？`,ans:[{l:'ΔL',u:'mm',v:d}],
+   sol:`${F('ΔL = NL/(EA)')}＝${P}×10³×${L}×10³/(2.05×10⁵×${A})＝<b>${nf(d)} mm</b>`}; }},
+ {t:'温度応力',tag:'c',g(){ const dT=pick([20,30,40,50]); const E=205000,a=1.2e-5; const s=E*a*dT;
+   const f=Fig(-.5,-1,6.5,1.2); f.sup('fixedL',0,0); f.sup('fixedR',6,0); f.line(0,0,6,0,9,'r'); f.text(3,0,`＋${dT}℃`,'r',15,'middle',-22);
+   return {fig:f.svg(),q:`両端を固定した鋼材の温度が ${dT}℃ 上がった。生じる圧縮応力度は？（E＝2.05×10⁵ N/mm²、線膨張係数 α＝1.2×10⁻⁵ /℃）`,ans:[{l:'σ',u:'N/mm²',v:s}],
+   sol:`自由なら ${F('ε = αΔT')} だけ伸びるが、固定で押し戻される。${F('σ = E α ΔT')}＝2.05×10⁵×1.2×10⁻⁵×${dT}＝<b>${nf(s)} N/mm²</b>（長さに関係しない）`}; }},
+ {t:'ポアソン比',tag:'c',g(){ const d=pick([20,25,30,40]),e=pick([0.0005,0.001,0.0015]),nu=pick([0.25,0.3]); const dd=nu*e*d;
+   return {fig:'',q:`直径 ${d} mm の棒を引っ張ったところ、軸方向ひずみが ${e} になった。ポアソン比 ${nu} のとき、直径の縮み量は？`,ans:[{l:'Δd',u:'mm',v:dd}],
+   sol:`横ひずみ＝${F('ν ε')}＝${nu}×${e}＝${nf(nu*e,3)}。Δd＝${nf(nu*e,3)}×${d}＝<b>${nf(dd)} mm</b>（細くなる）`}; }},
+ {t:'並列部材の分担',tag:'c',g(){ const A1=pick([1000,2000]),A2=pick([20000,40000]),P=pick([300,600,900]); const E1=205000,E2=20500; const k1=E1*A1,k2=E2*A2; const P1=P*k1/(k1+k2);
+   return {fig:'',q:`鋼材（E＝2.05×10⁵、A＝${A1} mm²）とコンクリート（E＝2.05×10⁴、A＝${A2} mm²）を一体にした長さの等しい柱に ${P} kN の圧縮力。鋼材が負担する力は？`,ans:[{l:'P<sub>鋼</sub>',u:'kN',v:P1}],
+   sol:`変形が等しいので力は EA の比で分担。鋼 EA＝${(k1/1e6).toFixed(0)}×10⁶、コンクリート EA＝${(k2/1e6).toFixed(0)}×10⁶。${F('P_鋼 = P × EA_鋼/ΣEA')}＝<b>${nf(P1)} kN</b>`}; }},
+ ]});
+
+// ---- 9 たわみ
+unit({id:'defl',name:'梁のたわみとたわみ角',tag:'c',ds:'たわみ公式、モールの定理、比で比べる問題',
+ pts:[`たわみの基本式 ${F('EI·d²y/dx² = −M')}（EI：曲げ剛性）`,`モールの定理：M/EI を荷重とみなした梁の「せん断力＝たわみ角」「曲げモーメント＝たわみ」`,`片持ち梁 先端集中 ${F('δ = PL³/3EI, θ = PL²/2EI')}`,`片持ち梁 等分布 ${F('δ = wL⁴/8EI')}`,`単純梁 中央集中 ${F('δ = PL³/48EI')}、等分布 ${F('δ = 5wL⁴/384EI')}`,`比で考える：δ は L³（等分布は L⁴）に比例、EI に反比例`],
+ game:{name:'断面力図ラボ（カスティリアーノの定理のタブ）',url:'../dan/'},
+ gens:[
+ {t:'単純梁・中央集中',tag:'c',g(){ const P=pick([10,20,40]),L=pick([4,5,6,8]),I=pick([1,2,4,8])*1e8,E=205000; const d=P*1e3*(L*1e3)**3/(48*E*I);
+   return {fig:beamFig(L,[{x:0,t:'pin'},{x:L,t:'roller'}],[{t:'P',x:L/2,label:`${P}kN`}],{dims:[[0,L,`${L}m`]]}),q:`単純梁の中央に ${P} kN。中央のたわみは？（E＝2.05×10⁵ N/mm²、I＝${I/1e8}×10⁸ mm⁴）`,ans:[{l:'δ',u:'mm',v:d}],
+   sol:`${F('δ = PL³/(48EI)')}＝${P}×10³×(${L}×10³)³/(48×2.05×10⁵×${I/1e8}×10⁸)＝<b>${nf(d)} mm</b>`}; }},
+ {t:'片持ち梁',tag:'c',g(){ const P=pick([5,10,20]),L=pick([2,3,4]),I=pick([1,2,4])*1e8,E=205000; const d=P*1e3*(L*1e3)**3/(3*E*I), th=P*1e3*(L*1e3)**2/(2*E*I);
+   return {fig:beamFig(L,[{x:0,t:'fixedL'}],[{t:'P',x:L,label:`${P}kN`}],{dims:[[0,L,`${L}m`]]}),q:`片持ち梁の先端に ${P} kN。先端のたわみとたわみ角は？（E＝2.05×10⁵ N/mm²、I＝${I/1e8}×10⁸ mm⁴）`,ans:[{l:'δ',u:'mm',v:d},{l:'θ',u:'×10⁻³ rad',v:th*1e3}],
+   sol:`${F('δ = PL³/3EI')}＝<b>${nf(d)} mm</b>、${F('θ = PL²/2EI')}＝${nf(th,4)} rad＝<b>${nf(th*1e3)}×10⁻³ rad</b>`}; }},
+ {t:'単純梁・等分布',tag:'c',g(){ const w=pick([5,10,20]),L=pick([4,6,8]),I=pick([2,4,8])*1e8,E=205000; const d=5*w*(L*1e3)**4/(384*E*I);
+   return {fig:beamFig(L,[{x:0,t:'pin'},{x:L,t:'roller'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),q:`単純梁に ${w} kN/m（＝${w} N/mm）。中央のたわみは？（E＝2.05×10⁵ N/mm²、I＝${I/1e8}×10⁸ mm⁴）`,ans:[{l:'δ',u:'mm',v:d}],
+   sol:`${F('δ = 5wL⁴/(384EI)')}＝5×${w}×(${L}×10³)⁴/(384×2.05×10⁵×${I/1e8}×10⁸)＝<b>${nf(d)} mm</b>`}; }},
+ {t:'たわみの比',tag:'k',g(){ const La=pick([1,2]),Lb=pick([1,2,3]),Ia=pick([1,2]),Ib=pick([1,2,4]),Pa=pick([1,2]),Pb=pick([1,2]); const r=(Pa*La**3/Ia)/(Pb*Lb**3/Ib);
+   return {fig:'',q:`同じ材料の単純梁A、Bの中央に集中荷重がかかる。A：荷重 ${Pa}P、スパン ${La}L、断面二次モーメント ${Ia}I。B：荷重 ${Pb}P、スパン ${Lb}L、断面二次モーメント ${Ib}I。中央のたわみの比 δA/δB は？`,ans:[{l:'δA/δB',u:'',v:r}],
+   sol:`${F('δ ∝ PL³/I')}。A：${Pa}×${La}³/${Ia}＝${nf(Pa*La**3/Ia)}、B：${Pb}×${Lb}³/${Ib}＝${nf(Pb*Lb**3/Ib)}。比＝<b>${nf(r)}</b>`}; }},
+ ]});
+
+// ---- 10 座屈
+unit({id:'buckle',name:'座屈',tag:'c',ds:'オイラー座屈荷重、座屈長さ、細長比',
+ pts:[`オイラー座屈荷重 ${F('Pcr = π²EI / lk²')}`,`座屈長さ lk：両端ピン ${F('1.0L')}、一端固定・他端自由 ${F('2.0L')}、一端固定・他端ピン ${F('0.7L')}、両端固定 ${F('0.5L')}`,`横移動が自由な両端固定（ラーメンの柱など） ${F('1.0L')}`,`細長比 ${F('λ = lk / i')}（i：断面二次半径）。λ が大きいほど座屈しやすい`,`I は弱いほうの軸（最小値）を使う`],
+ game:{name:'ぶっ壊し構造ラボ（アーチ橋の座屈）',url:'../bukkowashi/'},
+ gens:[
+ {t:'座屈荷重の比',tag:'k',g(){ const C=[['両端ピン',1],['一端固定・他端自由',2],['一端固定・他端ピン',.7],['両端固定',.5]]; const A=pick(C),B=pick(C),La=pick([1,2]),Lb=pick([1,2]),Ia=pick([1,2]),Ib=pick([1,2,3]); const pa=Ia/(A[1]*La)**2, pb=Ib/(B[1]*Lb)**2;
+   return {fig:'',q:`同じ材料の柱A（${A[0]}、長さ ${La}L、断面二次モーメント ${Ia}I）と柱B（${B[0]}、長さ ${Lb}L、${Ib}I）。弾性座屈荷重の比 P<sub>A</sub>/P<sub>B</sub> は？`,ans:[{l:'P<sub>A</sub>/P<sub>B</sub>',u:'',v:pa/pb}],
+   sol:`${F('Pcr ∝ I / lk²')}。A：lk＝${A[1]}×${La}L＝${nf(A[1]*La)}L → ${Ia}/${nf((A[1]*La)**2)}。B：lk＝${nf(B[1]*Lb)}L → ${Ib}/${nf((B[1]*Lb)**2)}。比＝<b>${nf(pa/pb)}</b>`}; }},
+ {t:'オイラー座屈荷重',tag:'c',g(){ const L=pick([3,4,5,6]),I=pick([1,2,5])*1e7,c=pick([['両端ピン',1],['両端固定',.5],['一端固定・他端自由',2]]),E=205000; const lk=c[1]*L*1e3; const P=PI*PI*E*I/(lk*lk)/1e3;
+   const f=Fig(-2,-.8,2,L+.8); f.line(0,0,0,L,7); f.dimV(-.8,0,L,`${L}m`); f.P(0,L,0,-1,'P','r',40); f.text(.6,L/2,c[0],'m',13,'start');
+   return {fig:f.svg(),q:`長さ ${L} m、${c[0]}の鋼柱（E＝2.05×10⁵ N/mm²、最小の I＝${I/1e7}×10⁷ mm⁴）。弾性座屈荷重は？`,ans:[{l:'Pcr',u:'kN',v:P}],
+   sol:`座屈長さ lk＝${c[1]}×${L}＝${nf(c[1]*L)} m。${F('Pcr = π²EI/lk²')}＝π²×2.05×10⁵×${I/1e7}×10⁷/(${nf(lk)})²＝<b>${nf(P)} kN</b>`}; }},
+ {t:'細長比',tag:'c',g(){ const d=pick([100,150,200]),L=pick([3,4,5]),c=pick([['両端ピン',1],['一端固定・他端ピン',.7],['両端固定',.5]]); const i=d/4, lam=c[1]*L*1e3/i;
+   return {fig:'',q:`直径 ${d} mm の円形断面の柱（長さ ${L} m、${c[0]}）。細長比 λ は？`,ans:[{l:'λ',u:'',v:lam}],
+   sol:`円の断面二次半径 ${F('i = √(I/A) = d/4')}＝${i} mm。${F('λ = lk/i')}＝${c[1]}×${L*1000}/${i}＝<b>${nf(lam)}</b>`}; }},
+ ]});
+
+// ---- 11 仕事とエネルギー
+unit({id:'energy',name:'仕事とエネルギー法',tag:'c',ds:'仮想仕事の原理、単位荷重法、ひずみエネルギー、カスティリアーノの定理',
+ pts:[`仮想仕事の原理：つりあっている構造物に仮想変位を与えると、外力の仕事の合計＝0`,`単位荷重法（トラス） ${F('δ = Σ N n L / (EA)')}（n：求めたい方向に単位荷重1をかけたときの軸力）`,`単位荷重法（梁） ${F('δ = ∫ M m / (EI) dx')}`,`軸力のひずみエネルギー ${F('U = N²L/(2EA)')}、曲げのひずみエネルギー ${F('U = ∫ M²/(2EI) dx')}`,`カスティリアーノの定理 ${F('δ = ∂U/∂P')}：エネルギーを荷重で微分すると、その荷重点・荷重の向きの変位`,`荷重のない点は仮の荷重 Q を置いて微分し、最後に Q＝0（単位荷重法 ${F('∫Mm/EI dx')} と同じ式になる）`,`相反作用の定理：点1の荷重による点2の変位＝点2の同じ荷重による点1の変位`],
+ game:[{name:'断面力図ラボ（カスティリアーノの定理のタブ）',url:'../dan/'},{name:'仮想仕事ラボ',url:'../kaso/'}],
+ gens:[
+ {t:'トラスのたわみ（単位荷重法）',tag:'c',g(){ const [a,h]=pick([[4,3],[3,4]]); const P=pick([30,60,90]),A=pick([1000,2000]),E=205000; const Ls=Math.hypot(a,h); const Ns=-P*Ls/(2*h), ns=-Ls/(2*h), Nb=P*a/(2*h), nb=a/(2*h); const sum=2*Ns*ns*Ls+Nb*nb*2*a; const d=sum*1e3*1e3/(E*A);
+   const f=Fig(-1,-1.6,2*a+1,h+1.6); f.poly([[0,0],[a,h],[2*a,0],[0,0]],'n',4); [[0,0],[a,h],[2*a,0]].forEach(p=>f.hinge(...p)); f.sup('pin',0,0); f.sup('roller',2*a,0); f.P(a,h,0,-1,`${P}kN`); f.dim(0,a,-1.25,`${a}m`); f.dim(a,2*a,-1.25,`${a}m`); f.dimV(-.6,0,h,`${h}m`);
+   return {fig:f.svg(),q:`全部材 A＝${A} mm²、E＝2.05×10⁵ N/mm² の三角形トラス。頂点の鉛直変位は？`,ans:[{l:'δ',u:'mm',v:d}],
+   sol:`実荷重の軸力 N：斜材 ${nf(Ns)} kN（長さ ${nf(Ls)} m）、下弦 ${nf(Nb)} kN（${2*a} m）。単位荷重1のときの n：斜材 ${nf(ns,3)}、下弦 ${nf(nb,3)}。${F('ΣNnL')}＝2×(${nf(Ns)})(${nf(ns,3)})(${nf(Ls)})＋(${nf(Nb)})(${nf(nb,3)})(${2*a})＝${nf(sum)} kN·m。${F('δ = ΣNnL/(EA)')}＝<b>${nf(d)} mm</b>`}; }},
+ {t:'カスティリアーノ（片持ち梁）',tag:'c',g(){ const P=pick([5,10,20]),L=pick([2,3,4]),I=pick([1,2,4]),EI=20500*I; const U=P*P*L**3/(6*EI), d=P*L**3/(3*EI);
+   return {fig:beamFig(L,[{x:0,t:'fixedL',lab:'A'}],[{t:'P',x:L,label:`${P}kN`}],{dims:[[0,L,`${L}m`]]}),q:`片持ち梁の先端に ${P} kN（EI＝${nf(EI)} kN·m²）。先端から x の位置の曲げモーメントは M＝−Px。曲げのひずみエネルギー U と、カスティリアーノの定理による先端のたわみは？`,ans:[{l:'U',u:'J',v:U*1e3},{l:'δ',u:'mm',v:d*1e3}],
+   sol:`${F('U = ∫₀ᴸ (Px)²/(2EI) dx = P²L³/(6EI)')}＝${P}²×${L}³/(6×${nf(EI)})＝${nf(U,5)} kN·m＝<b>${nf(U*1e3)} J</b>。P で微分：${F('δ = ∂U/∂P = PL³/(3EI)')}＝<b>${nf(d*1e3)} mm</b>（公式と一致）`}; }},
+ {t:'カスティリアーノ（仮の荷重）',tag:'c',g(){ const w=pick([2,4,6]),L=pick([2,3,4]),I=pick([1,2]),EI=20500*I; const d=w*L**4/(8*EI);
+   return {fig:beamFig(L,[{x:0,t:'fixedL',lab:'A'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),q:`片持ち梁全体に ${w} kN/m（EI＝${nf(EI)} kN·m²）。先端には荷重がないので、先端に仮の荷重 Q（下向き）を置いて考える。カスティリアーノの定理で先端のたわみは？`,ans:[{l:'δ',u:'mm',v:d*1e3}],
+   sol:`先端から x の位置で ${F('M = −wx²/2 − Qx')}、${F('∂M/∂Q = −x')}。${F('δ = ∂U/∂Q = ∫ M (∂M/∂Q)/EI dx')}。Q＝0 とおくと ${F('δ = ∫₀ᴸ (wx²/2)·x /EI dx = wL⁴/(8EI)')}＝${w}×${L}⁴/(8×${nf(EI)})＝<b>${nf(d*1e3)} mm</b>`}; }},
+ {t:'カスティリアーノ（たわみ角）',tag:'c',g(){ const P=pick([10,20,40]),L=pick([4,6,8]),I=pick([2,4]),EI=20500*I; const th=P*L*L/(16*EI);
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'P',x:L/2,label:`${P}kN`}],{dims:[[0,L/2,`${L/2}m`],[L/2,L,`${L/2}m`]]}),q:`単純梁の中央に ${P} kN（EI＝${nf(EI)} kN·m²）。支点Aに仮のモーメント荷重 C を置き、カスティリアーノの定理で支点Aのたわみ角を求めよ。`,ans:[{l:'θ<sub>A</sub>',u:'×10⁻³ rad',v:th*1e3}],
+   sol:`C だけによる曲げモーメント（Aから x）：${F('m = C(1 − x/L)')}、${F('∂M/∂C = 1 − x/L')}。${F('θ_A = ∫ M (1−x/L)/EI dx')}（C＝0）。左半分 ${F('M = Px/2')} と右半分を積分すると ${F('θ_A = PL²/(16EI)')}＝${P}×${L}²/(16×${nf(EI)})＝<b>${nf(th*1e3)}×10⁻³ rad</b>`}; }},
+ {t:'ひずみエネルギー',tag:'c',g(){ const P=pick([100,200,300]),L=pick([2,3,4]),A=pick([1000,2000]),E=205000; const U=(P*1e3)**2*L*1e3/(2*E*A)/1e3;
+   return {fig:'',q:`断面積 ${A} mm²、長さ ${L} m の鋼棒（E＝2.05×10⁵ N/mm²）に ${P} kN の引張力。蓄えられるひずみエネルギーは？`,ans:[{l:'U',u:'J（N·m）',v:U}],
+   sol:`${F('U = N²L/(2EA)')}＝(${P}×10³)²×${L*1000}/(2×2.05×10⁵×${A}) N·mm＝<b>${nf(U)} J</b>（${F('U = PΔL/2')} とも書ける）`}; }},
+ {t:'仮想仕事で反力',tag:'c',g(){ const L=pick([6,8,10]),a=ri(1,L-2),b=ri(a+1,L-1),P1=pick([10,20,30]),P2=pick([20,40]); const R=(P1*a+P2*b)/L;
+   return {fig:beamFig(L,[{x:0,t:'pin',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'P',x:a,label:`${P1}kN`},{t:'P',x:b,label:`${P2}kN`}],{dims:[[0,a,`${a}`],[a,b,`${b-a}`],[b,L,`${L-b}m`]]}),
+   q:`支点Bを外して反力Rに置きかえ、梁をA点まわりに小さく回転させる仮想変位を考える。仮想仕事の原理から R<sub>B</sub> は？`,ans:[{l:'R<sub>B</sub>',u:'kN',v:R}],
+   sol:`角度θ回すと、各点は（Aからの距離）×θ 上がる。${F('−'+P1+'×'+a+'θ −'+P2+'×'+b+'θ + R×'+L+'θ = 0')} → R＝<b>${nf(R)} kN</b>`}; }},
+ ]});
+
+// ---- 12 不静定構造
+unit({id:'indet',name:'不静定構造',tag:'c',ds:'固定端モーメント、たわみ角法、固定法、三連モーメント式',
+ pts:[`両端固定梁 等分布：端 ${F('wL²/12')}、中央 ${F('wL²/24')}。中央集中：端・中央とも ${F('PL/8')}`,`一端固定・他端ピン 等分布：固定端 ${F('wL²/8')}、ピン側反力 ${F('3wL/8')}`,`たわみ角法 ${F('M_AB = 2EK(2θA + θB − 3R) + C_AB')}`,`固定法：固定端モーメント → 不釣合い → 解放 → 分配（剛比の比）→ 到達（1/2）`,`分配率 ${F('DF = k / Σk')}、ピン端の有効剛比は ${F('0.75k')}`,`三連モーメント式（等断面）${F('M₁L₁ + 2M₂(L₁+L₂) + M₃L₂ = −(w₁L₁³ + w₂L₂³)/4')}`],
+ game:[{name:'固定法ラボ',url:'../kotei/'},{name:'断面力図ラボ（荷重を動かしてN図・Q図・M図を見る）',url:'../dan/'}],
+ gens:[
+ {t:'両端固定梁',tag:'c',g(){ const L=pick([4,6,8]),w=pick([6,12,24]); const Me=w*L*L/12, Mc=w*L*L/24;
+   return {fig:beamFig(L,[{x:0,t:'fixedL'},{x:L,t:'fixedR'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),q:`両端固定梁に ${w} kN/m。端部と中央の曲げモーメントの大きさは？`,ans:[{l:'|M<sub>端</sub>|',u:'kN·m',v:Me},{l:'M<sub>中央</sub>',u:'kN·m',v:Mc}],
+   sol:`端部 ${F('wL²/12')}＝<b>${nf(Me)} kN·m</b>（上側引張）。中央は単純梁の wL²/8＝${nf(w*L*L/8)} から端部の値を引いて ${F('wL²/24')}＝<b>${nf(Mc)} kN·m</b>`}; }},
+ {t:'一端固定・他端ローラー',tag:'c',g(){ const L=pick([4,6,8]),w=pick([4,8,12]); const MA=w*L*L/8, RB=3*w*L/8;
+   return {fig:beamFig(L,[{x:0,t:'fixedL',lab:'A'},{x:L,t:'roller',lab:'B'}],[{t:'w',x0:0,x1:L,label:`${w}kN/m`}],{dims:[[0,L,`${L}m`]]}),q:`一端固定・他端ローラーの梁に ${w} kN/m。固定端Aの曲げモーメントの大きさと、Bの反力は？`,ans:[{l:'|M<sub>A</sub>|',u:'kN·m',v:MA},{l:'R<sub>B</sub>',u:'kN',v:RB}],
+   sol:`1次の不静定。${F('M_A = wL²/8')}＝<b>${nf(MA)} kN·m</b>、${F('R_B = 3wL/8')}＝<b>${nf(RB)} kN</b>（Aは 5wL/8）`}; }},
+ {t:'固定法（1節点）',tag:'c',g(){ const L1=6,L2=pick([6,8]),w=pick([10,12]),P=pick([30,40,60]),k1=pick([1,2]),k2=pick([1,2]); const BA=w*L1*L1/12, BC=-P*L2/8; const U=BA+BC, D=-U, dfa=k1/(k1+k2); const MBA=BA+D*dfa;
+   return {fig:beamFig(L1+L2,[{x:0,t:'fixedL',lab:'A'},{x:L1,t:'roller',lab:'B'},{x:L1+L2,t:'fixedR',lab:'C'}],[{t:'w',x0:0,x1:L1,label:`${w}kN/m`},{t:'P',x:L1+L2/2,label:`${P}kN`}],{dims:[[0,L1,`${L1}m (k=${k1})`],[L1,L1+L2,`${L2}m (k=${k2})`]]}),
+   q:`固定法で解く。剛比 AB：${k1}、BC：${k2}。最終の端モーメント M<sub>BA</sub>（時計回り＋）は？`,ans:[{l:'M<sub>BA</sub>',u:'kN·m',v:MBA}],
+   sol:`固定端モーメント M<sub>BA</sub>＝+wL²/12＝${nf(BA)}、M<sub>BC</sub>＝−PL/8＝${nf(BC)}。不釣合い ${nf(U)} → 解放 ${nf(D)}。分配率 ${k1}/${k1+k2} → ${nf(D*dfa)}。M<sub>BA</sub>＝${nf(BA)}＋(${nf(D*dfa)})＝<b>${nf(MBA)} kN·m</b>`}; }},
+ {t:'三連モーメント式',tag:'d',g(){ const L1=pick([4,6,8]),L2=pick([4,6,8]),w=pick([10,20]); const MB=w*(L1**3+L2**3)/(8*(L1+L2));
+   return {fig:beamFig(L1+L2,[{x:0,t:'pin',lab:'A'},{x:L1,t:'roller',lab:'B'},{x:L1+L2,t:'roller',lab:'C'}],[{t:'w',x0:0,x1:L1+L2,label:`${w}kN/m`}],{dims:[[0,L1,`${L1}m`],[L1,L1+L2,`${L2}m`]]}),
+   q:`等断面の2径間連続梁（両端ピン）全体に ${w} kN/m。中間支点Bの曲げモーメントの大きさは？`,ans:[{l:'|M<sub>B</sub>|',u:'kN·m',v:MB}],
+   sol:`M<sub>A</sub>＝M<sub>C</sub>＝0。${F('2M_B(L₁+L₂) = −w(L₁³+L₂³)/4')} → ${F('|M_B| = w(L₁³+L₂³)/(8(L₁+L₂))')}＝<b>${nf(MB)} kN·m</b>`}; }},
+ ]});
+
+// ---- 13 影響線
+unit({id:'il',name:'影響線と移動荷重',tag:'d',ds:'反力・せん断力・曲げモーメントの影響線、車両荷重',
+ pts:[`影響線：単位荷重1が移動したときの、ある点の反力や断面力の変化を表した線`,`単純梁 R<sub>A</sub> の影響線は A で1、B で0 の直線`,`点C（Aから a、Bから b）の M の影響線は、C で最大 ${F('ab/L')} の三角形`,`集中荷重 P の効果 ＝ P × 縦距、等分布荷重 w の効果 ＝ w × 面積`,`連行荷重は、重い荷重を影響線の頂点に置いた状態が最大になることが多い`,`ミュラー・ブレスラウの原理：求めたい力を外して単位変位を与えた形が影響線`],
+ game:{name:'仮想仕事ラボ（ゲルバー梁）',url:'../kaso/'},
+ gens:[
+ {t:'点Cの最大曲げモーメント',tag:'d',g(){ const L=pick([10,12,20]),a=ri(2,L/2),b=L-a,P=pick([50,100,200]),w=pick([10,20]); const y=a*b/L; const Mp=P*y, Mw=w*L*y/2;
+   const f=Fig(-.8,-2.6,L+.8,1.8); f.line(0,0,L,0,7); f.sup('pin',0,0); f.sup('roller',L,0); f.text(a,0,'C','r',15,'middle',-18); f.poly([[0,-1.2],[a,-1.2-1.0],[L,-1.2],[0,-1.2]],'b',2,'rgba(50,134,190,.2)'); f.text(a,-2.35,`ab/L`,'b',13); f.dim(0,a,.9,`a=${a}m`); f.dim(a,L,.9,`b=${b}m`);
+   return {fig:f.svg(),q:`スパン ${L} m の単純梁。点C（Aから ${a} m）の曲げモーメントの影響線（青）を使い、(1) 集中荷重 ${P} kN が移動するときの最大値、(2) 等分布荷重 ${w} kN/m が全体に載るときの値は？`,ans:[{l:'(1)',u:'kN·m',v:Mp},{l:'(2)',u:'kN·m',v:Mw}],
+   sol:`影響線の頂点 ${F('ab/L')}＝${a}×${b}/${L}＝${nf(y)}。(1) 頂点に載せて ${P}×${nf(y)}＝<b>${nf(Mp)} kN·m</b>。(2) 面積 ${L}×${nf(y)}/2＝${nf(L*y/2)} に w を掛けて <b>${nf(Mw)} kN·m</b>`}; }},
+ {t:'2軸荷重の最大反力',tag:'d',g(){ const L=pick([10,15,20]),d=pick([3,4,5]),P1=pick([100,120]),P2=pick([40,60,80]); const R=P1+P2*(L-d)/L;
+   const f=Fig(-.8,-1.5,L+.8,2.4); f.line(0,0,L,0,7); f.sup('pin',0,0); f.sup('roller',L,0); f.text(0,0,'A','n',14,'middle',44); f.P(0,0,0,-1,`${P1}kN`,'r',50); f.P(d,0,0,-1,`${P2}kN`,'r',50); f.dim(0,d,1.7,`${d}m`); f.dim(0,L,-1.2,`${L}m`);
+   return {fig:f.svg(),q:`間隔 ${d} m の2軸荷重（${P1} kN と ${P2} kN）がスパン ${L} m の単純梁を通過する。支点Aの反力の最大値は？`,ans:[{l:'R<sub>A,max</sub>',u:'kN',v:R}],
+   sol:`R<sub>A</sub> の影響線は A で1、B で0。重い ${P1} kN をA上に置くと、${P2} kN の位置の縦距は (${L}−${d})/${L}＝${nf((L-d)/L,3)}。R＝${P1}×1＋${P2}×${nf((L-d)/L,3)}＝<b>${nf(R)} kN</b>`}; }},
+ {t:'せん断力の影響線',tag:'d',g(){ const L=pick([10,20]),a=ri(2,L/2-1),b=L-a,P=pick([50,100]); const Qp=P*b/L, Qn=-P*a/L;
+   return {fig:'',q:`スパン ${L} m の単純梁で、Aから ${a} m の点Cのせん断力を考える。集中荷重 ${P} kN が移動するとき、Cの正の最大せん断力と負の最大せん断力は？`,ans:[{l:'Q<sub>+max</sub>',u:'kN',v:Qp},{l:'Q<sub>−max</sub>',u:'kN',v:Qn}],
+   sol:`Qcの影響線は、Cのすぐ右で ${F('b/L')}＝${nf(b/L,3)}、すぐ左で ${F('−a/L')}＝${nf(-a/L,3)} と跳ぶ。正の最大＝${P}×${nf(b/L,3)}＝<b>${nf(Qp)} kN</b>、負の最大＝<b>${nf(Qn)} kN</b>`}; }},
+ ]});
+
+// ---- 14 塑性解析
+unit({id:'plastic',name:'塑性解析と崩壊荷重',tag:'c',ds:'全塑性モーメント、形状係数、崩壊メカニズム',
+ pts:[`全塑性モーメント ${F('Mp = σy · Zp')}、長方形の塑性断面係数 ${F('Zp = bh²/4')}`,`形状係数 ${F('f = Zp / Z')}（長方形1.5、H形 約1.1〜1.2）`,`仮想仕事法：外力の仕事 ＝ Σ Mp × ヒンジの回転角`,`単純梁 中央集中 ${F('Pu = 4Mp/L')}、両端固定 中央集中 ${F('8Mp/L')}、一端固定他端ピン 中央集中 ${F('6Mp/L')}`,`両端固定 等分布 ${F('wu = 16Mp/L²')}、門形ラーメンの層崩壊 ${F('H = ΣMp / h')}`,`上界定理：仮定したメカニズムの荷重のうち最小が真の崩壊荷重`],
+ game:{name:'仮想仕事ラボ（ラーメンの崩壊荷重）',url:'../kaso/'},
+ gens:[
+ {t:'全塑性モーメント',tag:'c',g(){ const b=pick([100,150,200]),h=pick([200,300,400]),sy=pick([235,325]); const Zp=b*h*h/4, Mp=sy*Zp/1e6, My=sy*b*h*h/6/1e6;
+   return {fig:'',q:`幅 ${b} mm、高さ ${h} mm の長方形断面（降伏点 σy＝${sy} N/mm²）。降伏モーメントと全塑性モーメントは？`,ans:[{l:'My',u:'kN·m',v:My},{l:'Mp',u:'kN·m',v:Mp}],
+   sol:`${F('My = σy·bh²/6')}＝<b>${nf(My)} kN·m</b>、${F('Mp = σy·bh²/4')}＝<b>${nf(Mp)} kN·m</b>（比は形状係数1.5）`}; }},
+ {t:'梁の崩壊荷重',tag:'c',g(){ const C=pick([['単純梁','pin','roller',4],['両端固定梁','fixedL','fixedR',8],['一端固定・他端ローラー','fixedL','roller',6]]); const L=pick([4,6,8]),Mp=pick([60,120,240]); const Pu=C[3]*Mp/L;
+   return {fig:beamFig(L,[{x:0,t:C[1]},{x:L,t:C[2]}],[{t:'P',x:L/2,label:'P'}],{dims:[[0,L/2,`${L/2}m`],[L/2,L,`${L/2}m`]]}),q:`${C[0]}（Mp＝${Mp} kN·m）の中央に集中荷重P。崩壊荷重 Pu は？`,ans:[{l:'Pu',u:'kN',v:Pu}],
+   sol:`中央がθ×${L/2} 下がる仮想変位。ヒンジ回転角の合計は ${C[3]===4?'中央2θ':C[3]===8?'両端θ＋θ、中央2θ＝4θ':'固定端θ、中央2θ＝3θ'}。${F('P·(L/2)θ = Mp × '+(C[3]/2)+'θ')} → ${F('Pu = '+C[3]+'Mp/L')}＝<b>${nf(Pu)} kN</b>`}; }},
+ {t:'門形ラーメンの層崩壊',tag:'k',g(){ const h=pick([3,4,5]),Mc=pick([100,200]),Mb=pick([80,150,300]); const H=(2*Mc+2*Math.min(Mc,Mb))/h;
+   const f=Fig(-1.5,-1,7.5,h+1); f.poly([[0,0],[0,h],[6,h],[6,0]],'n',7); f.sup('fixedB',0,0); f.sup('fixedB',6,0); f.P(0,h,1,0,'H','r',60); f.dimV(-.9,0,h,`${h}m`); f.text(.3,h/2,`柱 Mp=${Mc}`,'m',12,'start'); f.text(3,h+.35,`梁 Mp=${Mb}`,'m',12);
+   return {fig:f.svg(),q:`柱脚固定の門形ラーメン。柱の全塑性モーメント ${Mc} kN·m、梁 ${Mb} kN·m。層崩壊（横倒れ）メカニズムの崩壊水平力 H は？`,ans:[{l:'H',u:'kN',v:H}],
+   sol:`ヒンジは柱脚2か所（柱の Mp）と柱頭2か所（柱と梁の弱いほう＝${Math.min(Mc,Mb)}）。${F('H·h·θ = (2×'+Mc+' + 2×'+Math.min(Mc,Mb)+')θ')} → H＝<b>${nf(H)} kN</b>`}; }},
+ ]});
+
+// ---- 15 振動と耐震
+unit({id:'vib',name:'振動と耐震',tag:'k',ds:'固有周期、水平剛性、層せん断力の分担',
+ pts:[`1質点系の固有周期 ${F('T = 2π√(m/K)')}`,`柱の水平剛性：両端固定 ${F('12EI/h³')}、片持ち（頭部自由回転） ${F('3EI/h³')}`,`並列のばね ${F('K = k₁ + k₂')}、直列のばね ${F('1/K = 1/k₁ + 1/k₂')}`,`層せん断力は各柱の水平剛性の比で分担される（短い柱に集中する）`,`層間変位 ${F('δ = Q / K')}、層間変形角 ${F('δ / h')}`,`i階の層せん断力＝i階より上の階に作用する水平力の合計`],
+ game:{name:'ぶっ壊し構造ラボ（ピロティ・高架橋）',url:'../bukkowashi/'},
+ gens:[
+ {t:'固有周期の比',tag:'k',g(){ const ma=pick([1,2]),mb=pick([1,2,4]),ha=pick([1,2]),hb=pick([1,2]),na=pick([2,4]),nb=pick([2,4]); const r=Math.sqrt((ma*ha**3/na)/(mb*hb**3/nb));
+   return {fig:'',q:`同じ断面の柱（両端固定、水平剛性 12EI/h³）で支えた1層の建物A、B。A：質量 ${ma}m、柱の高さ ${ha}h、柱 ${na}本。B：質量 ${mb}m、高さ ${hb}h、柱 ${nb}本。固有周期の比 T<sub>A</sub>/T<sub>B</sub> は？`,ans:[{l:'T<sub>A</sub>/T<sub>B</sub>',u:'',v:r}],
+   sol:`${F('T ∝ √(m/K)')}、${F('K ∝ n/h³')}。A：${ma}×${ha}³/${na}＝${nf(ma*ha**3/na)}、B：${nf(mb*hb**3/nb)}。比＝√(${nf(ma*ha**3/na)}/${nf(mb*hb**3/nb)})＝<b>${nf(r)}</b>`}; }},
+ {t:'柱の水平力の分担',tag:'k',g(){ const hs=[pick([2,3]),pick([3,4]),pick([4,6])],Q=pick([100,200,300]); const ks=hs.map(h=>1/h**3), s=ks.reduce((a,b)=>a+b), q1=Q*ks[0]/s;
+   const f=Fig(-1,-1,10,6.6); const base=[6-hs[0],6-hs[1],6-hs[2]]; const xs=[1,4.5,8]; f.line(0,6,9,6,7); xs.forEach((x,i)=>{ f.line(x,base[i],x,6,6); f.sup('fixedB',x,base[i]); f.text(x+.3,(base[i]+6)/2,`${hs[i]}m`,'m',13,'start'); }); f.P(0,6,1,0,`${Q}kN`,'r',50); f.poly([[0,base[0]-.1],[xs[0]+1,base[0]-.1],[xs[1],base[1]-.1],[xs[2],base[2]-.1],[9.5,base[2]-.1]],'g',2);
+   return {fig:f.svg(),q:`剛な梁でつながれた、同じ断面で両端固定の柱3本（高さ ${hs.join('、')} m）に水平力 ${Q} kN。一番左の柱（高さ ${hs[0]} m）が負担する水平力は？`,ans:[{l:'Q₁',u:'kN',v:q1}],
+   sol:`水平剛性は ${F('12EI/h³')} なので ${F('1/h³')} の比で分担。${hs.map(h=>'1/'+h+'³').join(' : ')}＝${ks.map(k=>nf(k,4)).join(' : ')}。${F('Q₁ = Q × k₁/Σk')}＝<b>${nf(q1)} kN</b>（短い柱ほど大きな力を受ける）`}; }},
+ {t:'層せん断力と層間変位',tag:'k',g(){ const P=[pick([100,150,200]),pick([80,100,120]),pick([50,60,80])],K=pick([50,100,200]); const Q1=P[0]+P[1]+P[2]; const d=Q1/K;
+   return {fig:'',q:`3階建ての建物に、地震力として R階 ${P[0]} kN、3階 ${P[1]} kN、2階 ${P[2]} kN が作用する。1階の層せん断力と、1階の水平剛性 ${K} kN/cm のときの層間変位は？`,ans:[{l:'Q₁',u:'kN',v:Q1},{l:'δ₁',u:'cm',v:d}],
+   sol:`1階の層せん断力は上の階の力の合計：${P.join('＋')}＝<b>${Q1} kN</b>。${F('δ = Q/K')}＝${Q1}/${K}＝<b>${nf(d)} cm</b>`}; }},
+ {t:'ばねの直列・並列',tag:'c',g(){ const k1=pick([10,20,30,60]),k2=pick([10,20,30,60]),ser=Math.random()<.5; const K=ser? k1*k2/(k1+k2) : k1+k2;
+   return {fig:'',q:`ばね定数 ${k1} kN/m と ${k2} kN/m のばねを${ser?'直列':'並列'}につないだ。全体のばね定数は？`,ans:[{l:'K',u:'kN/m',v:K}],
+   sol:ser?`直列は力が同じで変位が足し合わさる：${F('1/K = 1/k₁ + 1/k₂')} → K＝<b>${nf(K)} kN/m</b>`:`並列は変位が同じで力が足し合わさる：${F('K = k₁ + k₂')}＝<b>${nf(K)} kN/m</b>`}; }},
+ ]});
+
+// ---- 16 アーチとケーブル
+unit({id:'arch',name:'アーチとケーブル',tag:'d',ds:'吊り橋のケーブル張力、3ヒンジアーチの水平反力',
+ pts:[`ケーブルは引張だけを受け、荷重に応じた形（等分布なら放物線）になる`,`等分布ケーブル：水平張力 ${F('H = wL²/(8f)')}（f：サグ）`,`最大張力（支点） ${F('T = √(H² + (wL/2)²)')}`,`3ヒンジアーチ：クラウンのヒンジまわり M＝0 から ${F('H = M₀ / f')}（M₀：同じスパンの単純梁の中央モーメント）`,`放物線アーチに等分布荷重：曲げモーメント0、軸力だけで支える`,`サグやライズが小さいほど水平力は大きくなる`],
+ game:{name:'ぶっ壊し構造ラボ（吊り橋・アーチ橋）',url:'../bukkowashi/'},
+ gens:[
+ {t:'ケーブルの張力',tag:'d',g(){ const L=pick([100,200,300]),f0=pick([10,20,25,30]),w=pick([10,20,30]); const H=w*L*L/(8*f0), T=Math.hypot(H,w*L/2);
+   const s=8/L; const f=Fig(-1,-2.6,9,1.4); const pts=[]; for(let i=0;i<=40;i++){ const x=L*i/40; pts.push([x*s, -4*f0*s*2.2*(x/L)*(1-x/L)]); } f.poly(pts,'n',3); f.sup('pin',0,0); f.sup('pin',8,0); f.dimV(4.3,0,-f0*s*2.2,`f=${f0}m`); f.dim(0,8,.9,`L=${L}m`); f.text(4,-f0*s*2.2-.6,`等分布 ${w}kN/m`,'r',13);
+   return {fig:f.svg(),q:`スパン ${L} m、サグ ${f0} m のケーブルに、水平長さあたり ${w} kN/m の等分布荷重。水平張力 H と最大張力 T は？`,ans:[{l:'H',u:'kN',v:H},{l:'T<sub>max</sub>',u:'kN',v:T}],
+   sol:`中央で切って半分のつりあい：${F('H·f = wL²/8')} → H＝<b>${nf(H)} kN</b>。支点の鉛直成分 wL/2＝${nf(w*L/2)}。${F('T = √(H² + (wL/2)²)')}＝<b>${nf(T)} kN</b>`}; }},
+ {t:'3ヒンジアーチ',tag:'d',g(){ const L=pick([20,30,40]),f0=pick([5,8,10]),P=pick([100,200]),w=pick([10,20]); const Hp=P*L/(4*f0), Hw=w*L*L/(8*f0);
+   const s=8/L; const f=Fig(-1,-1.3,9,4); const pts=[]; for(let i=0;i<=40;i++){ const x=L*i/40; pts.push([x*s, 4*f0*s*1.6*(x/L)*(1-x/L)]); } f.poly(pts,'n',6); f.sup('pin',0,0); f.sup('pin',8,0); f.hinge(4,f0*s*1.6); f.P(4,f0*s*1.6,0,-1,`P=${P}kN`,'r',44); f.dim(0,8,-.9,`L=${L}m`); f.dimV(4.6,0,f0*s*1.6,`f=${f0}m`);
+   return {fig:f.svg(),q:`スパン ${L} m、ライズ ${f0} m の3ヒンジアーチ。(1) クラウン（頂部のヒンジ）に集中荷重 ${P} kN、(2) 全体に水平長さあたり ${w} kN/m のとき、それぞれの水平反力は？`,ans:[{l:'(1) H',u:'kN',v:Hp},{l:'(2) H',u:'kN',v:Hw}],
+   sol:`${F('H = M₀/f')}。(1) M₀＝PL/4＝${nf(P*L/4)} → H＝<b>${nf(Hp)} kN</b>。(2) M₀＝wL²/8＝${nf(w*L*L/8)} → H＝<b>${nf(Hw)} kN</b>（放物線アーチなら曲げは0）`}; }},
+ ]});
+
+const LIFE={
+ force:{ex:['クレーンが荷物をつるすとき、ワイヤーの角度で張力が変わる','吊り橋のケーブルや、電柱を支える支線（斜めのワイヤー）'],use:'構造計算はすべて「つりあい」から始まる。クレーン作業では、ワイヤーの角度が開くほど張力が大きくなることを知らないと事故につながるため、現場の玉掛け作業でも教わる。'},
+ judge:{ex:['ピンとローラーで支えた橋桁（温度による伸び縮みをローラー側で逃がす）','壁の少ない建物が地震で傾く例（不安定に近い）'],use:'設計の最初に「この支え方で倒れないか」「つりあいだけで解けるか」を判断する。橋の支承（ししょう）をどこで固定し、どこで動かすかは、温度変化や地震の揺れに直結する。'},
+ beam:{ex:['歩道橋・小さな桁橋（単純桁）','ベランダ（片持ち梁）','住宅の床梁'],use:'M図で梁の太さや鉄筋の位置を、Q図であばら筋（せん断補強筋）の間隔を決める。点検では、中央下面の縦ひび割れ＝曲げ、支点近くの斜めひび割れ＝せん断、と図と結びつけて危険度を判断する。'},
+ frame:{ex:['ゲルバー橋（大阪の港大橋、スコットランドのフォース鉄道橋）','工場・倉庫・体育館の門形の骨組み','山形屋根の3ヒンジ構造'],use:'ラーメンは日本の建物の基本形。地震の水平力で柱の上下に大きな M が生じることを知っていると、柱と梁の接合部をなぜ丁寧に作るのかがわかる。'},
+ truss:{ex:['鉄道や道路の鋼トラス橋','東京タワーなどの鉄塔','体育館やドームの屋根トラス','送電鉄塔'],use:'部材を三角形に組むと、どの部材も引張か圧縮だけを受け、少ない材料で長い距離を架けられる。点検では、引張部材の亀裂と圧縮部材の曲がり（座屈）を見分けて確認する。'},
+ section:{ex:['H形鋼（上下のフランジに材料を集めた形）','鉄道のレール','鉄筋コンクリート梁の縦長の断面'],use:'同じ量の材料でも、上下に離して配置すると断面二次モーメントが大きくなり、曲がりにくくなる。H形鋼やI形の橋桁の形はこの計算から生まれた。'},
+ stress:{ex:['梁の上側が縮み、下側が伸びる','偏った位置に荷重がかかる基礎や柱'],use:'応力度が材料の許容値を超えないよう断面を決める。偏心荷重で基礎の片側に引張が生じると基礎が浮くので、「断面の核」の考え方で荷重の位置を確かめる。'},
+ strain:{ex:['夏に伸びる線路や橋（伸縮継手・すき間を設ける）','鉄筋とコンクリートの合成部材','温度で長さが変わる送電線'],use:'温度変化で伸び縮みする長さを計算し、橋の伸縮装置のすき間や、レールの継ぎ目を決める。伸びを止めると大きな温度応力が生じることもこの単元で計算できる。'},
+ defl:{ex:['歩くと揺れる床','完成時にまっすぐになるよう、あらかじめ上に反らせて作る橋桁（キャンバー）'],use:'強さが十分でも、たわみが大きいと床が揺れたり仕上げが割れたりする。建築では梁のたわみをスパンの1/250程度以下に抑える。橋では載荷試験で実際のたわみを測り、計算と比べて健全性を確かめる。'},
+ buckle:{ex:['細長い鉄骨の柱・トラスの圧縮材','足場のパイプ','地震で座屈した鉄骨の筋かい'],use:'細長い部材は、材料が強くても横に曲がって急に壊れる（座屈）。柱の太さや、途中で横に支える部材（つなぎ）の位置を決めるのに使う。'},
+ energy:{ex:['トラス橋の中央のたわみ','クレーンのブーム（腕）の先端の変位'],use:'複雑な構造の変位を手で求める標準の方法。両端固定梁など不静定構造を解くときにも使い、コンピュータの構造解析もこの考え方の延長にある。'},
+ indet:{ex:['鉄筋コンクリートのビルの梁（両端が柱と一体）','高速道路・新幹線の連続高架橋'],use:'実際の建物や橋のほとんどは不静定。力が硬い部材に多く流れることを理解すると、一部を補強したときに他の部材の力がどう変わるかを予想できる。'},
+ il:{ex:['トラックや列車が橋を渡るとき','クレーンが走行する梁'],use:'荷重が動く橋では「どこに車がいるとき一番危ないか」を影響線で求める。道路橋の設計荷重（T荷重・L荷重）や鉄道橋の列車荷重の載せ方はこの考え方に基づく。'},
+ plastic:{ex:['地震で柱や梁の端部が曲がって変形した建物（倒壊はしない）','鋼材の粘り強さ'],use:'大地震では、建物が壊れずに「粘って」揺れのエネルギーを吸収するよう設計する。どこにヒンジができると安全か（梁が先、柱は後）を決めるのが、この単元の崩壊メカニズムの考え方。'},
+ vib:{ex:['高層ビルの長い揺れ','免震建物（積層ゴムで固有周期を長くする）','歩くと揺れる歩道橋'],use:'固有周期が地震の揺れの周期と近いと大きく揺れる（共振）。免震や制振の装置は、固有周期を変えたり揺れを吸収したりしてこれを避ける。'},
+ arch:{ex:['明石海峡大橋などの吊り橋','石造りのめがね橋（長崎の眼鏡橋など）','アーチ形の鉄道橋・ダム'],use:'アーチは主に圧縮、ケーブルは引張だけで荷重を運ぶ。圧縮に強い石やコンクリート、引張に強い鋼の性質を生かす形で、長い距離を架ける橋の基本になっている。'},
+};
+
+// ==PF-KOZO==
+// ================= 証明（構造力学） =================
+const PFIG={
+ beamcut:`<svg viewBox="0 0 220 110"><rect width="220" height="110" fill="#F4F3EF"/><rect x="30" y="45" width="70" height="14" fill="#93BCD6" stroke="#12286B" stroke-width="2"/><rect x="100" y="45" width="24" height="14" fill="#D8CFBE" stroke="#12286B" stroke-width="2"/><text x="112" y="40" font-size="10" fill="#12286B" text-anchor="middle">dx</text><path d="M112,10 v28" stroke="#C62422" stroke-width="2"/><text x="118" y="22" font-size="10" fill="#C62422">w dx</text><path d="M100,78 v-16" stroke="#12286B" stroke-width="2"/><text x="78" y="90" font-size="10" fill="#12286B">Q</text><path d="M124,62 v16" stroke="#12286B" stroke-width="2"/><text x="128" y="90" font-size="10" fill="#12286B">Q＋dQ</text><text x="60" y="38" font-size="10" fill="#12286B">M</text><text x="150" y="38" font-size="10" fill="#12286B">M＋dM</text></svg>`,
+ bend:`<svg viewBox="0 0 220 120"><rect width="220" height="120" fill="#F4F3EF"/><path d="M40,40 Q110,70 180,40 L180,80 Q110,110 40,80Z" fill="#93BCD6" stroke="#12286B" stroke-width="2"/><path d="M40,60 Q110,90 180,60" stroke="#C62422" stroke-dasharray="4 3" fill="none"/><text x="186" y="64" font-size="10" fill="#C62422">中立軸</text><text x="110" y="56" font-size="10" fill="#12286B" text-anchor="middle">縮む（圧縮）</text><text x="110" y="104" font-size="10" fill="#12286B" text-anchor="middle">伸びる（引張）</text><path d="M110,12 L40,40 M110,12 L180,40" stroke="#5E6B86" stroke-dasharray="2 3"/><text x="114" y="14" font-size="10" fill="#5E6B86">曲率の中心（半径ρ）</text></svg>`,
+ euler:`<svg viewBox="0 0 220 120"><rect width="220" height="120" fill="#F4F3EF"/><line x1="110" y1="10" x2="110" y2="110" stroke="#5E6B86" stroke-dasharray="3 3"/><path d="M110,14 Q150,60 110,106" stroke="#12286B" stroke-width="4" fill="none"/><path d="M110,0 v10" stroke="#C62422" stroke-width="2"/><path d="M110,14 l-4,-7 h8z" fill="#C62422"/><text x="116" y="10" font-size="10" fill="#C62422">P</text><text x="136" y="64" font-size="10" fill="#12286B">y（横のふくらみ）</text><text x="60" y="64" font-size="10" fill="#12286B">M＝P·y</text></svg>`,
+};
+const PF={
+ force:[
+  {t:'合力 R＝√(F₁²＋F₂²＋2F₁F₂cosθ)',b:`2つの力を2辺とする平行四辺形の対角線が合力。成分で書くと、F₁ を x 軸に取り F₂ が角度 θ のとき、${F('R_x = F_1 + F_2 cosθ')}、${F('R_y = F_2 sinθ')}。<br>${F('R² = (F_1 + F_2 cosθ)² + (F_2 sinθ)² = F_1² + 2F_1 F_2 cosθ + F_2²(cos²θ + sin²θ)')}。${F('cos²θ + sin²θ = 1')} で式になる。`},
+  {t:'偶力はどの点まわりでも M＝P·d',b:`距離 d 離れた逆向きの力 P。ある点から1本目の作用線までの距離を a とすると、2本目までは ${F('a + d')}。向きが逆なのでモーメントは ${F('P(a + d) − Pa = Pd')}。a が消えるので、どこを中心にしても同じ。`},
+  {t:'つりあい ΣX＝0、ΣY＝0、ΣM＝0',b:`止まっている物体は、横にも縦にも動き出さず（力の合計0）、回り出さない（モーメントの合計0）。平面の物体の動き方は「横・縦・回転」の3通りなので、式も3つ。`},
+ ],
+ judge:[
+  {t:'判別式 m＝n＋s＋r−2k',b:`未知数と式の数を比べる。<br>・未知数：反力 n 個、各部材の力（軸力・せん断力・曲げモーメントのうち、部材の両端で独立なもの）、剛接合の分 r。<br>・式：各節点で ${F('ΣX = 0')}、${F('ΣY = 0')} の2つ → 全部で 2k 個。<br>部材1本ごとに未知の軸力1つ（s）、剛接合ではモーメントを伝える分 r が増える。${F('m = (未知数) − (式の数) = n + s + r − 2k')}。0なら静定、正なら式が足りない（不静定）、負なら動いてしまう（不安定）。`},
+  {t:'トラスは m＝n＋s−2k',b:`トラスの節点はピン（回転自由）なので、剛接合がなく r＝0。`},
+ ],
+ beam:[
+  {t:'dM/dx＝Q、dQ/dx＝−w',f:'beamcut',b:`梁から長さ dx の小片を切り出す。左の面に Q と M、右の面に ${F('Q + dQ')} と ${F('M + dM')}、上から荷重 ${F('w dx')}。<br>・縦のつりあい：${F('Q − w dx − (Q + dQ) = 0')} → ${F('dQ/dx = −w')}。<br>・右端まわりのモーメント：${F('M + Q dx − w dx · dx/2 − (M + dM) = 0')}。dx² は小さいので消して ${F('dM/dx = Q')}。<br>だから M のグラフの傾きが Q。Q＝0 の点で M の傾きが0 → 最大。`},
+  {t:'単純梁 集中荷重 M＝Pab/L',b:`A から a の点に P。B まわりのモーメントで ${F('R_A L = Pb')} → ${F('R_A = Pb/L')}。荷重点の M は、左側の力 R<sub>A</sub> × 腕 a ＝ ${F('Pab/L')}。中央（${F('a = b = L/2')}）なら ${F('PL/4')}。`},
+  {t:'単純梁 等分布 M＝wL²/8',b:`全荷重 wL を両支点で半分ずつ：${F('R_A = wL/2')}。中央の断面で、左半分について：反力 ${F('wL/2')} × 腕 ${F('L/2')} から、左半分の荷重 ${F('wL/2')}（重心は断面から ${F('L/4')}）のモーメントを引く。<br>${F('M = (wL/2)(L/2) − (wL/2)(L/4) = wL²/8')}。`},
+  {t:'片持ち梁 M＝PL、wL²/2',b:`固定端の M は、先端から固定端までの荷重のモーメントの合計。集中荷重は ${F('P × L')}。等分布は全荷重 wL が重心（中央、腕 L/2）に集まったと考えて ${F('wL × L/2')}。`},
+  {t:'三角形分布の合力と位置',b:`分布荷重の合力は、細い帯 ${F('w(x)dx')} を全部足したもの＝グラフの面積。作用点は、モーメントが同じになる位置＝面積の重心。三角形は ${F('½w_0 L')}、重心は大きい側から L/3。`},
+ ],
+ frame:[
+  {t:'ヒンジでは M＝0',b:`ヒンジは自由に回るので、回転を止める力（モーメント）を伝えられない。だから切ったときの断面の M は0。これがつりあいの3式に加わる「4つ目の式」になる。`},
+  {t:'3ヒンジ 等分布 H＝wL²/(8h)',b:`対称なので鉛直反力は ${F('V = wL/2')} ずつ。頂部ヒンジで切った左半分について、ヒンジまわりのモーメント＝0：<br>${F('V · L/2 − (wL/2)(L/4) − H · h = 0')} → ${F('H h = wL²/8')} → ${F('H = wL²/(8h)')}。<br>${F('wL²/8')} は同じスパンの単純梁の中央の M。それを高さ h で割った形。`},
+  {t:'剛接の節点で端モーメントがつりあう',b:`節点を小さく切り出すと、そこには荷重がない（または外からの集中モーメントだけ）。回り出さないためには、つながる部材の端モーメントの合計が0（または外からのモーメントと等しい）。柱と梁が直角に交わる隅では、柱頭と梁端の M が同じ大きさになる。`},
+ ],
+ truss:[
+  {t:'トラスの部材は軸力だけ',b:`部材の両端はピンで M＝0、途中に荷重がない。部材1本について、一端まわりのモーメントのつりあいから、もう一端の力は部材の方向を向くしかない（そうでないと回る）。だから力は部材の軸に沿った引張か圧縮だけ。`},
+  {t:'切断法で1本だけ求められるわけ',b:`3本を切ると未知数は3つ。求めたい部材以外の2本の作用線の交点を中心にモーメントをとれば、その2本は腕が0で式から消え、未知数が1つの式になる。`},
+  {t:'平行弦トラス N＝M/h',b:`ある格間で切ると、上弦と下弦の力が偶力となって、その断面の曲げモーメントを受け持つ（斜材は上下の力＝せん断力を受け持つ）。偶力のモーメントは ${F('N × h')} なので ${F('N = M/h')}。`},
+  {t:'ゼロメンバー',b:`荷重のない節点に一直線でない2本だけが集まると、一方の部材に直角な方向のつりあいで、もう一方の力が0。次にもう一方も0になる。L 字に2本・荷重なしなら両方0。`},
+ ],
+ section:[
+  {t:'図心 y₀＝Σ(A·y)/ΣA',b:`図心は、そこで支えるとどちらにも傾かない点（薄い板の重心）。各部分の面積を重さと考え、モーメントのつりあい ${F('ΣA · y_0 = Σ(A · y)')} から求める。`},
+  {t:'長方形 I＝bh³/12',b:`${F('I = ∫y² dA')}（中立軸からの距離の2乗 × 面積）。幅 b の細い帯 ${F('dA = b dy')} を、${F('y = −h/2')} から ${F('h/2')} まで足す：<br>${F('I = ∫ b y² dy = b[y³/3] = b(h³/24 + h³/24) = bh³/12')}。`},
+  {t:'断面係数 Z＝bh²/6',b:`縁の応力は ${F('σ = M y_max/I')}。${F('Z = I/y_max')} とおけば ${F('σ = M/Z')}。長方形は ${F('(bh³/12)/(h/2) = bh²/6')}。`},
+  {t:'平行軸の定理 I＝I₀＋A·e²',b:`図心から e 離れた軸まわりでは、距離が ${F('y + e')}。${F('∫(y + e)² dA = ∫y² dA + 2e∫y dA + e²∫dA')}。<br>図心軸では ${F('∫y dA = 0')}（図心の定義）なので ${F('I_0 + Ae²')}。底辺まわりの長方形：${F('bh³/12 + bh(h/2)² = bh³/3')}。`},
+  {t:'高さが効くわけ',b:`${F('I = bh³/12')} は高さの3乗。同じ面積で高さを2倍（幅を半分）にすると I は4倍。中立軸から遠い材料ほど、y² で大きく効く。だから H 形鋼は上下に材料を集める。`},
+ ],
+ stress:[
+  {t:'曲げ応力 σ＝M·y/I',f:'bend',b:`①平面保持：曲がっても断面は平らなまま。だから中立軸から y の点のひずみは ${F('ε = y/ρ')}（ρ：曲率半径）。<br>②フックの法則：${F('σ = Eε = Ey/ρ')}。応力は y に比例（直線分布）。<br>③この応力が断面に作るモーメントが M：${F('M = ∫σ y dA = (E/ρ)∫y² dA = EI/ρ')}。<br>②と③から ${F('E/ρ = M/I')} を消して ${F('σ = My/I')}。`},
+  {t:'長方形の最大せん断応力 1.5Q/A',b:`中立軸から y より外の部分のつりあいから ${F('τ = QS/(Ib)')}（S：その部分の断面一次モーメント）。<br>中立軸では ${F('S = b(h/2)(h/4) = bh²/8')}。${F('τ = Q(bh²/8)/((bh³/12)b) = 1.5Q/(bh)')}。`},
+  {t:'偏心圧縮 σ＝N/A±N·e/Z',b:`図心から e ずれた N は、図心の N と、モーメント ${F('M = N·e')} に置きかえられる（力を移すと、腕の分のモーメントが加わる）。それぞれの応力を足す。`},
+  {t:'断面の核 h/6',b:`引張が出ない条件：${F('N/A − Ne/Z ≥ 0')} → ${F('e ≤ Z/A = (bh²/6)/(bh) = h/6')}。`},
+  {t:'主応力（モールの円）',b:`角度 θ 傾けた面の応力をつりあいから求めると ${F('σ_θ = (σx + σy)/2 + ((σx − σy)/2)cos2θ + τ sin2θ')}。<br>これは「中心 ${F('(σx + σy)/2')}、半径 ${F('√(((σx − σy)/2)² + τ²)')} の円」の上を 2θ で回る点の横座標。最大・最小は中心 ± 半径。`},
+ ],
+ strain:[
+  {t:'伸び ΔL＝NL/(EA)',b:`${F('σ = N/A')}、${F('ε = ΔL/L')}、フックの法則 ${F('σ = Eε')} をつなぐ：${F('N/A = E ΔL/L')} → ${F('ΔL = NL/(EA)')}。`},
+  {t:'温度応力 σ＝EαΔT',b:`自由なら ${F('αΔT · L')} 伸びるはず。両端固定で伸びられないので、その分を押し戻す力が働く。押し縮めるひずみは ${F('αΔT')}、応力は ${F('E × αΔT')}。長さに関係しない。`},
+  {t:'並列の部材は EA の比で分担',b:`同じだけ伸びる：${F('N_1 L/(E_1 A_1) = N_2 L/(E_2 A_2)')} → ${F('N_1 : N_2 = E_1 A_1 : E_2 A_2')}。硬いほうが多く受け持つ。`},
+ ],
+ defl:[
+  {t:'たわみの式 EI·y″＝−M',b:`曲げ応力の証明で ${F('1/ρ = M/(EI)')}。たわみが小さいとき、曲率は ${F('1/ρ ≒ d²y/dx²')}。y を下向き正にとると、下側引張（＋の M）で下に凸になる向きの関係から符号が決まり ${F('EI d²y/dx² = −M')}。`},
+  {t:'片持ち梁 δ＝PL³/(3EI)',b:`固定端から x の点で ${F('M = −P(L − x)')}。${F('EI y″ = P(L − x)')} を2回積分：<br>${F('EI y′ = P(Lx − x²/2)')}、${F('EI y = P(Lx²/2 − x³/6)')}（固定端で y＝y′＝0）。<br>先端 x＝L：${F('δ = PL³/(3EI)')}、${F('θ = PL²/(2EI)')}。`},
+  {t:'単純梁 中央集中 PL³/(48EI)',b:`対称なので、半分（長さ L/2）を、中央で固定され端に反力 P/2 がかかる片持ち梁と考えられる。${F('(P/2)(L/2)³/(3EI) = PL³/(48EI)')}。`},
+  {t:'単純梁 等分布 5wL⁴/(384EI)',b:`${F('M = (w/2)(Lx − x²)')}。${F('EI y″ = −M')} を2回積分し、両端 y＝0 で積分定数を決めると ${F('EI y = (w/24)(x⁴ − 2Lx³ + L³x)')}（下向き正）。x＝L/2 を代入：${F('(w/24)(L⁴/16 − L⁴/4 + L⁴/2) = (w/24)(5L⁴/16) = 5wL⁴/384')}。`},
+  {t:'モールの定理',b:`${F('dQ/dx = −w')}、${F('dM/dx = Q')} と、${F('dθ/dx = −M/EI')}（θ＝y′）、${F('dy/dx = θ')} は同じ形。だから M/EI を荷重とみなして Q・M を求める計算をすると、それがそのまま θ・y になる（支点条件だけ合わせる）。`},
+ ],
+ buckle:[
+  {t:'オイラー座屈荷重 P_cr＝π²EI/L²',f:'euler',b:`両端ピンの柱が少し横にふくらんだ形 y(x) を考える。その点の曲げモーメントは ${F('M = P y')}。たわみの式 ${F('EI y″ = −Py')}。<br>${F('k² = P/(EI)')} とおくと ${F('y″ + k²y = 0')}、解は ${F('y = A sin kx')}（x＝0 で y＝0）。<br>x＝L でも y＝0 なので ${F('sin kL = 0')}。A≠0（ふくらんでいる）には ${F('kL = π')}（一番小さい解）。${F('P = k²EI = π²EI/L²')}。この荷重で、まっすぐでない形でもつりあえる＝座屈。`},
+  {t:'座屈長さ（2.0L、0.7L、0.5L）',b:`ふくらんだ形のうち、sin の半波（ピン－ピン）になっている長さが座屈長さ。<br>・一端固定・他端自由：鏡に映すと長さ 2L の両端ピンと同じ形 → ${F('2.0L')}。<br>・両端固定：両端の近くで反り返り、真ん中の半分が半波 → ${F('0.5L')}。<br>・固定－ピン：方程式 ${F('tan kL = kL')} を解いて ${F('kL = 4.49')} → ${F('π/4.49 ≒ 0.7')}。`},
+  {t:'細長比 λ＝l_k/i',b:`${F('I = Ai²')} を代入すると ${F('σ_cr = P_cr/A = π²E/(l_k/i)² = π²E/λ²')}。座屈しやすさは λ だけで決まる。`},
+ ],
+ energy:[
+  {t:'ひずみエネルギー U＝N²L/(2EA)',b:`ゆっくり力を0から N まで増やすと、伸びも0から ΔL まで比例して増える。力×伸びのグラフは三角形で、仕事は ${F('½NΔL')}。${F('ΔL = NL/(EA)')} を入れて ${F('N²L/(2EA)')}。<br>曲げも同じ考えで、小片 dx の回転角 ${F('M dx/(EI)')} から ${F('dU = M² dx/(2EI)')}。`},
+  {t:'カスティリアーノの定理 δ＝∂U/∂P',b:`荷重 P を ${F('dP')} だけ増やすと、外力のした仕事は ${F('δ · dP')}（他の荷重は変位しても同じ…を含めて、エネルギーの増加 ${F('dU')} に等しい）。<br>別の順番で考える：先に dP をかけ、次に元の荷重をかける。元の荷重の仕事は同じ U、dP はその間に δ だけ動くので ${F('dP · δ')} の仕事。<br>どちらの順番でも最後の状態は同じなので ${F('dU = δ dP')} → ${F('δ = ∂U/∂P')}。`},
+  {t:'単位荷重法 δ＝∫Mm/(EI)dx',b:`${F('U = ∫M²/(2EI) dx')} を P で微分：${F('δ = ∫(M/EI)(∂M/∂P) dx')}。<br>${F('∂M/∂P')} は「P＝1 のときの M」＝ m。だから ${F('δ = ∫Mm/(EI) dx')}。荷重がない点は仮の Q を置いて微分し、Q＝0 とすると同じ式。トラスなら ${F('Σ Nn L/(EA)')}。`},
+  {t:'相反作用の定理',b:`点1に P₁、点2に P₂ を順にかける場合と、逆順の場合で、最後の仕事は等しい。違いは「先にかけた荷重が、後の荷重で動かされる」項だけなので ${F('P_1 δ_12 = P_2 δ_21')}。P₁＝P₂ なら変位が等しい。`},
+ ],
+ indet:[
+  {t:'一端固定・他端ピン 等分布：R＝3wL/8',b:`ピン側の反力 R を外すと片持ち梁。等分布による先端のたわみ ${F('wL⁴/(8EI)')}（下）を、R による ${F('RL³/(3EI)')}（上）で打ち消して0にする：${F('R = 3wL/8')}。固定端の M は ${F('wL²/2 − (3wL/8)L = wL²/8')}。`},
+  {t:'両端固定 等分布：端 wL²/12',b:`単純梁に、両端に同じ大きさの M₀ を加えたものと考える。単純梁の端のたわみ角 ${F('wL³/(24EI)')} を、両端モーメントによる回転 ${F('M_0 L/(2EI)')} で0にする：${F('M_0 = wL²/12')}。中央は単純梁の ${F('wL²/8')} から引いて ${F('wL²/24')}。`},
+  {t:'たわみ角法 M＝2EK(2θ_A＋θ_B−3R)＋C',b:`部材の端の回転 θ<sub>A</sub>、θ<sub>B</sub> と部材角 R を与えたとき、両端に必要なモーメントを、単位荷重法（または片持ち梁のたわみ）で求めると、${F('M_AB = (2EI/L)(2θ_A + θ_B − 3R)')}。荷重による固定端モーメント C を重ね合わせる。`},
+  {t:'到達率1/2',b:`他端固定の部材で、A端だけ θ 回すとき、上の式で ${F('θ_B = 0')}：${F('M_AB = 4EKθ')}、${F('M_BA = 2EKθ')}。だから向こう端には半分が伝わる。ピン端なら ${F('M_BA = 0')} から ${F('M_AB = 3EKθ')} となり、剛比は ${F('3/4')} 倍。`},
+  {t:'分配率 DF＝k/Σk',b:`節点が θ 回ると、各部材の端モーメントは ${F('4EK_iθ')}（剛比に比例）。合計が不釣合いモーメントを打ち消すので、各部材は剛比の割合で分担する。`},
+ ],
+ il:[
+  {t:'R_A の影響線は直線',b:`単位荷重1が A から x の点にあるとき、B まわりのモーメントで ${F('R_A L = 1 × (L − x)')} → ${F('R_A = 1 − x/L')}。x の1次式なので直線、A で1、B で0。`},
+  {t:'M_C の影響線 頂点 ab/L',b:`荷重が C より右（B側）にあるとき、C の M は左側だけ見て ${F('R_A × a = (1 − x/L)a')}。荷重が C にあるとき ${F('(b/L)a = ab/L')}。左側にあるときは右側を見て同じ形。だから C で頂点の三角形。`},
+  {t:'等分布の効果＝w×面積',b:`重ね合わせ：小さな区間の荷重 ${F('w dx')} の効果は ${F('w dx × η(x)')}（η：縦距）。全部足すと ${F('w∫η dx')} ＝ w × 影響線の面積。`},
+  {t:'ミュラー・ブレスラウの原理',b:`求めたい力を外し、その方向に単位の変位を与える。仮想仕事の原理で「求めたい力 × 1 − 1 × η(x) = 0」となり、荷重点の変位 η(x) がそのまま求めたい力の値になる。`},
+ ],
+ plastic:[
+  {t:'全塑性モーメント M_p＝σ_y Z_p、Z_p＝bh²/4',b:`断面全体が降伏すると、中立軸の上は ${F('−σ_y')}、下は ${F('+σ_y')} の一様な応力。上半分の力 ${F('σ_y b h/2')} と下半分の力が偶力になり、腕は ${F('h/2')}（それぞれの重心 h/4 ずつ）。<br>${F('M_p = σ_y (bh/2)(h/2) = σ_y bh²/4')}。弾性の ${F('bh²/6')} との比が形状係数 1.5。`},
+  {t:'単純梁 中央集中 P_u＝4M_p/L',b:`中央に塑性ヒンジができて、左右の梁が角度 θ で回る崩壊を考える。荷重点は ${F('θL/2')} 下がる。<br>仮想仕事：外力の仕事 ${F('P(θL/2)')} ＝ ヒンジの仕事 ${F('M_p × 2θ')}（中央のヒンジは両側から θ ずつ折れる）。${F('P_u = 4M_p/L')}。両端固定なら端のヒンジ θ×2 が加わり ${F('M_p(θ + 2θ + θ) = 4M_pθ')} → ${F('8M_p/L')}。`},
+  {t:'両端固定 等分布 w_u＝16M_p/L²',b:`中央が ${F('θL/2')} 下がると、等分布荷重の平均の下がりは半分なので、外力の仕事 ${F('wL × θL/4')}。ヒンジの仕事 ${F('4M_pθ')}。等しいとおいて ${F('w_u = 16M_p/L²')}。`},
+  {t:'上界定理',b:`本当の崩壊形でないメカニズムを仮定すると、どこかで M が M<sub>p</sub> を超える状態をつりあいとして計算していることになり、求まる荷重は本当の値以上になる。だから候補の中で最小のものが正解（に一番近い）。`},
+ ],
+ vib:[
+  {t:'固有周期 T＝2π√(m/K)',b:`質量 m がばね K で横に揺れると、変位 x のとき戻す力 ${F('−Kx')}。運動方程式 ${F('m x″ = −Kx')}。解は ${F('x = A sin ωt')}、代入すると ${F('ω² = K/m')}。1周期は ${F('ωT = 2π')} なので ${F('T = 2π√(m/K)')}。`},
+  {t:'柱の水平剛性 12EI/h³、3EI/h³',b:`片持ち柱の頭に力 P：${F('δ = Ph³/(3EI)')} → ${F('K = 3EI/h³')}。<br>両端固定（頭が回らない）では、柱の中央で M＝0 となり、長さ h/2 の片持ち柱2本を直列にしたものと同じ：${F('δ = 2 × P(h/2)³/(3EI) = Ph³/(12EI)')} → ${F('12EI/h³')}。`},
+  {t:'並列・直列のばね',b:`並列：同じ変位で、力が足される → ${F('K = k_1 + k_2')}。直列：同じ力で、変位が足される → ${F('1/K = 1/k_1 + 1/k_2')}。`},
+  {t:'短い柱に力が集中する',b:`同じ層の柱は同じだけ横にずれる（並列）。力は剛性に比例して分担され、剛性は ${F('1/h³')}。高さが半分の柱は8倍の力を受ける（腰壁で短くなった柱が壊れやすい理由）。`},
+ ],
+ arch:[
+  {t:'ケーブル H＝wL²/(8f)',b:`中央で切った左半分について、支点まわりのモーメント。中央のケーブルの張力は水平（最下点）で H、腕はサグ f。左半分の荷重 ${F('wL/2')} は腕 ${F('L/4')}。<br>${F('H f = (wL/2)(L/4) = wL²/8')}。単純梁の中央の M を f で割った形。`},
+  {t:'最大張力 T＝√(H²＋(wL/2)²)',b:`支点では、水平成分 H（どこでも一定）と、鉛直成分＝支える荷重の半分 ${F('wL/2')}。三平方の定理で合成する。`},
+  {t:'放物線になるわけ',b:`ケーブルは M＝0（曲げられない）。位置 x のモーメント ${F('M_0(x) − H y(x) = 0')} → ${F('y = M_0(x)/H')}。等分布の単純梁の M₀ は放物線なので、ケーブルの形も放物線。アーチは上下逆にしたもので、放物線アーチに等分布なら M＝0、軸力だけ。`},
+  {t:'3ヒンジアーチ H＝M₀/f',b:`クラウンのヒンジで M＝0。そこでの M は、単純梁と同じ鉛直反力によるモーメント M₀ から、水平反力による ${F('H × f')} を引いたもの：${F('M_0 − Hf = 0')}。`},
+ ],
+};
+
+// ==/PF-KOZO==
+// ==MISS==
+const MISS={"force": [["お祭りの日の歩道橋", "../sogi/#bridge", "人の重さが支点にどう分かれるか（つりあい）", 1, 5]], "beam": [["お祭りの日の歩道橋", "../sogi/#bridge", "なぜ真ん中の M が最大か、M＝wL²/8 の出どころ", 2, 5], ["マンションのベランダ", "../sogi/#balcony", "片持ち梁の M＝wL²/2", 1, 4], ["校舎のコンクリートの梁", "../sogi/#rcbeam", "M＝wL²/8（歩道橋と同じ）", 1, 3], ["高潮をせき止める水門", "../kasen/#gate", "扉を梁として考える", 2, 3]], "section": [["お祭りの日の歩道橋", "../sogi/#bridge", "桁の形で強さが変わるわけ（断面係数 Z）", 4, 5], ["校舎のコンクリートの梁", "../sogi/#rcbeam", "断面の形と強さ", 2, 3]], "stress": [["お祭りの日の歩道橋", "../sogi/#bridge", "σ＝M/Z で「折れないか」を判定する", 5, 5], ["マンションのベランダ", "../sogi/#balcony", "上側が引っ張られる理由（曲げ応力の向き）", 3, 4], ["校舎のコンクリートの梁", "../sogi/#rcbeam", "引張力 T と鉄筋の量", 3, 3], ["高潮をせき止める水門", "../kasen/#gate", "扉や柱が耐えられるか", 3, 3]], "defl": [["マンションのベランダ", "../sogi/#balcony", "先が下がる量（たわみ）", 4, 4]], "strain": [["夏と冬の橋の長さ", "../sogi/#thermal", "温度で伸びる量と温度応力 σ＝EαΔT", 1, 2]], "judge": [["夏と冬の橋の長さ", "../sogi/#thermal", "ローラーで逃がす支え方（支点と反力）", 2, 2]]};
+// ==/MISS==
+// ================= app =================
+function missHtml(L){ return `<div class="miss"><h3>この単元で解ける謎</h3>${L.map(x=>`<a class="mlink" href="${x[1]}" target="_blank" rel="noopener"><b>ミッション「${x[0]}」</b><span>道順 ${x[3]}/${x[4]}：${x[2]}</span></a>`).join('')}</div>`; }
+function pfHtml(L){ const sup=t=>t.replace(/\^\{([^}]+)\}/g,'<sup>$1</sup>'); return `<div class="pf"><h3>なぜそうなる？（証明・導き方）</h3><p class="pfl">式をタップすると、どこから出てくるかを順に説明します。</p>${L.map(x=>`<details><summary>${sup(String(x.t).replace(/_([A-Za-z0-9\u4e00-\u9fff]+)/g,'<sub>$1</sub>'))}</summary><div class="pfb">${x.f&&typeof PFIG!=='undefined'&&PFIG[x.f]?`<div class="pff">${PFIG[x.f]}</div>`:''}${sup(x.b)}</div></details>`).join('')}</div>`; }
+const $main=document.getElementById('main'), $crumb=document.getElementById('crumb'), $prog=document.getElementById('prog');
+let filt='all', cur=null, prob=null, gi=null;
+let st={}; try{ st=JSON.parse(localStorage.getItem('kozo-progress')||'{}'); }catch(e){ st={}; }
+const save=()=>{ try{ localStorage.setItem('kozo-progress',JSON.stringify(st)); }catch(e){} };
+const TAG={c:['共通','c'],k:['建築','k'],d:['土木','d']};
+function totalSolved(){ return Object.values(st).reduce((a,b)=>a+(b.ok||0),0); }
+function home(){
+  cur=null; $crumb.textContent=''; $prog.textContent=`正解 ${totalSolved()} 問`; location.hash='';
+  const list=U.filter(u=> filt==='all' || u.tag==='c' || u.tag===filt || u.gens.some(g=>g.tag===filt));
+  $main.innerHTML=`<h1>構造力学を、<b>手で解いて</b>身につける。</h1>
+   <p class="lead">力のつりあいから、断面・応力・たわみ・座屈、不静定構造、塑性、振動、影響線まで16単元。数値が毎回変わる問題を解き、答え合わせと解き方で確かめます。建築（一級・二級建築士）と土木（公務員・技術士一次・大学の構造力学）の両方の出題範囲に対応しています。</p>
+   <div class="filters">${[['all','すべて'],['k','建築でよく出る'],['d','土木でよく出る']].map(([k,l])=>`<button class="chip ${filt===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+   <div class="grid">${list.map(u=>{ const i=U.indexOf(u); const p=st[u.id]||{ok:0,n:0}; const pct=Math.min(100,(p.ok||0)/(u.gens.length*2)*100);
+     return `<button class="unit" data-u="${i}"><span class="no"><span>UNIT ${String(i+1).padStart(2,'0')}</span><span class="tag ${u.tag}">${TAG[u.tag][0]}</span></span><span class="nm">${u.name}</span><span class="ds">${u.ds}</span><span class="ds">問題 ${u.gens.length}種　正解 ${p.ok||0}</span><span class="bar"><i style="width:${pct}%"></i></span></button>`; }).join('')}</div>
+   <div class="games"><h2>シリーズのほかのラボ</h2><ul><li><a href="../sogi/" target="_blank" rel="noopener">そぎ落としミッション（入口）</a>：実物から問題へ。9つの勉強のつながりマップ</li><li><a href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a>：荷重を動かしてN図・Q図・M図、カスティリアーノの定理</li><li><a href="../jiban/" target="_blank" rel="noopener">地盤力学ラボ</a>：土の性質・有効応力・圧密・土圧・支持力・液状化</li><li><a href="../suiri/" target="_blank" rel="noopener">水理学ラボ</a>：静水圧・ベルヌーイ・管路・開水路・跳水・津波</li><li><a href="../kasen/" target="_blank" rel="noopener">河川工学ラボ</a>：川原の石・堤防・浸透・遊水地・内水・水門の6ミッション</li></ul></div>
+   <div class="games"><h2>体験しながら学ぶゲーム</h2><ul>
+     <li><a href="../bukkowashi/" target="_blank" rel="noopener">ぶっ壊し構造ラボ</a>：どこが壊れるか予想して、力の流れを見る（ダム・トンネルも）</li>
+     <li><a href="../kaso/" target="_blank" rel="noopener">仮想仕事ラボ</a>：少し動かして力を求める</li>
+     <li><a href="../kotei/" target="_blank" rel="noopener">固定法ラボ</a>：固定端モーメント・解放・分配・到達</li></ul></div>
+   <p class="foot">モーメントの符号は単元ごとに説明しています。答えは有効数字3桁程度で入力してください（±1.5%まで正解）。進み具合はこの端末のブラウザに保存されます。</p>`;
+  $main.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{ filt=b.dataset.f; home(); });
+  $main.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>openUnit(+b.dataset.u));
+  window.scrollTo(0,0);
+}
+function openUnit(i,g){
+  cur=i; const u=U[i]; location.hash='u'+(i+1); $crumb.textContent=`${String(i+1).padStart(2,'0')} ${u.name}`; updProg();
+  const gens=u.gens.map((x,k)=>({x,k})).filter(o=> filt==='all'||o.x.tag==='c'||o.x.tag===filt);
+  const pool=gens.length?gens:u.gens.map((x,k)=>({x,k}));
+  gi = g!=null? g : pick(pool).k; lastBeam=null; prob=u.gens[gi].g(); if(prob.dia===undefined) prob.dia=lastBeam;
+  const p=prob;
+  $main.innerHTML=`<div class="uhead"><h2>${u.name}</h2><span class="tag ${u.tag}">${TAG[u.tag][0]}</span></div>
+   <div class="ucols"><aside class="points">${(typeof MISS!=='undefined'&&MISS[u.id])?missHtml(MISS[u.id]):''}<h3>要点</h3><ul>${u.pts.map(x=>`<li>${x}</li>`).join('')}</ul>${[].concat(u.game||[]).map(gm=>`<div class="game">体験：<a href="${gm.url}" target="_blank" rel="noopener">${gm.name}</a></div>`).join('')}
+     ${(typeof PF!=='undefined'&&PF[u.id])?pfHtml(PF[u.id]):''}${LIFE[u.id]?`<div class="life"><h3>実例</h3><ul>${LIFE[u.id].ex.map(x=>`<li>${x}</li>`).join('')}</ul><h3>この勉強がどう生きるか</h3><p>${LIFE[u.id].use}</p></div>`:''}<div class="btns" style="margin-top:10px">${i>0?`<button class="b" id="prevU">← 前の単元</button>`:''}${i<U.length-1?`<button class="b" id="nextU">次の単元 →</button>`:''}</div></aside>
+   <section class="pcard"><h3>問題</h3><div class="types">${u.gens.map((x,k)=>`<button class="chip ${k===gi?'on':''}" data-g="${k}">${x.t}<span class="tag ${x.tag}" style="margin-left:5px">${TAG[x.tag][0]}</span></button>`).join('')}</div>
+     ${p.fig?`<div class="fig">${p.fig}</div>`:''}<p class="q">${p.q}</p>
+     <div class="ansrow">${p.ans.map((a,k)=>`<label>${a.l}<input id="a${k}" type="number" inputmode="decimal" step="any" placeholder="?">${a.u}</label>`).join('')}</div>
+     <div class="btns"><button class="b main" id="chk">答え合わせ</button><button class="b" id="show">解き方を見る</button><button class="b" id="new">次の問題</button></div>
+     <div id="out"></div></section></div>`;
+  $main.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>openUnit(i,+b.dataset.g));
+  const pv=document.getElementById('prevU'); if(pv) pv.onclick=()=>openUnit(i-1); const nx=document.getElementById('nextU'); if(nx) nx.onclick=()=>openUnit(i+1);
+  document.getElementById('new').onclick=()=>openUnit(i,gi);
+  document.getElementById('show').onclick=()=>reveal(false);
+  document.getElementById('chk').onclick=check;
+  p.ans.forEach((a,k)=>document.getElementById('a'+k).onkeydown=e=>{ if(e.key==='Enter') check(); });
+  window.scrollTo(0,0);
+}
+function within(v,t){ return Math.abs(v-t) <= Math.max(Math.abs(t)*.015, .011); }
+function check(){ const p=prob; let all=true, any=false;
+  p.ans.forEach((a,k)=>{ const el=document.getElementById('a'+k); const v=parseFloat(el.value); if(!isFinite(v)){ all=false; el.className=''; return; } any=true; const ok=within(v,a.v); el.className=ok?'ok':'ng'; if(!ok) all=false; });
+  if(!any){ document.getElementById('a0').focus(); return; }
+  const u=U[cur]; st[u.id]=st[u.id]||{ok:0,n:0}; if(!p.counted){ p.counted=true; st[u.id].n++; if(all) st[u.id].ok++; save(); updProg(); }
+  reveal(all,true); }
+function reveal(ok,checked){ const p=prob; const o=document.getElementById('out');
+  o.innerHTML=`${checked?`<div class="res ${ok?'ok':'ng'}">${ok?'正解！':'惜しい、もう一度確かめよう'}</div>`:''}<div class="sol">${p.sol}<div class="note">答え：${p.ans.map(a=>`${a.l}＝${nf(a.v)} ${a.u}`).join('、')}</div></div>${p.dia?`<div class="nqmwrap"><h3>この問題の N図・Q図・M図</h3>${NQM(p.dia)}<p class="note">荷重を動かして形の変わり方を見るなら <a href="../dan/" target="_blank" rel="noopener">断面力図ラボ</a></p></div>`:''}`; }
+function updProg(){ $prog.textContent=`正解 ${totalSolved()} 問`; }
+document.getElementById('logo').onclick=home;
+function route(){ const m=location.hash.match(/^#u(\d+)$/); if(m&&U[+m[1]-1]) openUnit(+m[1]-1); else home(); }
+window.addEventListener('hashchange',()=>{ const m=location.hash.match(/^#u(\d+)$/); if(m){ if(cur!==+m[1]-1) openUnit(+m[1]-1); } else if(cur!=null) home(); });
+// ==NAZO==
+const NAZO={
+ force:{q:'重い荷物を2人で1本の棒にぶら下げて担ぐ。荷物が自分の近くにぶら下がっていたら、重いのはどっち？',o:['自分','相手','同じ'],a:0,w:'棒が回らないためには、支える2人のまわりのモーメントがつりあう必要があります。荷物に近い人の腕は短く、遠い人の腕は長い。力は距離の逆の比で分かれるので、近い人ほど重くなります。'},
+ judge:{q:'橋の片方の端は、わざわざ転がる「ローラー」で支えてある。なぜ？',o:['安く作れるから','夏に伸びた分を逃がすため','地震のときに倒れやすくするため'],a:1,w:'両端をピンで固定すると、温度で伸びようとする桁が両端を押し合い、大きな力（温度応力）が生まれます。片方をローラーにすると静定になり、伸びた分は転がって逃げるので、余計な力が生まれません。'},
+ beam:{q:'ベランダ（片持ち梁）にひびが入るとしたら、どこ？',o:['根元の上側','根元の下側','先端'],a:0,w:'片持ち梁は根元で曲げモーメントが最大になり、上側が引っ張られます。コンクリートは引張に弱いので、ひびは根元の上側に入ります。だからベランダの鉄筋は上側に入れます。'},
+ frame:{q:'ゲルバー梁の途中にある「ヒンジ（蝶番）」。そこの曲げモーメントはいくつ？',o:['いちばん大きい','ゼロ','半分くらい'],a:1,w:'ヒンジは自由に回るので、曲げを伝えられません。だからヒンジで M＝0。この条件を使って、梁をヒンジで切り分けて解きます。'},
+ truss:{q:'鉄橋の三角形（トラス）の、いちばん下の横の部材。押されている？引っ張られている？',o:['押されている','引っ張られている','力はかかっていない'],a:1,w:'トラス全体は1本の単純梁のように曲がります。単純梁の下側は伸びる側なので、下弦材は引張、上弦材は圧縮です。'},
+ section:{q:'同じ板を棚板にする。寝かせて使うのと、立てて使うの、曲がりにくいのは？',o:['寝かせる','立てる','同じ'],a:1,w:'曲がりにくさ（断面二次モーメント I＝bh³/12）は、高さ h の3乗で効きます。高さが2倍なら8倍曲がりにくい。梁が縦長なのはこのためです。'},
+ stress:{q:'鉄骨の梁が「H」の形をしているのはなぜ？',o:['見た目がいいから','曲げで力が大きくなる上下に、材料を集めるため','運びやすいから'],a:1,w:'曲げ応力は、中立軸から離れるほど大きくなります。上下のフランジに材料を集めると、少ない鋼で断面係数 Z が大きくなり、σ＝M/Z が小さく抑えられます。'},
+ strain:{q:'長さ100 m の鋼の橋。夏と冬の温度差30 ℃で、長さはどれくらい変わる？',o:['約0.4 mm','約4 cm','約4 m'],a:1,w:'伸び ΔL＝αΔT L＝1.2×10⁻⁵×30×100 m＝0.036 m、約4 cm。だから橋の継ぎ目には、伸び縮みを吸収する伸縮装置があります。'},
+ defl:{q:'同じ梁で、長さ（スパン）を2倍にすると、真ん中のたわみは何倍？',o:['2倍','4倍','16倍'],a:2,w:'等分布荷重の単純梁のたわみは δ＝5wL⁴/(384EI)。長さの4乗に比例するので16倍です。長い橋ほど桁を高くして I を大きくするのはこのためです。'},
+ buckle:{q:'同じ太さの細い棒を、長さ2倍にして縦に押す。ぐにゃっと曲がる（座屈する）力は？',o:['半分','4分の1','同じ'],a:1,w:'オイラーの座屈荷重 P＝π²EI/l²。長さの2乗に反比例するので4分の1になります。細長い柱ほど、材料が強くても座屈で先に壊れます。'},
+ energy:{q:'ばねを2倍伸ばすと、ばねにたまるエネルギーは何倍？',o:['2倍','4倍','同じ'],a:1,w:'力も伸びも2倍になるので、力と伸びのグラフの三角形の面積（U＝½kx²）は4倍です。このエネルギーを力で微分すると変位が出る、というのがカスティリアーノの定理です。'},
+ indet:{q:'両端をがっちり固定した梁と、ただ乗せただけの梁。同じ重さで、真ん中の曲げモーメントは？',o:['固定した方が小さい','同じ','固定した方が大きい'],a:0,w:'両端を固定すると、端にも曲げ（wL²/12）を受け持たせられます。真ん中は wL²/24 で、乗せただけの梁（wL²/8）の3分の1になります。'},
+ il:{q:'トラックが橋を渡るとき、橋の真ん中の曲げが最大になるのは、トラックがどこにいるとき？',o:['渡り始め','真ん中','渡り終わり'],a:1,w:'真ん中の曲げモーメントの影響線は、真ん中を頂点とする三角形です。荷重が頂点（真ん中）に来たときに最大になります。'},
+ plastic:{q:'鋼の梁は、どこか1か所が曲がり始めたら、すぐに崩れる？',o:['すぐ崩れる','まだ耐える','曲がり始めた所から折れる'],a:1,w:'1か所が全塑性モーメントに達して「塑性ヒンジ」になっても、不静定なら力がほかの場所に回ります。ヒンジがいくつかでき、崩壊メカニズムになるまで耐え続けます。'},
+ vib:{q:'地震のとき、背の高い柱と短い柱が並んでいたら、壊れやすいのは？',o:['長い柱','短い柱','同じ'],a:1,w:'柱の水平剛性は 12EI/h³。同じ層の柱は同じだけ横にずれるので、硬い（短い）柱ほど大きな力を受けます。腰壁で短くなった柱が地震で壊れやすいのはこのためです。'},
+ arch:{q:'吊り橋のケーブル。たるみを少なくピンと張るほど、ケーブルの力は？',o:['小さくなる','大きくなる','変わらない'],a:1,w:'ケーブルの水平張力 H＝wL²/(8f)。たるみ f が小さいほど大きくなります。洗濯ロープをピンと張るほど切れやすいのと同じです。'},
+};
+
+// ---- 謎解きの層：各単元を「謎→予想→確かめる→答え→腕試し」にする ----
+const NK=document.title+'-nazo';
+let NZ={}; try{ NZ=JSON.parse(localStorage.getItem(NK)||'{}'); }catch(e){ NZ={}; }
+const nzSave=()=>{ try{ localStorage.setItem(NK,JSON.stringify(NZ)); }catch(e){} };
+const nzStars=id=>{ const z=NZ[id]||{}; return (z.p!=null?1:0)+(z.r?1:0)+(((st[id]||{}).ok||0)>0?1:0); };
+const nzOpen=i=> i===0 || NZ.__all || (U[i-1] && (NZ[U[i-1].id]||{}).r) || nzStars(U[i].id)>0;
+(function(){ const s=document.createElement('style'); s.textContent=`
+.nzintro{border:3px solid var(--red);background:#fff;padding:10px 14px;margin:0 0 14px}
+.nzintro b{color:var(--red)}.nzintro ol{margin:6px 0 0;padding-left:1.4em}.nzintro li{margin:2px 0}
+.nzq{display:block;font-weight:900;color:var(--red);font-size:15px;line-height:1.45;margin:4px 0 2px}
+.nzst{display:block;font-size:14px;letter-spacing:2px;color:var(--red)}
+.unit.nzlock{opacity:.55;background:#eceae3}.unit.nzlock .nzq{color:#5E6B86}
+.nzall{margin:0 0 12px}
+.nzcard{border:4px solid var(--red);background:#fff;padding:14px 16px;margin:0 0 16px}
+.nzcard .lb{display:inline-block;background:var(--red);color:#fff;font-weight:900;padding:2px 10px;font-size:13px;letter-spacing:.1em}
+.nzcard h3{margin:8px 0 10px;font-size:20px;line-height:1.45;color:var(--navy,#12286B)}
+.nzopts{display:flex;flex-wrap:wrap;gap:8px}
+.nzopts button{font:inherit;font-weight:700;border:2px solid var(--navy,#12286B);background:#fff;color:var(--navy,#12286B);padding:8px 14px;cursor:pointer}
+.nzopts button.on{background:var(--navy,#12286B);color:#fff}.nzopts button.ans{border-color:var(--red);box-shadow:0 0 0 3px var(--red) inset}
+.nzmsg{margin:10px 0 0;line-height:1.7}.nzmsg .hit{color:var(--red);font-weight:900;font-size:18px}
+.nzsteps{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0;font-size:12px;font-weight:700}
+.nzsteps span{border:1.5px solid #93BCD6;padding:2px 8px;color:#5E6B86}.nzsteps span.on{background:#12286B;color:#fff;border-color:#12286B}
+.nzcard .b{margin-top:8px}`; document.head.appendChild(s); })();
+function nzHome(){
+  if(typeof NAZO==='undefined') return;
+  const f=$main.querySelector('.filters');
+  if(f){ const d=document.createElement('div'); d.className='nzintro'; const done=U.filter(u=>(NZ[u.id]||{}).r).length;
+    d.innerHTML=`<b>謎を解きながら進む。</b>各単元は、身の回りの「謎」から始まります（解いた謎 ${done}/${U.length}）。<ol><li>謎を読んで、答えを<b>予想</b>する</li><li>体験や問題で<b>確かめる</b></li><li>答えと理由を見る（★2）→ <b>次の謎が開く</b></li><li>腕試しの問題に1問正解で ★3</li></ol>`;
+    f.before(d);
+    const a=document.createElement('div'); a.className='nzall'; a.innerHTML=`<button class="chip ${NZ.__all?'on':''}" id="nzall">${NZ.__all?'すべての謎を開いています（順番に戻す）':'試験前などは、すべての謎を開く'}</button>`; f.after(a);
+    a.querySelector('#nzall').onclick=()=>{ NZ.__all=!NZ.__all; nzSave(); home(); };
+  }
+  $main.querySelectorAll('.unit[data-u]').forEach(b=>{ const i=+b.dataset.u, u=U[i], z=NAZO[u.id]; if(!z) return;
+    const open=nzOpen(i), s=nzStars(u.id);
+    const q=document.createElement('span'); q.className='nzq'; q.textContent=open?('謎：'+z.q):'？？？　前の謎を解くと開きます';
+    const nm=b.querySelector('.nm'); nm.before(q); nm.style.fontSize='13px';
+    const sv=document.createElement('span'); sv.className='nzst'; sv.textContent='★'.repeat(s)+'☆'.repeat(3-s); b.querySelector('.bar').before(sv);
+    if(!open){ b.classList.add('nzlock'); b.onclick=e=>{ e.stopImmediatePropagation(); const t=document.getElementById('nzall'); if(t){ t.scrollIntoView({behavior:'smooth',block:'center'}); } }; }
+  });
+}
+function nzCard(i){
+  if(typeof NAZO==='undefined') return; const u=U[i], z=NAZO[u.id]; if(!z) return;
+  const old=document.getElementById('nzcard'); if(old) old.remove();
+  const c=document.createElement('section'); c.className='nzcard'; c.id='nzcard';
+  const head=$main.querySelector('.uhead'); (head||$main.firstChild).after(c);
+  const r=()=>{ const zz=NZ[u.id]||{}; const s=nzStars(u.id); const hasX=!!document.getElementById('xw');
+    c.innerHTML=`<span class="lb">謎 ${String(i+1).padStart(2,'0')}</span><h3>${z.q}</h3>
+     <div class="nzopts">${z.o.map((o,k)=>`<button data-k="${k}" class="${zz.p===k?'on':''} ${zz.r&&k===z.a?'ans':''}">${o}</button>`).join('')}</div>
+     <div class="nzmsg">${zz.p==null?'まずは直感で予想しよう。':
+       !zz.r?`予想しました。${hasX?'体験で数字を動かしたり、':''}下の問題を解いたりして確かめてから、答えを開こう。<br><button class="b main" id="nzrev">答えと理由を見る</button>`:
+       `<span class="hit">${zz.p===z.a?'予想どおり！':'予想が外れた！ だから面白い。'}</span>　答え：<b>${z.o[z.a]}</b><br>${z.w}<br>${s<3?'<b>腕試し：</b>下の問題に1問正解すると ★3。':'<b>★3 クリア！</b>'} ${i<U.length-1?`<button class="b main" id="nznext">次の謎へ →</button>`:''}`}</div>
+     <div class="nzsteps"><span class="${zz.p!=null?'on':''}">① 予想</span><span class="${zz.r?'on':''}">② 確かめて答え</span><span class="${s>=3?'on':''}">③ 腕試し</span></div>`;
+    c.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{ if((NZ[u.id]||{}).r) return; NZ[u.id]=Object.assign(NZ[u.id]||{},{p:+b.dataset.k}); nzSave(); r(); });
+    const rv=c.querySelector('#nzrev'); if(rv) rv.onclick=()=>{ NZ[u.id].r=1; nzSave(); r(); };
+    const nx=c.querySelector('#nznext'); if(nx) nx.onclick=()=>openUnit(i+1);
+  };
+  r(); c._r=r;
+}
+{ const _home=home; home=function(){ _home.apply(this,arguments); nzHome(); };
+  const _open=openUnit; openUnit=function(i,g){ const same=(cur===i)&&document.getElementById('nzcard'); _open.apply(this,arguments); nzCard(i); };
+  const _check=check; check=function(){ _check.apply(this,arguments); const c=document.getElementById('nzcard'); if(c&&c._r) c._r(); }; }
+{ const lg=document.getElementById('logo'); if(lg) lg.onclick=()=>home(); }
+{ const _h=home; home=function(){ _h.apply(this,arguments); const h=$main.querySelector('h1'); if(h){ const nm=document.title.replace(/ラボ$/,''); h.innerHTML=`${nm}の謎を、<b>予想して</b>解き明かす。`; } }; }
+
+// ==/NAZO==
+route();
+window.__kz={U};
+</script>
