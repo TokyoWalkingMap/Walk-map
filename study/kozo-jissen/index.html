@@ -122,6 +122,24 @@ const LAB={key:'kozo-jissen',h1:'構造力学を、<b>本物の設計</b>で使�
  note:'数値は学習用に簡略化しています（許容応力度・荷重は代表値）。実際の設計は、道路橋示方書・建築基準法などの基準に従います。',
  links:[['構造力学ラボ（謎と問題）',URLS.kozo],['構造力学 理論ラボ（体系図と導出）',URLS.kozoR]]};
 const H_SEC=[['H-400×200',400,200,1190,23700,66.0],['H-500×200',500,200,1910,47800,89.6],['H-600×200',600,200,2590,77600,106],['H-700×300',700,300,5640,197000,185],['H-800×300',800,300,7160,286000,210],['H-900×300',900,300,8990,404000,243]];
+
+// 対称行列の固有値（ヤコビ法）
+const jacobiEig=(A0)=>{ const n=A0.length; const A=A0.map(r=>r.slice()); const V=A.map((r,i)=>r.map((_,j)=>i===j?1:0));
+  for(let sw=0;sw<60;sw++){ let off=0; for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) off+=A[i][j]**2; if(off<1e-18) break;
+   for(let p=0;p<n;p++) for(let q=p+1;q<n;q++){ if(Math.abs(A[p][q])<1e-14) continue; const th=(A[q][q]-A[p][p])/(2*A[p][q]); const t=Math.sign(th||1)/(Math.abs(th)+Math.sqrt(th*th+1)); const c=1/Math.sqrt(t*t+1), sn=t*c;
+    for(let k=0;k<n;k++){ const akp=A[k][p], akq=A[k][q]; A[k][p]=c*akp-sn*akq; A[k][q]=sn*akp+c*akq; }
+    for(let k=0;k<n;k++){ const apk=A[p][k], aqk=A[q][k]; A[p][k]=c*apk-sn*aqk; A[q][k]=sn*apk+c*aqk; }
+    for(let k=0;k<n;k++){ const vkp=V[k][p], vkq=V[k][q]; V[k][p]=c*vkp-sn*vkq; V[k][q]=sn*vkp+c*vkq; } } }
+  return A.map((r,i)=>({w2:A[i][i],v:V.map(row=>row[i])})).sort((a,b)=>a.w2-b.w2); };
+const BLD_CACHE={};
+function bldModes(N,kf,iso){ const key=N+'/'+kf+'/'+iso; if(BLD_CACHE[key]) return BLD_CACHE[key];
+  const m=1.0e6, h=3.5; // 1階あたり 1000 t、階高 3.5 m
+  // 基準の剛性：一様なせん断型で T1≈0.025·(全高) となる値
+  const n0=N; const Kunit=[]; for(let i=0;i<n0;i++){ Kunit.push(new Array(n0).fill(0)); } for(let i=0;i<n0;i++){ const kb=1, ka=i<n0-1?1:0; Kunit[i][i]=kb+ka; if(i<n0-1){ Kunit[i][i+1]=-1; Kunit[i+1][i]=-1; } }
+  const w2u=jacobiEig(Kunit)[0].w2; const T1t=0.025*h*N; const kbase=m*(2*Math.PI/T1t)**2/w2u; const k=kbase*kf;
+  const nn=N+(iso?1:0); const ks=[]; if(iso){ const Tiso=3.5; ks.push((N+1)*m*(2*Math.PI/Tiso)**2); } for(let i=0;i<N;i++) ks.push(k);
+  const K=[]; for(let i=0;i<nn;i++) K.push(new Array(nn).fill(0)); for(let i=0;i<nn;i++){ K[i][i]+=ks[i]; if(i+1<nn){ K[i][i]+=ks[i+1]; K[i][i+1]-=ks[i+1]; K[i+1][i]-=ks[i+1]; } }
+  const E=jacobiEig(K.map(r=>r.map(x=>x/m))); return BLD_CACHE[key]={E,m,h,nn,ks,iso}; }
 const CASES=(()=>{ const {S,L,A,T,M,R,P,C,B,G,Pin,Rol,Fix,W,Dim}=dg; const n=DC.n,r=DC.r,b=DC.b;
 const ratioTxt=(v,lim,u)=>`${nf(v)} ${u} ／ 上限 ${nf(lim)} ${u}`;
 return [
@@ -229,6 +247,39 @@ return [
  },
  links:[['強制振動と共振',URLS.kozoR+'#d-shindo-2'],['1自由度の運動方程式',URLS.kozoR+'#d-shindo-0'],['免震と制振（TMD）',URLS.kozoR+'#d-shindo-6'],['固有周期',URLS.kozoR+'#d-vib-0']],
  real:'2000年に開通したロンドンのミレニアム橋は、大勢が渡ると横に大きく揺れ、2日で閉鎖されました。揺れに合わせて人が歩調をそろえてしまう現象（同期化）が原因で、ダンパーを約90台付けて再開しました。日本の歩道橋の設計でも、固有振動数が 1.5〜2.3 Hz を避けるように目安が決められています。'},
+{id:'biru',title:'ビルの固有振動数と揺れ方',client:'△△不動産 開発部',
+ thumb:S(160,70,G(30,130,66),R(60,6,40,60,DC.m,n,1.5),...[16,26,36,46,56].map(y=>L(60,y,100,y,n,1)),P('M120,66 Q126,36 134,6','none',b,2)),
+ story:'駅前に、オフィスビルを建てる。地震のとき、ビルはどんな形で、何秒で揺れる？ 揺れが大きすぎると、柱や壁が壊れたり、家具が倒れたりする。柱の硬さ、免震、ダンパーを選んで、揺れを抑えよう。',
+ req:['1階ごとの質量 1000 t、階高 3.5 m。各階を「おもり」、柱と壁を「ばね」とみなす（せん断型の質点モデル）','固有値問題 |K − ω²M|＝0 を解いて、各モードの固有周期と揺れ方を出す','地震の揺れは設計用の応答スペクトル（地盤の種類で形が変わる）。減衰で Fh＝1.5/(1＋10ζ) 倍に小さくなる','各モードの揺れを2乗和の平方根（SRSS）で重ね合わせる','層間変形角（上下の床のずれ ÷ 階高）は 1/100 以下、最上階の加速度は 6 m/s² 以下（家具が倒れにくい）'],
+ inputs:[{k:'N',label:'階数',opts:[[5,'5 階'],[10,'10 階'],[20,'20 階'],[30,'30 階']],def:10},{k:'Tc',label:'地盤',opts:[[0.4,'かたい'],[0.6,'ふつう'],[0.8,'やわらかい（埋立地）']],def:0.6},
+  {d:1,k:'kf',label:'柱と壁の硬さ',help:'基準を 1 とした倍率。硬いほど揺れは小さいが、周期が短くなって地震力は大きくなる。',opts:[[0.5,'0.5 倍'],[1,'1 倍'],[2,'2 倍']],def:1},
+  {d:1,k:'iso',label:'免震',opts:[[0,'なし'],[1,'あり（免震層 3.5 秒）']],def:0},
+  {d:1,k:'z',label:'ダンパーで足す減衰',opts:[[0.02,'なし（2%）'],[0.05,'少し（5%）'],[0.1,'多く（10%）']],def:0.02}],
+ calc(s){ const D=bldModes(s.N,s.kf,s.iso); const {E,m,h,nn,iso}=D; const g=9.8; const z=iso?Math.max(s.z,0.15):s.z; const Fh=1.5/(1+10*z);
+   const sa=T=>{ const Tc=s.Tc; const f=T<Tc?1:T<2*Tc?1-0.2*(T/Tc-1)**2:1.6*Tc/T; return 0.8*g*f*Fh; };
+   const nm=Math.min(nn,5); const modes=[]; let drift2=new Array(nn).fill(0), acc2=0;
+   for(let j=0;j<nm;j++){ const {w2,v}=E[j]; const w=Math.sqrt(w2), T=2*Math.PI/w; const L_=v.reduce((a,x)=>a+x,0), Mj=v.reduce((a,x)=>a+x*x,0); const G_=L_/Mj; const A_=sa(T);
+     const u=v.map(x=>G_*x*A_/w2); for(let i=0;i<nn;i++){ const dd=u[i]-(i?u[i-1]:0); drift2[i]+=dd*dd; } acc2+=(G_*v[nn-1]*A_)**2; modes.push({T,v,G:G_}); }
+   const drift=drift2.map(Math.sqrt); const st0=iso?1:0; const dmax=Math.max(...drift.slice(st0)), ang=dmax/h, accTop=Math.sqrt(acc2); const isoDisp=iso?drift[0]:0;
+   const cost=s.N*(10+6*s.kf)+(iso?s.N*6+80:0)+(s.z===0.05?s.N*2:s.z===0.1?s.N*5:0); // 百万円
+   return {rows:[['1次の固有周期',mm('T₁＝2π/ω₁'),nf(modes[0].T,2),'秒'],['2次の固有周期',mm('T₂'),nf(modes[1]?modes[1].T:NaN,2),'秒'],['3次の固有周期',mm('T₃'),nf(modes[2]?modes[2].T:NaN,2),'秒'],['1次の固有振動数',mm('f₁＝1/T₁'),nf(1/modes[0].T,2),'Hz'],['1次の刺激係数',mm('Γ₁＝Σφ/Σφ²'),nf(Math.abs(modes[0].G),2),''],['減衰比',mm('ζ'),nf(z*100,0),'%'],['1次の応答加速度',mm('Sa(T₁)'),nf(sa(modes[0].T),2),'m/s²'],['最大の層間変形',mm('SRSS で重ね合わせ'),nf(dmax*1000,0),'mm'],['最大の層間変形角',mm('δ/h'),'1/'+nf(1/ang,0),''],['最上階の加速度',mm('SRSS'),nf(accTop,2),'m/s²'],...(iso?[['免震層の変形',mm('免震層'),nf(isoDisp*100,0),'cm']]:[])],
+     checks:[['層間変形角（柱・壁が壊れないか）',ang*100,0.01,ang<=0.01,`1/${nf(1/ang,0)} ／ 上限 1/100`],['最上階の加速度（家具が倒れないか）',accTop/6,6,accTop<=6,`${nf(accTop,2)} ／ 上限 6 m/s²`]],
+     cost, costTxt:`約 ${nf(cost,0)} 百万円（構造部分の目安）`, modes, nn, iso, ang, accTop};
+ },
+ fig(s,q){ const W=340,H=270, base=250, top=24; const nn=q.nn; const fh=(base-top)/nn; const cols=[DC.r,DC.b,'#C8A02A']; const xs=[70,170,270];
+   let g=G(10,330,base+2);
+   q.modes.slice(0,3).forEach((md,j)=>{ const x0=xs[j]; const mx=Math.max(...md.v.map(Math.abs)); const amp=30;
+     const pts=sgn=>[`${x0},${base}`,...md.v.map((v,i)=>`${(x0+sgn*amp*v/mx).toFixed(1)},${(base-(i+1)*fh).toFixed(1)}`)].join(' ');
+     const ptsR=[`${x0},${base}`,...md.v.map((v,i)=>`${x0},${(base-(i+1)*fh).toFixed(1)}`)].join(' ');
+     g+=`<polyline points="${ptsR}" fill="none" stroke="#D9D6CC" stroke-width="6"/>`;
+     g+=`<polyline points="${pts(1)}" fill="none" stroke="${cols[j]}" stroke-width="3"><animate attributeName="points" dur="${Math.max(0.6,Math.min(2.4,md.T*0.6)).toFixed(2)}s" repeatCount="indefinite" values="${pts(1)};${pts(-1)};${pts(1)}"/></polyline>`;
+     md.v.forEach((v,i)=>{ const y=base-(i+1)*fh; if(nn<=12||i%Math.ceil(nn/12)===nn%Math.ceil(nn/12)) g+=`<circle cx="${x0+30*v/mx}" cy="${y}" r="3" fill="${cols[j]}"><animate attributeName="cx" dur="${Math.max(0.6,Math.min(2.4,md.T*0.6)).toFixed(2)}s" repeatCount="indefinite" values="${x0+30*v/mx};${x0-30*v/mx};${x0+30*v/mx}"/></circle>`; });
+     g+=T(x0,top-8,`${j+1}次 ${nf(md.T,2)} 秒`,cols[j],12); });
+   if(q.iso) g+=R(20,base-fh,300,fh,'none','#C8A02A',1.5)+T(170,base-fh/2+4,'免震層',DC.g,10,'middle',400);
+   return S(W,H,g,T(170,H-2,(q.ang<=0.01&&q.accTop<=6)?'揺れ方（モード）：アニメーションで表示':'揺れが大きすぎる！',(q.ang<=0.01&&q.accTop<=6)?n:r,11));
+ },
+ links:[['2層の建物とモード',URLS.kozoR+'#d-shindo-5'],['応答スペクトル',URLS.kozoR+'#d-shindo-4'],['免震と制振',URLS.kozoR+'#d-shindo-6'],['剛性マトリクス',URLS.kozoR+'#d-indet-9'],['重ね合わせの原理',URLS.kozoR+'#d-indet-0']],
+ real:'実際の超高層ビル（高さ 60 m 超）は、国の認定を受けるため、本物の地震記録を何本も入れて、時間を追って揺れを計算します（時刻歴応答解析）。2011年の東日本大震災では、震源から遠い東京や大阪の超高層ビルが、周期の長い揺れ（長周期地震動）と共振して、10分以上ゆっくり大きく揺れました。それ以来、長周期地震動への対策（ダンパーの追加など）が進んでいます。'},
 ]; })();
 
 // ---- 実践ラボ：本物を設計する流れ（依頼 → 条件 → 計算 → 照査 → 図面 → コスト） ----

@@ -995,6 +995,8 @@ const m=s=>`<span class="mm">${s}</span>`;
 .dst li.hide{display:none}
 .dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
 .mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.dit h3 em{display:inline-block}
+.dd{position:relative;display:inline-block}.dd::before{content:"";position:absolute;left:58%;top:.12em;height:.15em;transform:translateX(-50%);background:radial-gradient(circle closest-side,currentColor 85%,transparent 100%) 0 0/.17em .15em repeat-x}.dd.d1::before{width:.17em}.dd.d2::before{width:.38em;background-size:.19em .15em}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
 .dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
 .dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
@@ -1032,6 +1034,11 @@ function taikei(byP){
    ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
+
+// ẋ・ẍ はフォントによって点がずれるので、点を自前で描く
+function dotFix(root){ if(!root) return; const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>/[ẋẍ]/.test(n.nodeValue)&&!n.parentNode.closest('svg')?1:3}); const ns=[]; while(w.nextNode()) ns.push(w.currentNode);
+  ns.forEach(n=>{ const fr=document.createDocumentFragment(); n.nodeValue.split(/([ẋẍ])/).forEach(p=>{ if(p==='ẋ'||p==='ẍ'){ const sp=document.createElement('span'); sp.className='dd '+(p==='ẋ'?'d1':'d2'); sp.textContent='x'; fr.appendChild(sp); } else if(p) fr.appendChild(document.createTextNode(p)); }); n.parentNode.replaceChild(fr,n); }); }
+(()=>{ if(typeof MutationObserver==='undefined') return; let pend=false; const mo=new MutationObserver(()=>{ if(pend) return; pend=true; setTimeout(()=>{ pend=false; mo.disconnect(); try{ dotFix(document.body); } finally { mo.observe(document.body,{childList:true,subtree:true}); } },0); }); const st=()=>{ dotFix(document.body); mo.observe(document.body,{childList:true,subtree:true}); }; if(document.body) st(); else document.addEventListener('DOMContentLoaded',st); })();
 const XU=()=>typeof DXU!=='undefined'?DXU:[];
 function deriveView(){
   if(typeof DER==='undefined') return;
@@ -1447,7 +1454,7 @@ const spec=()=>{ const W=320,H=220,l=36,tp=12,bt=36, tmax=5; const X=t=>l+(W-8-l
   [0,1,2,3,4,5].forEach(v=>s+=`<text x="${X(v)}" y="${H-bt+13}" font-size="9" text-anchor="middle" fill="#5E6B86">${v}</text>`);
   [[0.4,'かたい地盤',COL[2]],[0.6,'ふつう',COL[1]],[0.8,'やわらかい地盤',COL[0]]].forEach(([Tc,lab,c],k)=>{ const f=t=>t<Tc?1:t<2*Tc?1-0.2*(t/Tc-1)**2:1.6*Tc/t; const pts=[]; for(let i=0;i<=200;i++){ const t=tmax*i/200; pts.push(`${X(t).toFixed(1)},${Y(f(t)).toFixed(1)}`); }
    s+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${c}" stroke-width="2.2"/><rect x="${W-120}" y="${tp+4+k*14}" width="12" height="4" fill="${c}"/><text x="${W-104}" y="${tp+10+k*14}" font-size="10" fill="${n}">${lab}</text>`; });
-  s+=`<text x="${X(2.4)}" y="${Y(0.95)}" font-size="10" fill="${b}">長い周期ほど小さい</text><text x="${X(0.1)}" y="${Y(1.05)}" font-size="10" fill="${r}" text-anchor="start">短い周期は大きい</text>`;
+  s+=`<text x="${X(2.7)}" y="${Y(0.62)}" font-size="10" fill="${b}">長い周期ほど小さい</text><text x="${X(0.1)}" y="${Y(1.05)}" font-size="10" fill="${r}" text-anchor="start">短い周期は大きい</text>`;
   return svg(W,H,s); };
 return {p:['motion','hooke','eq'],it:[
  {t:'1自由度の運動方程式',goal:'m ẍ＋c ẋ＋k x＝F(t)',fig:S(320,190,Fix(30,40,140),P('M30,90 l12,0 l6,-12 l12,24 l12,-24 l12,24 l6,-12 l12,0','none',n,2),R(102,66,60,48,DC.m,n,2),M(132,96,'m',n,16),L(30,130,60,130,n,2),R(60,122,24,16,'#fff',n,2),L(72,130,102,130,n,2),L(84,124,84,136,n,3),T(60,60,'k',n,13),T(72,156,'c',n,13),A(162,90,220,90,r),M(228,95,'F(t)',r,14,'start'),L(132,124,132,150,DC.g,1,'3 3'),A(132,160,170,160,b,1.6),M(176,164,'x',b,14,'start'),G(90,180,180)),

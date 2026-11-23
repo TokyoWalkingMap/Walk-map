@@ -998,6 +998,8 @@ const m=s=>`<span class="mm">${s}</span>`;
 .dst li.hide{display:none}
 .dst .eq{display:block;text-align:center;margin:6px 0;font-size:19px}
 .mm{font-family:"Times New Roman",serif;font-style:italic;font-weight:700;white-space:nowrap}
+.dit h3 em{display:inline-block}
+.dd{position:relative;display:inline-block}.dd::before{content:"";position:absolute;left:58%;top:.12em;height:.15em;transform:translateX(-50%);background:radial-gradient(circle closest-side,currentColor 85%,transparent 100%) 0 0/.17em .15em repeat-x}.dd.d1::before{width:.17em}.dd.d2::before{width:.38em;background-size:.19em .15em}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;font-size:.92em}.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 3px}.fr>span:last-child{padding:0 3px}
 .dnav{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 0}
 .dkey{display:block;background:#fdf3f2;border-left:6px solid #C62422;padding:8px 12px;margin:10px 0 0;font-weight:700}
@@ -1035,6 +1037,11 @@ function taikei(byP){
    ${typeof JISSEN_URL!=='undefined'?`<a class="pfd" href="${JISSEN_URL}" target="_blank" rel="noopener" style="margin:12px 0 0">実践ラボ：この原理を使って、本物の構造物を設計してみる（依頼→計算→照査→図面→コスト）→</a>`:''}
    <details class="tksh"><summary>3つの力学は、同じ原理でつながっている</summary><table><tr><th>原理</th><th>使う力学</th><th>どこに出てくる？</th></tr>${SHARED.map(x=>`<tr><td>${x[0]}</td><td>${x[1]}</td><td>${x[2]}</td></tr>`).join('')}</table></details></section>`;
 }
+
+// ẋ・ẍ はフォントによって点がずれるので、点を自前で描く
+function dotFix(root){ if(!root) return; const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>/[ẋẍ]/.test(n.nodeValue)&&!n.parentNode.closest('svg')?1:3}); const ns=[]; while(w.nextNode()) ns.push(w.currentNode);
+  ns.forEach(n=>{ const fr=document.createDocumentFragment(); n.nodeValue.split(/([ẋẍ])/).forEach(p=>{ if(p==='ẋ'||p==='ẍ'){ const sp=document.createElement('span'); sp.className='dd '+(p==='ẋ'?'d1':'d2'); sp.textContent='x'; fr.appendChild(sp); } else if(p) fr.appendChild(document.createTextNode(p)); }); n.parentNode.replaceChild(fr,n); }); }
+(()=>{ if(typeof MutationObserver==='undefined') return; let pend=false; const mo=new MutationObserver(()=>{ if(pend) return; pend=true; setTimeout(()=>{ pend=false; mo.disconnect(); try{ dotFix(document.body); } finally { mo.observe(document.body,{childList:true,subtree:true}); } },0); }); const st=()=>{ dotFix(document.body); mo.observe(document.body,{childList:true,subtree:true}); }; if(document.body) st(); else document.addEventListener('DOMContentLoaded',st); })();
 const XU=()=>typeof DXU!=='undefined'?DXU:[];
 function deriveView(){
   if(typeof DER==='undefined') return;
