@@ -114,7 +114,7 @@ footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-si
   <a href="#c3"><span>3</span>変換表と、その導き方</a>
   <a href="#c4"><span>4</span>たたみこみ（雨と川の流量）</a>
   <a href="#c5"><span>5</span>積分方程式を解く</a>
-  <a href="#c6"><span>6</span>部分分数分解と逆変換</a>
+  <a href="#c6"><span>6</span>逆ラプラス変換（なぜ・どう戻す）</a>
   <a href="#c7"><span>7</span>極で揺れ方がわかる</a>
   <a href="#c8"><span>8</span>土木での使い道</a>
  </nav>
@@ -213,7 +213,7 @@ footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-si
   <ol class="steps" data-walk>
    <li>第2項は <span class="m">y∗sin t</span>。両辺を変換すると、<span class="m">L[sin t]＝1/(s²＋1)</span>、<span class="m">L[e<sup>t</sup>]＝1/(s−1)</span>：<span class="eq">Y − Y · <span class="fr"><span>1</span><span>s²＋1</span></span> ＝ <span class="fr"><span>1</span><span>s − 1</span></span></span></li>
    <li class="q" data-q="Y でくくると、Y にかかる係数は？" data-o="s²/(s²＋1)|1/(s²＋1)|(s²＋2)/(s²＋1)" data-a="0" data-w="1 − 1/(s²＋1) ＝ (s²＋1−1)/(s²＋1) ＝ s²/(s²＋1)。"></li>
-   <li>だから <span class="eq">Y(s)＝<span class="fr"><span>s²＋1</span><span>s²(s − 1)</span></span></span>このままでは表にない。部分分数に分ける（6章）。</li>
+   <li>だから <span class="eq">Y(s)＝<span class="fr"><span>s²＋1</span><span>s²(s − 1)</span></span></span>このままでは表にない。部分分数に分ける（<a href="#c6">6章 逆ラプラス変換</a>）。</li>
    <li class="q" data-q="a/s ＋ b/s² ＋ c/(s−1) に分けると、(a, b, c) は？" data-o="(−1, −1, 2)|(1, 1, 0)|(−1, 1, 2)" data-a="0" data-w="c は s＝1 を入れて (1＋1)/1＝2。b は s² をかけて s＝0：(0＋1)/(0−1)＝−1。a は s² の係数をそろえて a＋c＝1 から −1。"></li>
    <li><span class="eq">y(t)＝−1 − t ＋ 2e<sup>t</sup></span></li>
   </ol>
@@ -231,17 +231,121 @@ footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-si
 </section>
 
 <!-- 6 -->
-<section class="ch" id="c6"><h2><span>6</span>部分分数分解と、逆変換</h2>
- <p>表に載っているのは <span class="m">1/s<sup>n</sup></span>、<span class="m">1/(s−a)</span>、<span class="m">ω/(s²＋ω²)</span> のような単純な形だけです。複雑な <span class="m">Y(s)</span> は、単純な分数の足し算に分けてから戻します。</p>
- <ol class="steps">
-  <li><b>分母を因数に分ける</b>：例 <span class="m">s²(s−1)</span>。</li>
-  <li><b>形を決める</b>：1次の因数 <span class="m">(s−a)</span> には <span class="m">c/(s−a)</span>、2乗 <span class="m">s²</span> には <span class="m">a/s＋b/s²</span>、<span class="m">s²＋ω²</span> には <span class="m">(ps＋q)/(s²＋ω²)</span>。</li>
-  <li><b>隠して代入する（ヘビサイドの方法）</b>：<span class="m">c</span> を出すには、<span class="m">Y</span> から <span class="m">(s−1)</span> を手で隠して、残りに <span class="m">s＝1</span> を入れる。いちばん速い。</li>
-  <li><b>残りは係数比較</b>：通分して、<span class="m">s²</span> や <span class="m">s</span> の係数を両辺でそろえる。</li>
-  <li><b>表を逆に読む</b>：<span class="m">(ps＋q)/(s²＋ω²)＝p·s/(s²＋ω²)＋(q/ω)·ω/(s²＋ω²)</span> → <span class="m">p cos ωt＋(q/ω) sin ωt</span>。</li>
- </ol>
+<section class="ch" id="c6"><h2><span>6</span>逆ラプラス変換：s の世界から、時間の世界へ戻る</h2>
+ <h3>なぜ、戻さないといけないの？</h3>
+ <p><span class="m">s</span> の世界で <span class="m">Y(s)＝(s²＋1)/(s²(s−1))</span> が出ても、それは「答えの写し」です。橋が何 cm たわむか、川の流量が何時にいくらか、建物が何秒で止まるか。知りたいのは<b>時間 t の関数 y(t)</b> なので、最後に必ず時間の世界へ戻します。これが逆ラプラス変換 <span class="m">y(t)＝L<sup>−1</sup>[Y(s)]</span> です。</p>
+ <h3>なぜ、部分分数に分けるの？</h3>
+ <p>戻し方の本当の式（ブロムウィッチ積分）は、複素数の世界での積分で、手計算ではまず使いません。そのかわり、<b>表を逆に読めば戻せる</b>ことを使います。ところが表にあるのは <span class="m">1/(s−a)</span>、<span class="m">1/s<sup>n</sup></span>、<span class="m">ω/(s²＋ω²)</span> のような単純な形だけ。だから複雑な分数を、<b>表にある形の足し算に分けてから</b>、1つずつ戻します（線形性：足し算はそのまま戻せる）。</p>
+ <p>分けた1つ1つの分数は、物理的にも意味があります。分母の1つの因数（極）が、答えの中の1つの「動き方」になります。分けることは、答えを「減っていく部分」「揺れる部分」「一定の部分」に分解して見ることです。</p>
+ <span class="key">分母を見れば、計算する前に答えの形がわかる。部分分数は、その形ごとに答えを分ける作業。</span>
+
+ <h3>見分け表：分母の形 → 時間の形</h3>
+ <div class="tbl"><table>
+  <thead><tr><th>分母にある因数（極）</th><th>分けた形</th><th>時間の世界</th><th>どんな動き</th></tr></thead>
+  <tbody>
+   <tr><td class="f">s</td><td class="f">A / s</td><td class="f">A</td><td>一定（落ち着く値）</td></tr>
+   <tr><td class="f">s − a</td><td class="f">A / (s − a)</td><td class="f">A e<sup>at</sup></td><td>a＜0 なら減る、a＞0 なら増える</td></tr>
+   <tr><td class="f">(s − a)<sup>n</sup></td><td class="f">A₁/(s−a) ＋ … ＋ A<sub>n</sub>/(s−a)<sup>n</sup></td><td class="f">e<sup>at</sup>(A₁ ＋ A₂t ＋ … )</td><td>同じ極が重なると t がかかる</td></tr>
+   <tr><td class="f">s² ＋ ω²</td><td class="f">(Bs ＋ C)/(s² ＋ ω²)</td><td class="f">B cos ωt ＋ (C/ω) sin ωt</td><td>同じ大きさで揺れ続ける</td></tr>
+   <tr><td class="f">(s＋α)² ＋ ω²</td><td class="f">(Bs ＋ C)/((s＋α)² ＋ ω²)</td><td class="f">e<sup>−αt</sup>( … cos ωt ＋ … sin ωt)</td><td>揺れながら減る（建物の揺れ）</td></tr>
+  </tbody></table></div>
+
+ <h3>4つの型を、例題で</h3>
+ <div class="prob"><p class="ttl">型A：表にそのままある（係数をそろえるだけ）</p>
+  <span class="eq">Y ＝ <span class="fr"><span>6</span><span>s⁴</span></span> ＋ <span class="fr"><span>5</span><span>s² ＋ 25</span></span></span>
+  <p><span class="m">6/s⁴＝3!/s⁴</span> なので <span class="m">t³</span>。<span class="m">5/(s²＋25)＝ω/(s²＋ω²)</span>（ω＝5）なので <span class="m">sin 5t</span>。<b>y＝t³＋sin 5t</b>。</p>
+  <p class="note">なぜ：表の形（分子が n! や ω）に合うように、定数を前に出したり入れたりするだけ。<span class="m">1/s⁴</span> なら <span class="m">(1/6)·3!/s⁴</span> → <span class="m">t³/6</span>。</p>
+ </div>
+ <div class="prob"><p class="ttl">型B：分母が、違う1次の因数に分かれる</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 3</span><span>(s − 1)(s ＋ 2)</span></span> ＝ <span class="fr"><span>A</span><span>s − 1</span></span> ＋ <span class="fr"><span>B</span><span>s ＋ 2</span></span></span>
+  <p>隠して代入（下の図で触れます）：<span class="m">A</span> は <span class="m">(s−1)</span> を隠して <span class="m">s＝1</span>：<span class="m">4/3</span>。<span class="m">B</span> は <span class="m">(s＋2)</span> を隠して <span class="m">s＝−2</span>：<span class="m">1/(−3)＝−1/3</span>。<b>y＝(4/3)e<sup>t</sup> − (1/3)e<sup>−2t</sup></b>。</p>
+  <p class="note">なぜ隠して代入でよいか：両辺に <span class="m">(s−1)</span> をかけると <span class="m">(s＋3)/(s＋2)＝A＋B(s−1)/(s＋2)</span>。ここで <span class="m">s＝1</span> にすると B の項が 0 になり、A だけが残る。</p>
+ </div>
+ <div class="prob"><p class="ttl">型C：同じ因数が重なる</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 4</span><span>(s ＋ 1)²</span></span> ＝ <span class="fr"><span>A</span><span>s ＋ 1</span></span> ＋ <span class="fr"><span>B</span><span>(s ＋ 1)²</span></span></span>
+  <p>分子を <span class="m">(s＋1)</span> のまとまりで書きかえるのが速い：<span class="m">s＋4＝(s＋1)＋3</span>。だから <span class="m">Y＝1/(s＋1)＋3/(s＋1)²</span>。推移法則で <span class="m">1/(s＋1)² → t e<sup>−t</sup></span>。<b>y＝e<sup>−t</sup>(1＋3t)</b>。</p>
+  <p class="note">なぜ t がかかる：<span class="m">L[t]＝1/s²</span> を推移法則で s→s＋1 とずらすと <span class="m">L[t e<sup>−t</sup>]＝1/(s＋1)²</span>。重なった極は「減りながら、いったん増える」動き（臨界減衰）になる。</p>
+ </div>
+ <div class="prob"><p class="ttl">型D：分母が2次で、因数に分けられない</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 5</span><span>s² ＋ 2s ＋ 10</span></span></span>
+  <ol class="steps">
+   <li><b>平方完成</b>：<span class="m">s²＋2s＋10＝(s＋1)²＋9</span>。極は <span class="m">s＝−1±3i</span>（減りながら揺れる）。</li>
+   <li><b>分子も (s＋1) のまとまりに</b>：<span class="m">s＋5＝(s＋1)＋4</span>。</li>
+   <li><span class="m">Y＝(s＋1)/((s＋1)²＋9) ＋ (4/3)·3/((s＋1)²＋9)</span>。</li>
+   <li>推移法則（s→s＋1 は e<sup>−t</sup> をかける）で <b>y＝e<sup>−t</sup>(cos 3t ＋ (4/3) sin 3t)</b>。</li>
+  </ol>
+  <p class="note">なぜ平方完成：表の <span class="m">s/(s²＋ω²)</span> と <span class="m">ω/(s²＋ω²)</span> の形に、推移法則でずらして当てはめるため。建物の揺れの式は、ほとんどがこの型になる。</p>
+ </div>
+
+ <div class="lab" id="lab4"><h4>触って確かめる：隠して代入（ヘビサイドの方法）</h4>
+  <p style="font-size:13px;margin:0 0 6px">分母の因数をタップして隠すと、残りに極の値を入れた計算が出ます。</p>
+  <div class="chips" id="hvP" role="group" aria-label="問題を選ぶ"></div>
+  <div id="hvY" class="eq" style="font-size:22px"></div>
+  <div id="hvF" class="chips" style="justify-content:center" role="group" aria-label="隠す因数"></div>
+  <div id="hvC" class="ans" style="margin-top:10px"></div>
+  <div id="hvR" class="read"></div>
+  <svg id="hvS" viewBox="0 0 340 160" role="img" aria-label="分けた項ごとの時間の動きと、その和"></svg>
+  <p class="note">グラフ：細い線が分けた1つ1つの項、太い線がその和 y(t)。項ごとに「動き方」が違うのが見えます。</p>
+ </div>
+
+ <h3>練習：まず型を見分けてから解く</h3>
+ <div id="ilq"></div>
+
  <p class="note">配られたプリントの (3) は、途中の分母が <span class="m">s²＋3³</span> と書かれていますが、正しくは <span class="m">s²＋3²</span>（＝s²＋9）です。(4) の答えの最後は <span class="m">2e<sup>t</sup></span> です（<span class="m">2<sup>e<sup>t</sup></sup></span> ではありません）。</p>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ const {C,tx,ln,pl,$}=MX;
+/* 隠して代入：Y=N(s)/Π(s-p_i)、異なる実数の極 */
+const HP=[
+ {n:[1,3],p:[1,-2],lab:'(s＋3)/((s−1)(s＋2))'},
+ {n:[0,5],p:[0,-1,-5],lab:'5/(s(s＋1)(s＋5))'},
+ {n:[2,0,1],p:[-1,-2,-3],lab:'(2s²＋1)/((s＋1)(s＋2)(s＋3))'},
+];
+const fmtF=p=>p===0?'s':p>0?`(s − ${p})`:`(s ＋ ${-p})`;
+const poly=(c,s)=>c.reduce((a,x)=>a*s+x,0);
+const frac=v=>{ for(let d=1;d<=60;d++){ const n=Math.round(v*d); if(Math.abs(n/d-v)<1e-9) return d===1?`${n<0?'−':''}${Math.abs(n)}`:`${n<0?'−':''}${Math.abs(n)}/${d}`; } return v.toFixed(3); };
+let cur=0, cov=new Set();
+$('#hvP').innerHTML=HP.map((h,i)=>`<button data-i="${i}"${i?'':' class="on"'}>問題${i+1}</button>`).join('');
+function nstr(c){ const deg=c.length-1; return c.map((x,i)=>{ const pw=deg-i; if(x===0) return ''; const t=pw===0?`${Math.abs(x)}`:`${Math.abs(x)===1?'':Math.abs(x)}s${pw>1?'²':''}`; return (x<0?' − ':' ＋ ')+t; }).join('').replace(/^ ＋ /,'').replace(/^ − /,'−'); }
+function draw(){ const h=HP[cur];
+ $('#hvY').innerHTML=`Y ＝ <span class="fr"><span>${nstr(h.n)}</span><span>${h.p.map((p,i)=>cov.has(i)?`<span style="background:#12286B;color:#12286B;border-radius:3px">${fmtF(p)}</span>`:fmtF(p)).join('')}</span></span>`;
+ $('#hvF').innerHTML=h.p.map((p,i)=>`<button data-k="${i}" class="${cov.has(i)?'on':''}">${fmtF(p)} を隠す</button>`).join('');
+ const res=h.p.map((p,i)=>{ const num=poly(h.n,p); const den=h.p.reduce((a,q,j)=>j===i?a:a*(p-q),1); return num/den; });
+ const last=[...cov].pop();
+ if(last==null) $('#hvC').innerHTML='因数を1つ選んで隠してみよう。';
+ else { const p=h.p[last]; const num=poly(h.n,p); const others=h.p.filter((_,j)=>j!==last); $('#hvC').innerHTML=`${fmtF(p)} を隠して、残りに <b>s＝${String(p).replace("-","−")}</b> を入れる：<span class="m">{${nstr(h.n).replace(/s/g,`(${String(p).replace('-','−')})`)}} ÷ {${others.map(q=>`(${String(p).replace('-','−')}${q<0?'＋'+(-q):q>0?'−'+q:''})`).join('')}} ＝ ${frac(num)} ÷ ${frac(others.reduce((a,q)=>a*(p-q),1))} ＝ <b>${frac(res[last])}</b></span>`; }
+ $('#hvR').innerHTML=h.p.map((p,i)=>`<div class="${cov.has(i)?'hi':''}">${fmtF(p)} の係数<b>${cov.has(i)?frac(res[i]):'？'}</b><span>→ ${cov.has(i)?`${frac(res[i])}${p===0?'':` e<sup>${p===-1?'−':p===1?'':p<0?'−'+(-p):p}t</sup>`}`:'…'}</span></div>`).join('');
+ const TM=h.p.some(p=>p>0)?1.5:5; const X=t=>36+290*t/TM; const terms=h.p.map((p,i)=>t=>res[i]*Math.exp(p*t)); const tot=t=>terms.reduce((a,f)=>a+f(t),0);
+ let lo=0,hi=0; for(let i=0;i<=100;i++){ const t=TM*i/100; [tot(t),...terms.map(f=>f(t))].forEach(v=>{ if(isFinite(v)){ lo=Math.min(lo,v); hi=Math.max(hi,v); } }); } const pad=(hi-lo)*0.1||1;
+ const Y=v=>150-130*(Math.max(lo-pad,Math.min(hi+pad,v))-(lo-pad))/((hi+pad)-(lo-pad));
+ let s=ln(36,10,36,150)+ln(36,Y(0),330,Y(0),C.navy,1)+tx(330,158,'t',C.navy,10,'end',700);
+ const cols=[C.blue,C.gold,'#7a5fb0'];
+ terms.forEach((f,i)=>{ if(!cov.has(i)) return; const pts=[]; for(let k=0;k<=150;k++){ const t=TM*k/150; pts.push([X(t),Y(f(t))]); } s+=pl(pts,cols[i%3],1.5,'4 3'); });
+ if(cov.size===h.p.length){ const pts=[]; for(let k=0;k<=150;k++){ const t=TM*k/150; pts.push([X(t),Y(tot(t))]); } s+=pl(pts,C.red,2.8)+tx(330,20,'━ 和 y(t)',C.red,10,'end',700); }
+ else s+=tx(183,80,'全部の係数を出すと、y(t) が描けます',C.muted,11);
+ $('#hvS').innerHTML=s;
+ document.querySelectorAll('#hvF button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; if(cov.has(k)) cov.delete(k); else cov.add(k); draw(); }); }
+document.querySelectorAll('#hvP button').forEach(b=>b.onclick=()=>{ cur=+b.dataset.i; cov=new Set(); document.querySelectorAll('#hvP button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+draw();
+
+/* 練習：型を見分ける→答え */
+const T=['型A：そのまま','型B：違う1次','型C：重なる','型D：2次（平方完成）'];
+const IQ=[
+ ['24 / s⁵',0,'24＝4! なので t⁴。','y＝t⁴'],
+ ['3 / (s² ＋ 9)',0,'ω＝3 の sin。','y＝sin 3t'],
+ ['1 / (s(s ＋ 4))',1,'s を隠して s＝0：1/4。(s＋4) を隠して s＝−4：1/(−4)。','y＝(1 − e<sup>−4t</sup>)/4'],
+ ['(s ＋ 7) / ((s ＋ 1)(s ＋ 3))',1,'(s＋1) を隠して s＝−1：6/2＝3。(s＋3) を隠して s＝−3：4/(−2)＝−2。','y＝3e<sup>−t</sup> − 2e<sup>−3t</sup>'],
+ ['(2s ＋ 1) / (s ＋ 2)²',2,'2s＋1＝2(s＋2) − 3。だから 2/(s＋2) − 3/(s＋2)²。','y＝e<sup>−2t</sup>(2 − 3t)'],
+ ['1 / (s² ＋ 4s ＋ 13)',3,'(s＋2)²＋9。(1/3)·3/((s＋2)²＋9)。','y＝(1/3) e<sup>−2t</sup> sin 3t'],
+ ['s / (s² ＋ 6s ＋ 25)',3,'(s＋3)²＋16。分子 s＝(s＋3) − 3 ＝ (s＋3) − (3/4)·4。','y＝e<sup>−3t</sup>(cos 4t − (3/4) sin 4t)'],
+ ['(s² ＋ 1) / (s²(s − 1))',1,'s² は重なるので a/s ＋ b/s² ＋ c/(s−1)。c＝2、b＝−1、a＝−1（プリントの (4)）。B と C の混ざった型。','y＝−1 − t ＋ 2e<sup>t</sup>'],
+];
+$('#ilq').innerHTML=IQ.map(([q],i)=>`<div class="prob" data-i="${i}"><p class="ttl">問${i+1}　<span class="m" style="font-size:18px;color:var(--red)">L<sup>−1</sup>[ ${q} ]</span></p><p style="margin:0 0 6px;font-size:13px;font-weight:700">どの型？</p><div class="chips">${T.map((t,k)=>`<button data-k="${k}">${t}</button>`).join('')}</div><div class="ans" hidden></div></div>`).join('');
+document.querySelectorAll('#ilq .prob').forEach(box=>{ const [q,a,w,ans]=IQ[+box.dataset.i];
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(+x.dataset.k===a) x.classList.add('on'); }); const an=box.querySelector('.ans'); an.innerHTML=(k===a?'<b>当たり。</b>':`<b>${T[a]} です。</b>`)+w+`<br><b style="font-family:var(--math);font-size:17px;color:var(--red)">${ans}</b>`; an.hidden=false; }); });
+});
+</script>
 
 <!-- 7 -->
 <section class="ch" id="c7"><h2><span>7</span>極で、揺れ方がわかる</h2>
