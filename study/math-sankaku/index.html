@@ -1,0 +1,256 @@
+<title>三角関数ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* レイアウト：勉強ラボシリーズのリソグラフ調。1カラムの章立て、各章に「謎 → 触る → 導く」 */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;--gold:#C8A02A;
+ --disp:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;--body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;--math:"Times New Roman",Times,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 60px}
+header.top{border-bottom:3px solid var(--navy);padding-block:14px 10px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.logo{font-family:var(--disp);font-size:20px;color:var(--navy);letter-spacing:1px}.logo b{color:var(--red);font-weight:400}
+.series{font-size:12px;color:var(--muted)}
+.hero{padding-block:28px 10px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(26px,6vw,40px);line-height:1.3;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:62ch;margin:0}
+.road{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none;font-size:12px}
+.road li{border:1.5px solid var(--navy);padding:2px 10px;background:var(--sheet)}
+.road li.on{background:var(--navy);color:#fff}.road li.soon{border-style:dashed;color:var(--muted);border-color:var(--muted)}
+nav.toc{margin:22px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+nav.toc a{display:block;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);text-decoration:none;font-weight:700;padding:6px 10px;font-size:13px}
+nav.toc a span{color:var(--red);font-family:var(--disp);font-weight:400;margin-right:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--soft)}
+section.ch{margin-top:46px;scroll-margin-top:12px}
+section.ch>h2{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--navy);margin:0 0 8px;line-height:1.4;text-wrap:balance}
+section.ch>h2 span{color:var(--red);margin-right:10px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 6px}
+p{margin:8px 0}
+.mm,.m{font-family:var(--math);font-style:italic;font-weight:700;white-space:nowrap}
+.eq{display:block;text-align:center;font-family:var(--math);font-style:italic;font-weight:700;font-size:20px;color:var(--red);margin:12px 0;white-space:normal;overflow-x:auto}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span:last-child{padding:0 .2em}
+.int{font-size:1.4em;vertical-align:-.25em;font-style:normal;font-weight:400}
+sup,sub{font-size:.7em}
+.nazo{background:var(--sheet);border:3px solid var(--red);padding:14px 16px;margin:16px 0}
+.nazo b.k{display:block;font-family:var(--disp);font-weight:400;color:var(--red);font-size:14px;letter-spacing:2px}
+.nazo .q{font-weight:700;margin:4px 0 10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button,.btn{font:inherit;font-weight:700;text-align:left;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 12px;cursor:pointer;min-height:44px}
+.opts button:hover,.opts button:focus-visible,.btn:hover,.btn:focus-visible{background:var(--soft);outline:none}
+.opts button.ok{background:var(--navy);color:#fff}.opts button.ng{border-color:var(--red);color:var(--red);background:#fbeaea}
+.opts button:disabled{cursor:default}
+.ans{border-left:4px solid var(--blue);background:var(--soft);padding:8px 12px;margin-top:10px}
+.lab{background:var(--sheet);border:2px solid var(--navy);padding:12px;margin:14px 0}
+.lab h4{margin:0 0 4px;font-size:14px;color:var(--red);letter-spacing:1px}
+.lab svg{width:100%;height:auto;display:block;background:var(--sheet);touch-action:none}
+.ctl{display:grid;gap:8px;margin-top:8px}
+.ctl label{display:grid;grid-template-columns:auto 1fr 64px;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.ctl input[type=range]{width:100%;accent-color:var(--red)}
+.ctl output{font-family:var(--math);font-weight:700;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:4px 10px;cursor:pointer;min-height:36px}
+.chips button.on{background:var(--navy);color:#fff}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
+.read div{border:1.5px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted)}
+.read b{display:block;font-family:var(--math);font-size:20px;color:var(--navy)}
+.read .hi b{color:var(--red)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;background:var(--sheet);font-size:14px}
+th,td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:13px}
+td.f{font-family:var(--math);font-style:italic;font-weight:700;font-size:17px;white-space:nowrap}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--blue);font-weight:700;font-size:13px}
+details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps>li{counter-increment:st;position:relative;padding:10px 0 10px 40px;border-bottom:1.5px solid var(--line)}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.steps>li.q::before{content:"?";background:var(--red)}
+.steps>li[hidden]{display:none}
+.prob{background:var(--sheet);border:2px solid var(--navy);padding:12px 14px;margin:14px 0}
+.prob .ttl{font-weight:900;color:var(--navy)}
+.prob .eq{font-size:18px}
+.use{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.use div{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px;min-width:0}
+.use b{display:block;color:var(--red);font-size:15px}
+.use p{font-size:13px;line-height:1.7;margin:4px 0 0}
+.key{display:block;background:#fbeaea;border-left:5px solid var(--red);padding:8px 12px;font-weight:900;color:var(--navy);margin:14px 0}
+.note{font-size:12px;color:var(--muted)}
+a{color:var(--blue)}
+footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
+
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
+<div class="wrap">
+<header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
+
+<div class="hero">
+ <h1>斜めのものを、<em>縦と横</em>に分ける道具。</h1>
+ <p class="lead">三角関数は、角度と長さを結びつけます。坂の上の力を「すべらせる力」と「押しつける力」に分ける、届かない高さを測る、波や揺れを式にする。土木の計算で、いちばんよく出てくる数学です。</p>
+ <ul class="road" aria-label="数学ラボの章"><li class="on">三角関数</li><li><a href="../math-kika/">幾何学</a></li><li><a href="../math-bibun/">微分積分はいつ使う？</a></li><li><a href="../math-bihou/">微分方程式</a></li><li><a href="../math/">ラプラス変換と積分方程式</a></li></ul>
+ <nav class="toc" aria-label="目次">
+  <a href="#c1"><span>1</span>謎：勾配 10% の坂は何度？</a>
+  <a href="#c2"><span>2</span>単位円で、sin・cos・tan を見る</a>
+  <a href="#c3"><span>3</span>力を分ける：斜面の上の石</a>
+  <a href="#c4"><span>4</span>届かない高さを測る</a>
+  <a href="#c5"><span>5</span>公式と、その導き方</a>
+  <a href="#c6"><span>6</span>波と揺れ：sin が時間で動く</a>
+ </nav>
+</div>
+
+<section class="ch" id="c1"><h2><span>1</span>謎：勾配 10% の坂は、何度？</h2>
+ <div class="nazo" data-nazo="1"><b class="k">謎</b>
+  <p class="q">「勾配 10%」の道路標識がある。100 m 進むと 10 m 上がる坂だ。この坂の角度は、何度くらい？</p>
+  <div class="opts"><button data-a="0">10°</button><button data-a="1">約 5.7°</button><button data-a="2">約 36°（360° の 10%）</button></div>
+  <div class="ans" data-ok="1" hidden>約 5.7° です。勾配は「高さ ÷ 水平距離」＝ <span class="m">tan θ</span>。<span class="m">tan θ＝0.1</span> となる角は <span class="m">θ≈5.71°</span>。角度が小さいときは <span class="m">tan θ≈θ（ラジアン）</span> なので、0.1 rad ≈ 5.7° です。10% でもかなり急に感じる坂で、自動車の道路は普通 5〜8% までです。</div>
+ </div>
+</section>
+
+<section class="ch" id="c2"><h2><span>2</span>単位円で、sin・cos・tan を見る</h2>
+ <p>半径 1 の円の上を、点が角度 θ だけ回ったとき、その点の<b>横の位置が cos θ</b>、<b>縦の位置が sin θ</b>、そして<b>傾き（縦 ÷ 横）が tan θ</b> です。直角三角形の「辺の比」は、この特別な場合です。点をドラッグして回してみましょう。右側には、sin θ の高さを角度ごとに並べた波が描かれます。</p>
+ <div class="lab"><h4>触って確かめる：点を回す</h4>
+  <svg id="uc" viewBox="0 0 340 200" role="img" aria-label="単位円と、sinの波"></svg>
+  <div class="read"><div>角度 θ<b id="th">—</b></div><div>cos θ（横）<b id="co">—</b></div><div class="hi">sin θ（縦）<b id="si">—</b></div><div>tan θ（傾き）<b id="ta">—</b></div></div>
+  <p class="note">度とラジアン：半径 1 の円で、角 θ が切り取る弧の長さが θ（ラジアン）。180° ＝ π rad。微分で <span class="m">(sin θ)′＝cos θ</span> ときれいに書けるのは、ラジアンのときだけです。</p>
+ </div>
+</section>
+
+<section class="ch" id="c3"><h2><span>3</span>力を分ける：斜面の上の石</h2>
+ <p>斜面の上の重さ <span class="m">W</span> の石には、まっすぐ下向きに重力がかかります。これを斜面に<b>沿う向き</b>と<b>垂直な向き</b>に分けると、すべらせようとする力 <span class="m">W sin θ</span> と、斜面に押しつける力 <span class="m">W cos θ</span> になります。押しつける力が大きいほど、摩擦で止める力 <span class="m">μ W cos θ</span> も大きくなります。</p>
+ <div class="lab"><h4>触って確かめる：斜面の角度を上げる</h4>
+  <svg id="sl" viewBox="0 0 340 230" role="img" aria-label="斜面の上の石と、力の分解"></svg>
+  <div class="ctl"><label for="ang">斜面の角度 θ <input id="ang" type="range" min="0" max="60" step="0.5" value="20"><output id="ango"></output></label><label for="mu">摩擦係数 μ <input id="mu" type="range" min="0.2" max="1" step="0.01" value="0.6"><output id="muo"></output></label></div>
+  <div class="read"><div>すべらせる力 W sin θ<b id="fs">—</b></div><div>止める力の最大 μW cos θ<b id="fr">—</b></div><div class="hi">判定<b id="jd">—</b></div></div>
+  <p class="note">すべり出すのは <span class="m">W sin θ ＞ μ W cos θ</span>、つまり <span class="m">tan θ ＞ μ</span> のとき。W は消えるので、重い石も軽い石も同じ角度ですべり出す。砂を積んだ山の斜面の角度（安息角）は、これで決まります。斜面の安定を考える地盤力学の出発点です。</p>
+ </div>
+ <div class="nazo" data-nazo="2"><b class="k">謎</b>
+  <p class="q">同じ斜面に、重さ 1 kg の石と 100 kg の石を置いて、だんだん傾けていく。先にすべり出すのは？</p>
+  <div class="opts"><button data-a="0">重い 100 kg の石</button><button data-a="1">軽い 1 kg の石</button><button data-a="2">同時（同じ材料なら）</button></div>
+  <div class="ans" data-ok="2" hidden>同時です。すべらせる力も止める力も、どちらも W に比例するので、比べると W が消えて <span class="m">tan θ ＞ μ</span> だけが残ります。重さではなく、角度と材料（μ）で決まります。</div>
+ </div>
+</section>
+
+<section class="ch" id="c4"><h2><span>4</span>届かない高さを測る</h2>
+ <p>橋脚や鉄塔の高さは、登らなくても測れます。根元から水平に <span class="m">d</span> 離れた所から、てっぺんを見上げる角度 <span class="m">θ</span> を測れば、高さは <span class="m">h＝d tan θ</span>（＋目の高さ）。これが測量の基本です。</p>
+ <div class="lab"><h4>触って確かめる：距離と見上げる角度</h4>
+  <svg id="sv4" viewBox="0 0 340 200" role="img" aria-label="見上げ角で高さを測る図"></svg>
+  <div class="ctl"><label for="dd">水平距離 d <input id="dd" type="range" min="10" max="80" step="1" value="40"><output id="ddo"></output></label><label for="aa">見上げる角度 θ <input id="aa" type="range" min="5" max="70" step="0.5" value="35"><output id="aao"></output></label></div>
+  <div class="read"><div>tan θ<b id="t4">—</b></div><div class="hi">高さ h ＝ d tan θ ＋ 1.5<b id="h4">—</b></div></div>
+  <p class="note">目の高さ 1.5 m を足しています。角度を 1° まちがえると高さがどれだけずれるか、角度が大きいときと小さいときで比べてみよう（大きい角ほど誤差が大きい）。</p>
+ </div>
+</section>
+
+<section class="ch" id="c5"><h2><span>5</span>公式と、その導き方</h2>
+ <div class="tbl"><table>
+  <thead><tr><th>公式</th><th>土木で使う場面</th><th>導き方</th></tr></thead>
+  <tbody>
+   <tr><td class="f">sin²θ ＋ cos²θ ＝ 1</td><td>力の大きさ ＝ √(横² ＋ 縦²)</td><td><details><summary>導き方</summary><div class="why">単位円の点 (cos θ, sin θ) は原点から距離 1。三平方の定理そのもの。</div></details></td></tr>
+   <tr><td class="f">sin(α＋β) ＝ sin α cos β ＋ cos α sin β</td><td>モールの応力円、向きを変えた応力</td><td><details><summary>導き方</summary><div class="why">角 α の直角三角形の上に、角 β の直角三角形を積む。斜辺 1 のとき、てっぺんの高さを2つの三角形の縦の辺の和として書くと、この式になる。cos も同じように横の辺で。</div></details></td></tr>
+   <tr><td class="f">sin 2θ ＝ 2 sin θ cos θ</td><td>斜めの面の応力 σ sin2θ/2、放物線の飛距離</td><td><details><summary>導き方</summary><div class="why">加法定理で α＝β＝θ とおく。</div></details></td></tr>
+   <tr><td class="f">c² ＝ a² ＋ b² − 2ab cos C</td><td>測量（2辺とはさむ角から距離）、トラスの部材長</td><td><details><summary>導き方（余弦定理）</summary><div class="why">頂点 C を原点、辺 b を横軸にとると、A＝(b, 0)、B＝(a cos C, a sin C)。AB の長さを三平方で計算すると、sin²＋cos²＝1 を使ってこの式になる。C＝90° なら三平方の定理。</div></details></td></tr>
+   <tr><td class="f">a / sin A ＝ b / sin B ＝ c / sin C</td><td>三角測量（1辺と2角から、他の辺）</td><td><details><summary>導き方（正弦定理）</summary><div class="why">頂点 C から辺 c に垂線を下ろすと、その長さは <span class="m">b sin A</span> とも <span class="m">a sin B</span> とも書ける。等しいとおくと <span class="m">a/sin A＝b/sin B</span>。</div></details></td></tr>
+   <tr><td class="f">tan θ ≈ sin θ ≈ θ（θ が小さいとき）</td><td>たわみ角、勾配、座屈の計算</td><td><details><summary>導き方</summary><div class="why">単位円で θ が小さいと、弧（θ）・縦の線（sin θ）・接線（tan θ）の長さがほぼ同じ。構造力学で「たわみ角 ＝ たわみの傾き」とおけるのはこのため。</div></details></td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="ch" id="c6"><h2><span>6</span>波と揺れ：sin が時間で動く</h2>
+ <p>単位円の点を一定の速さで回し続けると、縦の位置は時間とともに sin の形で上下します。海の波も、建物の揺れも、交流の電気も、この形です。<span class="m">y＝A sin(2π(t/T − x/λ))</span>。<span class="m">A</span> は高さ（振幅）、<span class="m">T</span> は1回の時間（周期）、<span class="m">λ</span> は波1つの長さ（波長）です。</p>
+ <div class="lab"><h4>触って確かめる：波を動かす</h4>
+  <svg id="wv" viewBox="0 0 340 170" role="img" aria-label="進む波"></svg>
+  <div class="ctl"><label for="wa">振幅 A <input id="wa" type="range" min="0.2" max="1.5" step="0.05" value="1"><output id="wao"></output></label><label for="wl">波長 λ <input id="wl" type="range" min="20" max="200" step="5" value="100"><output id="wlo"></output></label><label for="wt">周期 T <input id="wt" type="range" min="4" max="20" step="0.5" value="10"><output id="wto"></output></label></div>
+  <div class="read"><div>波の速さ c ＝ λ / T<b id="wc">—</b></div></div>
+  <button class="btn" id="wp" style="margin-top:8px">止める</button>
+  <p class="note">波長 100 m・周期 10 秒の波は、秒速 10 m で進む。うねりの周期が長いほど速く遠くまで届く（<a href="../suiri-riron/#d-fluid-7">水理の理論ラボ：波速</a>）。</p>
+ </div>
+</section>
+
+<footer>数学ラボ（土木の勉強ラボシリーズ）。ほかのラボ：<a href="../kozo/">構造力学ラボ</a>・<a href="../jiban/">地盤力学ラボ</a>・<a href="../suiri/">水理学ラボ</a>・<a href="../sogi/">そぎ落としミッション</a></footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ const {C,tx,ln,pl,pg,arr,nf,$,drag}=MX; const D=Math.PI/180;
+/* 単位円 */
+(()=>{ const sv=$('#uc'); let th=40*D; const cx=80, cy=100, R=70;
+ const draw=()=>{ const c=Math.cos(th), s=Math.sin(th); let g='';
+  g+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${C.mid}" stroke-width="2"/>`+ln(cx-R-6,cy,cx+R+6,cy,C.navy,1)+ln(cx,cy-R-6,cx,cy+R+6,C.navy,1);
+  const px=cx+R*c, py=cy-R*s;
+  g+=ln(cx,cy,px,py,C.navy,2)+ln(px,cy,px,py,C.red,3)+ln(cx,cy,px,cy,C.blue,3);
+  if(Math.abs(c)>0.08){ const ty=cy-R*Math.max(-2.2,Math.min(2.2,s/c)); g+=ln(cx+R,cy,cx+R,ty,C.gold,2.5)+ln(cx,cy,cx+R,ty,C.gold,1,'3 3'); }
+  const a0=0, a1=th; g+=`<path d="M${cx+18},${cy} A18,18 0 ${th>Math.PI?1:0} 0 ${(cx+18*Math.cos(a1)).toFixed(1)},${(cy-18*Math.sin(a1)).toFixed(1)}" fill="none" stroke="${C.navy}" stroke-width="1.5"/>`+tx(cx+26,cy-6,'θ',C.navy,11,'start',700);
+  g+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="8" fill="${C.red}" stroke="#fff" stroke-width="2" style="cursor:grab"/>`;
+  // wave
+  const X=a=>170+160*a/(2*Math.PI); g+=ln(170,cy,332,cy,C.navy,1)+ln(170,cy-R-4,170,cy+R+4,C.navy,1);
+  const w=[]; for(let i=0;i<=120;i++){ const a=2*Math.PI*i/120; w.push([X(a),cy-R*Math.sin(a)]); } g+=pl(w,C.line,2);
+  const wd=[]; for(let i=0;i<=120;i++){ const a=th*i/120; wd.push([X(a),cy-R*Math.sin(a)]); } g+=pl(wd,C.red,2.5);
+  g+=ln(px,py,X(th),py,C.red,1,'3 3')+`<circle cx="${X(th).toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="${C.red}"/>`;
+  [[Math.PI/2,'90°'],[Math.PI,'180°'],[1.5*Math.PI,'270°'],[2*Math.PI,'360°']].forEach(([a,l])=>g+=tx(X(a),cy+R+16,l,C.muted,9));
+  g+=tx(14,16,'━ cos',C.blue,10,'start',700)+tx(56,16,'━ sin',C.red,10,'start',700)+tx(96,16,'━ tan',C.gold,10,'start',700);
+  sv.innerHTML=g; const deg=th/D; $('#th').textContent=deg.toFixed(0)+'°'; $('#co').textContent=c.toFixed(3); $('#si').textContent=s.toFixed(3); $('#ta').textContent=Math.abs(c)<1e-3?'∞':(s/c).toFixed(3); };
+ drag(sv,340,200,(x,y)=>{ if(x>165) { th=Math.max(0,Math.min(2*Math.PI,(x-170)/160*2*Math.PI)); } else { let a=Math.atan2(cy-y,x-cx); if(a<0) a+=2*Math.PI; th=a; } draw(); });
+ draw(); })();
+
+/* 斜面 */
+(()=>{ const sv=$('#sl'), as=$('#ang'), ms=$('#mu');
+ const draw=()=>{ const t=+as.value*D, mu=+ms.value; $('#ango').textContent=(+as.value).toFixed(1)+'°'; $('#muo').textContent=mu.toFixed(2);
+  const ox=30, oy=200, L=280; const ex=ox+L*Math.cos(t), ey=oy-L*Math.sin(t);
+  let g=pg([[ox,oy],[ex,ey],[ex,oy]],'#E9E1CF',1,C.navy,2)+`<path d="M${ox+40},${oy} A40,40 0 0 0 ${(ox+40*Math.cos(t)).toFixed(1)},${(oy-40*Math.sin(t)).toFixed(1)}" fill="none" stroke="${C.navy}" stroke-width="1.5"/>`+tx(ox+48,oy-6,'θ',C.navy,12,'start',700);
+  const bx=ox+0.55*L*Math.cos(t), by=oy-0.55*L*Math.sin(t); const nx=-Math.sin(t), ny=-Math.cos(t);
+  const s=22; const cxb=bx+nx*s*0.5, cyb=by+ny*s*0.5;
+  const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>[cxb+u*s/2*Math.cos(t)+v*s/2*nx, cyb-u*s/2*Math.sin(t)+v*s/2*ny]);
+  const slide=Math.tan(t)>mu;
+  g+=pg(corners,slide?C.red:'#8a8f9c',1,C.navy,1.5);
+  const F=70; g+=arr(cxb,cyb,cxb,cyb+F,C.navy)+tx(cxb+6,cyb+F+12,'W',C.navy,12,'start',700);
+  const fs=F*Math.sin(t), fn=F*Math.cos(t);
+  g+=arr(cxb,cyb,cxb-fs*Math.cos(t),cyb+fs*Math.sin(t),C.red)+arr(cxb,cyb,cxb-fn*nx,cyb-fn*ny,C.blue);
+  g+=ln(cxb-fs*Math.cos(t),cyb+fs*Math.sin(t),cxb,cyb+F,C.muted,1,'3 3')+ln(cxb-fn*nx,cyb-fn*ny,cxb,cyb+F,C.muted,1,'3 3');
+  g+=tx(14,18,'━ すべらせる力 W sinθ',C.red,10,'start',700)+tx(14,32,'━ 押しつける力 W cosθ',C.blue,10,'start',700);
+  sv.innerHTML=g; $('#fs').textContent=(Math.sin(t)).toFixed(2)+' W'; $('#fr').textContent=(mu*Math.cos(t)).toFixed(2)+' W'; $('#jd').textContent=slide?'すべる':'止まる'; $('#jd').style.color=slide?C.red:C.navy; };
+ as.oninput=draw; ms.oninput=draw; draw(); })();
+
+/* 高さを測る */
+(()=>{ const sv=$('#sv4'), ds=$('#dd'), as=$('#aa');
+ const draw=()=>{ const d=+ds.value, a=+as.value*D; const h=d*Math.tan(a)+1.5; $('#ddo').textContent=d+' m'; $('#aao').textContent=(+as.value).toFixed(1)+'°';
+  const sc=Math.min(260/d, 160/Math.max(h,1)); const gx=300, gy=185, px=gx-d*sc, py=gy-1.5*sc;
+  let g=ln(10,gy,334,gy,C.navy,2)+`<rect x="${gx-6}" y="${(gy-h*sc).toFixed(1)}" width="12" height="${(h*sc).toFixed(1)}" fill="${C.mid}" stroke="${C.navy}"/>`;
+  g+=ln(px,gy,px,py,C.navy,3)+`<circle cx="${px}" cy="${(py-4).toFixed(1)}" r="4" fill="${C.navy}"/>`;
+  g+=ln(px,py,gx,py,C.blue,1.5,'4 3')+ln(px,py,gx,gy-h*sc,C.red,2);
+  g+=`<path d="M${px+30},${py} A30,30 0 0 0 ${(px+30*Math.cos(a)).toFixed(1)},${(py-30*Math.sin(a)).toFixed(1)}" fill="none" stroke="${C.red}" stroke-width="1.5"/>`+tx(px+36,py-4,'θ',C.red,12,'start',700);
+  g+=tx((px+gx)/2,gy+13,'d ＝ '+d+' m',C.blue,11,'middle',700)+tx(gx-10,(gy+gy-h*sc)/2,'h ＝ '+h.toFixed(1)+' m',C.red,11,'end',700);
+  sv.innerHTML=g; $('#t4').textContent=Math.tan(a).toFixed(3); $('#h4').textContent=h.toFixed(1)+' m'; };
+ ds.oninput=draw; as.oninput=draw; draw(); })();
+
+/* 波 */
+(()=>{ const sv=$('#wv'); let run=!window.matchMedia('(prefers-reduced-motion: reduce)').matches, t0=performance.now(), tt=0;
+ const draw=()=>{ const A=+$('#wa').value, L=+$('#wl').value, T=+$('#wt').value; $('#wao').textContent=A.toFixed(2)+' m'; $('#wlo').textContent=L+' m'; $('#wto').textContent=T+' 秒'; $('#wc').textContent=(L/T).toFixed(1)+' m/秒';
+  const X=x=>20+300*x/300, Y=v=>85-40*v; let g=ln(20,85,320,85,C.navy,1);
+  const p=[]; for(let i=0;i<=300;i++){ const x=i; p.push([X(x),Y(A*Math.sin(2*Math.PI*(tt/T-x/L)))]); }
+  g+=pg([[X(0),165],...p,[X(300),165]],C.mid,0.5)+pl(p,C.blue,2.5);
+  const bx=150; g+=`<circle cx="${X(bx)}" cy="${Y(A*Math.sin(2*Math.PI*(tt/T-bx/L))).toFixed(1)}" r="6" fill="${C.red}"/>`+tx(X(bx)+10,24,'浮き（その場で上下するだけ）',C.red,10,'start',700);
+  g+=ln(X(20),150,X(20+L),150,C.navy,1.5)+tx(X(20+L/2),146,'λ',C.navy,12,'middle',700)+tx(316,163,'0〜300 m',C.muted,9,'end');
+  sv.innerHTML=g; };
+ const loop=now=>{ if(run){ tt+=(now-t0)/1000; } t0=now; draw(); requestAnimationFrame(loop); };
+ ['wa','wl','wt'].forEach(k=>$('#'+k).oninput=draw);
+ $('#wp').textContent=run?'止める':'動かす'; $('#wp').onclick=()=>{ run=!run; $('#wp').textContent=run?'止める':'動かす'; };
+ requestAnimationFrame(loop); })();
+});
+</script>

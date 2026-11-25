@@ -1,0 +1,465 @@
+<title>ラプラス変換ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* レイアウト：勉強ラボシリーズのリソグラフ調。1カラムの章立て、各章に「謎 → 触る → 導く」 */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;--gold:#C8A02A;
+ --disp:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;--body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;--math:"Times New Roman",Times,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 60px}
+header.top{border-bottom:3px solid var(--navy);padding-block:14px 10px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.logo{font-family:var(--disp);font-size:20px;color:var(--navy);letter-spacing:1px}.logo b{color:var(--red);font-weight:400}
+.series{font-size:12px;color:var(--muted)}
+.hero{padding-block:28px 10px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(26px,6vw,40px);line-height:1.3;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:62ch;margin:0}
+.road{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none;font-size:12px}
+.road li{border:1.5px solid var(--navy);padding:2px 10px;background:var(--sheet)}
+.road li.on{background:var(--navy);color:#fff}.road li.soon{border-style:dashed;color:var(--muted);border-color:var(--muted)}
+nav.toc{margin:22px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+nav.toc a{display:block;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);text-decoration:none;font-weight:700;padding:6px 10px;font-size:13px}
+nav.toc a span{color:var(--red);font-family:var(--disp);font-weight:400;margin-right:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--soft)}
+section.ch{margin-top:46px;scroll-margin-top:12px}
+section.ch>h2{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--navy);margin:0 0 8px;line-height:1.4;text-wrap:balance}
+section.ch>h2 span{color:var(--red);margin-right:10px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 6px}
+p{margin:8px 0}
+.mm,.m{font-family:var(--math);font-style:italic;font-weight:700;white-space:nowrap}
+.eq{display:block;text-align:center;font-family:var(--math);font-style:italic;font-weight:700;font-size:20px;color:var(--red);margin:12px 0;white-space:normal;overflow-x:auto}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span:last-child{padding:0 .2em}
+.int{font-size:1.4em;vertical-align:-.25em;font-style:normal;font-weight:400}
+sup,sub{font-size:.7em}
+.nazo{background:var(--sheet);border:3px solid var(--red);padding:14px 16px;margin:16px 0}
+.nazo b.k{display:block;font-family:var(--disp);font-weight:400;color:var(--red);font-size:14px;letter-spacing:2px}
+.nazo .q{font-weight:700;margin:4px 0 10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button,.btn{font:inherit;font-weight:700;text-align:left;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 12px;cursor:pointer;min-height:44px}
+.opts button:hover,.opts button:focus-visible,.btn:hover,.btn:focus-visible{background:var(--soft);outline:none}
+.opts button.ok{background:var(--navy);color:#fff}.opts button.ng{border-color:var(--red);color:var(--red);background:#fbeaea}
+.opts button:disabled{cursor:default}
+.ans{border-left:4px solid var(--blue);background:var(--soft);padding:8px 12px;margin-top:10px}
+.lab{background:var(--sheet);border:2px solid var(--navy);padding:12px;margin:14px 0}
+.lab h4{margin:0 0 4px;font-size:14px;color:var(--red);letter-spacing:1px}
+.lab svg{width:100%;height:auto;display:block;background:var(--sheet);touch-action:none}
+.ctl{display:grid;gap:8px;margin-top:8px}
+.ctl label{display:grid;grid-template-columns:auto 1fr 64px;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.ctl input[type=range]{width:100%;accent-color:var(--red)}
+.ctl output{font-family:var(--math);font-weight:700;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:4px 10px;cursor:pointer;min-height:36px}
+.chips button.on{background:var(--navy);color:#fff}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
+.read div{border:1.5px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted)}
+.read b{display:block;font-family:var(--math);font-size:20px;color:var(--navy)}
+.read .hi b{color:var(--red)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;background:var(--sheet);font-size:14px}
+th,td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:13px}
+td.f{font-family:var(--math);font-style:italic;font-weight:700;font-size:17px;white-space:nowrap}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--blue);font-weight:700;font-size:13px}
+details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps>li{counter-increment:st;position:relative;padding:10px 0 10px 40px;border-bottom:1.5px solid var(--line)}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.steps>li.q::before{content:"?";background:var(--red)}
+.steps>li[hidden]{display:none}
+.prob{background:var(--sheet);border:2px solid var(--navy);padding:12px 14px;margin:14px 0}
+.prob .ttl{font-weight:900;color:var(--navy)}
+.prob .eq{font-size:18px}
+.use{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.use div{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px;min-width:0}
+.use b{display:block;color:var(--red);font-size:15px}
+.use p{font-size:13px;line-height:1.7;margin:4px 0 0}
+.key{display:block;background:#fbeaea;border-left:5px solid var(--red);padding:8px 12px;font-weight:900;color:var(--navy);margin:14px 0}
+.note{font-size:12px;color:var(--muted)}
+a{color:var(--blue)}
+footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
+
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
+<div class="wrap">
+<header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
+
+<div class="hero">
+ <h1>微分も積分も、<em>かけ算と割り算</em>に変える道具。</h1>
+ <p class="lead">ラプラス変換は、時間 <span class="m">t</span> の世界の式を、<span class="m">s</span> の世界へ写す変換です。向こうの世界では、微分は「<span class="m">s</span> をかける」、積分は「<span class="m">s</span> で割る」、たたみこみ積分は「ただのかけ算」になります。だから、ばねの揺れの微分方程式も、積分方程式も、分数の計算で解けます。</p>
+ <ul class="road" aria-label="数学ラボの章"><li><a href="../math-sankaku/">三角関数</a></li><li><a href="../math-kika/">幾何学</a></li><li><a href="../math-bibun/">微分積分はいつ使う？</a></li><li><a href="../math-bihou/">微分方程式</a></li><li class="on">ラプラス変換と積分方程式</li></ul>
+ <nav class="toc" aria-label="目次">
+  <a href="#c1"><span>1</span>謎：微分方程式を割り算で？</a>
+  <a href="#c2"><span>2</span>定義を触って確かめる</a>
+  <a href="#c3"><span>3</span>変換表と、その導き方</a>
+  <a href="#c4"><span>4</span>たたみこみ（雨と川の流量）</a>
+  <a href="#c5"><span>5</span>積分方程式を解く</a>
+  <a href="#c6"><span>6</span>逆ラプラス変換（なぜ・どう戻す）</a>
+  <a href="#c7"><span>7</span>極で揺れ方がわかる</a>
+  <a href="#c8"><span>8</span>土木での使い道</a>
+ </nav>
+</div>
+
+<!-- 1 -->
+<section class="ch" id="c1"><h2><span>1</span>謎：微分方程式を、割り算で解く？</h2>
+ <div class="nazo" data-nazo="1"><b class="k">謎</b>
+  <p class="q">建物の揺れの式 <span class="m">m x″＋c x′＋k x＝F</span> には、微分（<span class="m">x′</span>、<span class="m">x″</span>）が入っています。これを、微分も積分も一度も使わずに、分数の計算だけで解く方法はある？</p>
+  <div class="opts"><button data-a="0">ない。微分方程式は微分積分で解くしかない</button><button data-a="1">ある。式を別の世界に写すと、微分が「かけ算」になる</button><button data-a="2">近似（だいたいの値）なら出せるが、正確には無理</button></div>
+  <div class="ans" data-ok="1" hidden>正解は「ある」。それがラプラス変換です。時間の関数 <span class="m">f(t)</span> に <span class="m">e<sup>−st</sup></span> をかけて 0 から ∞ まで積分すると、<span class="m">s</span> の関数 <span class="m">F(s)</span> になります。このとき「微分 → <span class="m">s</span> をかける」に変わるので、揺れの式は <span class="m">(ms²＋cs＋k)X(s)＝F(s)</span> という<b>ただの1次方程式</b>になります。あとは割り算して、表を見ながら時間の世界へ戻すだけです。</div>
+ </div>
+ <p>流れはいつも同じ3段です。</p>
+ <ol class="steps">
+  <li><b>写す</b>：両辺をラプラス変換して、<span class="m">t</span> の式を <span class="m">s</span> の式にする（表を使う）。</li>
+  <li><b>解く</b>：<span class="m">s</span> の世界では微分も積分もない。分数の計算で <span class="m">Y(s)＝…</span> を出す。</li>
+  <li><b>戻す</b>：部分分数に分けて、表を逆に読んで <span class="m">y(t)</span> に戻す（逆ラプラス変換）。</li>
+ </ol>
+ <span class="key">難しい計算は「写す」「戻す」の表が引き受ける。真ん中は分数の計算だけ。</span>
+</section>
+
+<!-- 2 -->
+<section class="ch" id="c2"><h2><span>2</span>定義を、触って確かめる</h2>
+ <p>ラプラス変換の定義はこれだけです。</p>
+ <span class="eq">F(s)＝<span class="int">∫</span><sub>0</sub><sup>∞</sup> f(t) e<sup>−st</sup> dt</span>
+ <p><span class="m">e<sup>−st</sup></span> は、時間がたつほど小さくなる「重み」です。<span class="m">s</span> が大きいほど早く 0 になります。つまり <span class="m">F(s)</span> は、「<span class="m">f(t)</span> を、最初のほうを重く、後のほうを軽く見て足した面積」です。<span class="m">s</span> を動かすと、その面積がどう変わるかを見てみましょう。</p>
+ <div class="lab" id="lab1"><h4>触って確かめる：赤い面積が F(s)</h4>
+  <div class="chips" id="l1f" role="group" aria-label="関数を選ぶ"><button data-f="one" class="on">f＝1</button><button data-f="t">f＝t</button><button data-f="exp">f＝e<sup>−t</sup></button><button data-f="sin">f＝sin 2t</button></div>
+  <svg id="l1sv" viewBox="0 0 340 220" role="img" aria-label="f(t)、重み e^(−st)、その積の面積のグラフ"></svg>
+  <div class="ctl"><label for="l1s">s の値 <input id="l1s" type="range" min="0.3" max="3" step="0.05" value="1"><output id="l1so">1.00</output></label></div>
+  <div class="read"><div>赤い面積（数値で足した値）<b id="l1num">—</b></div><div class="hi">表の公式 <span id="l1form"></span><b id="l1fv">—</b></div></div>
+  <p class="note">面積は t＝0〜60 を細かく区切って足した値です。公式とほぼ同じになることを確かめてください。</p>
+ </div>
+ <div class="nazo" data-nazo="2"><b class="k">謎</b>
+  <p class="q"><span class="m">f(t)＝1</span>（ずっと一定）のとき、<span class="m">s</span> を 2 倍にすると、<span class="m">F(s)</span> はどうなる？ 上の図で確かめる前に予想しよう。</p>
+  <div class="opts"><button data-a="0">2倍になる</button><button data-a="1">半分になる</button><button data-a="2">変わらない</button></div>
+  <div class="ans" data-ok="1" hidden>半分です。<span class="m">F(s)＝1/s</span> なので、<span class="m">s</span> が2倍なら <span class="m">F</span> は半分。重みが2倍の速さで消えるので、効いている時間の長さが半分になり、面積も半分になります。</div>
+ </div>
+</section>
+
+<!-- 3 -->
+<section class="ch" id="c3"><h2><span>3</span>変換表と、その導き方</h2>
+ <p>表は覚えるものではありません。どれも定義の積分を1回するだけで出ます。「導き方」を開いて確かめてください。</p>
+ <div class="tbl"><table>
+  <thead><tr><th>t の世界 f(t)</th><th>s の世界 F(s)</th><th>導き方</th></tr></thead>
+  <tbody>
+  <tr><td class="f">1</td><td class="f"><span class="fr"><span>1</span><span>s</span></span></td><td><details><summary>導き方</summary><div class="why"><span class="m">∫<sub>0</sub><sup>∞</sup> e<sup>−st</sup> dt＝[−e<sup>−st</sup>/s]<sub>0</sub><sup>∞</sup>＝0−(−1/s)＝1/s</span>（<span class="m">s＞0</span> のとき <span class="m">e<sup>−st</sup>→0</span>）。</div></details></td></tr>
+  <tr><td class="f">t<sup>n</sup></td><td class="f"><span class="fr"><span>n!</span><span>s<sup>n＋1</sup></span></span></td><td><details><summary>導き方</summary><div class="why">部分積分で <span class="m">L[t<sup>n</sup>]＝(n/s)·L[t<sup>n−1</sup>]</span>。これを n 回くり返すと <span class="m">(n/s)((n−1)/s)…(1/s)·(1/s)＝n!/s<sup>n＋1</sup></span>。逆に読むと <span class="m">L<sup>−1</sup>[1/s<sup>n</sup>]＝t<sup>n−1</sup>/(n−1)!</span>。</div></details></td></tr>
+  <tr><td class="f">e<sup>at</sup></td><td class="f"><span class="fr"><span>1</span><span>s − a</span></span></td><td><details><summary>導き方</summary><div class="why"><span class="m">∫<sub>0</sub><sup>∞</sup> e<sup>at</sup>e<sup>−st</sup> dt＝∫<sub>0</sub><sup>∞</sup> e<sup>−(s−a)t</sup> dt</span>。1 の式の s を s−a に置きかえたものなので <span class="m">1/(s−a)</span>。</div></details></td></tr>
+  <tr><td class="f">sin ωt</td><td class="f"><span class="fr"><span>ω</span><span>s²＋ω²</span></span></td><td rowspan="2"><details><summary>導き方</summary><div class="why">オイラーの式 <span class="m">e<sup>iωt</sup>＝cos ωt＋i sin ωt</span> を使う。<span class="m">L[e<sup>iωt</sup>]＝1/(s−iω)＝(s＋iω)/(s²＋ω²)</span>。実部が cos、虚部が sin の変換。</div></details></td></tr>
+  <tr><td class="f">cos ωt</td><td class="f"><span class="fr"><span>s</span><span>s²＋ω²</span></span></td></tr>
+  <tr><td class="f">e<sup>at</sup> f(t)</td><td class="f">F(s − a)</td><td><details><summary>導き方（推移法則）</summary><div class="why">定義の中で <span class="m">e<sup>at</sup>e<sup>−st</sup>＝e<sup>−(s−a)t</sup></span>。s を s−a にずらすだけ。例：<span class="m">L[e<sup>−2t</sup> sin 3t]＝3/((s＋2)²＋9)</span>。</div></details></td></tr>
+  <tr><td class="f">f′(t)</td><td class="f">s F(s) − f(0)</td><td><details><summary>導き方（微分 → s をかける）</summary><div class="why">部分積分：<span class="m">∫<sub>0</sub><sup>∞</sup> f′e<sup>−st</sup>dt＝[f e<sup>−st</sup>]<sub>0</sub><sup>∞</sup>＋s∫<sub>0</sub><sup>∞</sup> f e<sup>−st</sup>dt＝−f(0)＋sF(s)</span>。2回微分なら <span class="m">s²F−s f(0)−f′(0)</span>。初期値が自動で入るのが便利な所。</div></details></td></tr>
+  <tr><td class="f"><span class="int">∫</span><sub>0</sub><sup>t</sup> f(τ) dτ</td><td class="f"><span class="fr"><span>F(s)</span><span>s</span></span></td><td><details><summary>導き方（積分 → s で割る）</summary><div class="why"><span class="m">g(t)＝∫<sub>0</sub><sup>t</sup> f dτ</span> とおくと <span class="m">g′＝f</span>、<span class="m">g(0)＝0</span>。微分の公式から <span class="m">sG(s)＝F(s)</span>、だから <span class="m">G＝F/s</span>。</div></details></td></tr>
+  <tr><td class="f">(f ∗ g)(t)＝<span class="int">∫</span><sub>0</sub><sup>t</sup> f(τ) g(t−τ) dτ</td><td class="f">F(s) G(s)</td><td><details><summary>導き方（たたみこみ → かけ算）</summary><div class="why">定義に入れると <span class="m">∫<sub>0</sub><sup>∞</sup>∫<sub>0</sub><sup>t</sup> f(τ)g(t−τ)dτ e<sup>−st</sup>dt</span>。積分の順番を入れかえ（τ を先に固定）、<span class="m">u＝t−τ</span> とおくと <span class="m">e<sup>−st</sup>＝e<sup>−sτ</sup>e<sup>−su</sup></span> に分かれて、<span class="m">∫f(τ)e<sup>−sτ</sup>dτ · ∫g(u)e<sup>−su</sup>du＝F(s)G(s)</span>。<b>これが積分方程式を解く鍵。</b></div></details></td></tr>
+  </tbody></table></div>
+ <p class="note"><b>記号のメモ</b>：<span class="m">[F(t)]<sub>0</sub><sup>∞</sup></span> の大かっこは、積分したあとに「上の端（∞）を入れた値 − 下の端（0）を入れた値」をとる、という意味です。<span class="m">L[ ]</span> の大かっこは「中身をラプラス変換する」という別の記号です。</p>
+ <p class="note">どの公式も「重ね合わせ」が使える（線形性）：<span class="m">L[a f＋b g]＝aF＋bG</span>。積分は足し算なので、そのまま分けられます。</p>
+</section>
+
+<!-- 4 -->
+<section class="ch" id="c4"><h2><span>4</span>たたみこみ：雨が、川の流量になるまで</h2>
+ <p>たたみこみ <span class="m">(f∗g)(t)＝∫<sub>0</sub><sup>t</sup> f(τ) g(t−τ) dτ</span> は、むずかしそうに見えますが、意味は「<b>過去の入力が、少しずつ遅れて効いてくる分を全部足す</b>」です。</p>
+ <p>川の流量で考えます。1時間に 1 mm の雨が降ったとき、川の流量がどう増えてどう減るかの形を「単位図」<span class="m">g(t)</span> といいます。本当の雨 <span class="m">f(τ)</span> は時刻ごとに強さが違います。時刻 <span class="m">t</span> の流量は、「τ に降った雨 <span class="m">f(τ)</span>」が「降ってから <span class="m">t−τ</span> 時間たった分の流れ <span class="m">g(t−τ)</span>」になって届く量を、全部の τ について足したものです。</p>
+ <div class="lab" id="lab2"><h4>触って確かめる：時刻 t を動かす</h4>
+  <div class="chips" id="l2r" role="group" aria-label="雨の降り方"><button data-r="one" class="on">短い大雨</button><button data-r="two">2回の雨</button><button data-r="long">長い雨</button></div>
+  <svg id="l2sv" viewBox="0 0 340 250" role="img" aria-label="雨、裏返した単位図、その積、川の流量のグラフ"></svg>
+  <div class="ctl"><label for="l2t">時刻 t <input id="l2t" type="range" min="0" max="12" step="0.1" value="3"><output id="l2to">3.0 時間</output></label></div>
+  <p class="note">上：青い棒が雨 f(τ)、赤い線が裏返してずらした単位図 g(t−τ)、赤い面積がその積。下：赤い面積の大きさを時刻ごとに並べたものが川の流量（たたみこみ）。</p>
+ </div>
+ <div class="nazo" data-nazo="3"><b class="k">謎</b>
+  <p class="q">同じ量の雨が「短い大雨」と「長い雨」で降った。川の流量のいちばん高い所（ピーク）は、どちらが高い？</p>
+  <div class="opts"><button data-a="0">短い大雨</button><button data-a="1">長い雨</button><button data-a="2">雨の量が同じなので同じ</button></div>
+  <div class="ans" data-ok="0" hidden>短い大雨です。上の図で切り替えてみると、雨がまとまって降るほど、遅れて届く流れが重なって、ピークが高くなります。ゲリラ豪雨で中小河川があふれやすいのはこのためです。たたみこみは「重なり具合」を計算しています。</div>
+ </div>
+ <p>そしてラプラス変換すると、たたみこみは <span class="m">F(s)G(s)</span>、つまりただのかけ算になります。次の章では、この性質で積分方程式を解きます。</p>
+</section>
+
+<!-- 5 -->
+<section class="ch" id="c5"><h2><span>5</span>積分方程式を解く</h2>
+ <p>未知の関数 <span class="m">y</span> が積分の中に入っている式を、積分方程式といいます。中でも <span class="m">∫<sub>0</sub><sup>t</sup> y(τ) k(t−τ) dτ</span> の形（ボルテラ型）は、たたみこみ <span class="m">y∗k</span> なので、ラプラス変換するとかけ算 <span class="m">Y(s)K(s)</span> になります。</p>
+ <span class="key">見分け方：積分の中が「y(τ) × (t−τ) だけの式」なら、たたみこみ。</span>
+
+ <div class="prob" id="ex1"><p class="ttl">例題1</p>
+  <span class="eq"><span class="int">∫</span><sub>0</sub><sup>t</sup> y(τ) cos(t − τ) dτ ＝ t</span>
+  <ol class="steps" data-walk>
+   <li class="q" data-q="左辺の積分は、どういう形？" data-o="y(t) と cos t のたたみこみ y ∗ cos t|y(t) × cos t のかけ算|cos t の積分" data-a="0" data-w="積分の中が y(τ) と、(t−τ) だけで書ける cos(t−τ) のかけ算なので、たたみこみ y∗cos t。"></li>
+   <li>両辺をラプラス変換する。たたみこみはかけ算に、<span class="m">L[cos t]＝s/(s²＋1)</span>、<span class="m">L[t]＝1/s²</span>：<span class="eq">Y(s) · <span class="fr"><span>s</span><span>s²＋1</span></span> ＝ <span class="fr"><span>1</span><span>s²</span></span></span></li>
+   <li class="q" data-q="Y(s) は？" data-o="(s²＋1)/s³ ＝ 1/s ＋ 1/s³|s/(s²＋1)|1/(s²(s²＋1))" data-a="0" data-w="両辺を s/(s²＋1) で割ると (s²＋1)/s³。分子を分けて 1/s ＋ 1/s³。"></li>
+   <li class="q" data-q="表を逆に読むと y(t) は？" data-o="1 ＋ t²/2|t ＋ t³|1 ＋ t²" data-a="0" data-w="L⁻¹[1/s]＝1、L⁻¹[1/s³]＝t²/2!＝t²/2。"></li>
+   <li><span class="eq">y(t)＝1＋<span class="fr"><span>1</span><span>2</span></span>t²</span>確かめ：これを元の式に入れて積分すると、ちゃんと <span class="m">t</span> になります。</li>
+  </ol>
+ </div>
+
+ <div class="prob" id="ex2"><p class="ttl">例題2（y が積分の外にもある形）</p>
+  <span class="eq">y(t) − <span class="int">∫</span><sub>0</sub><sup>t</sup> y(τ) sin(t − τ) dτ ＝ e<sup>t</sup></span>
+  <ol class="steps" data-walk>
+   <li>第2項は <span class="m">y∗sin t</span>。両辺を変換すると、<span class="m">L[sin t]＝1/(s²＋1)</span>、<span class="m">L[e<sup>t</sup>]＝1/(s−1)</span>：<span class="eq">Y − Y · <span class="fr"><span>1</span><span>s²＋1</span></span> ＝ <span class="fr"><span>1</span><span>s − 1</span></span></span></li>
+   <li class="q" data-q="Y でくくると、Y にかかる係数は？" data-o="s²/(s²＋1)|1/(s²＋1)|(s²＋2)/(s²＋1)" data-a="0" data-w="1 − 1/(s²＋1) ＝ (s²＋1−1)/(s²＋1) ＝ s²/(s²＋1)。"></li>
+   <li>だから <span class="eq">Y(s)＝<span class="fr"><span>s²＋1</span><span>s²(s − 1)</span></span></span>このままでは表にない。部分分数に分ける（<a href="#c6">6章 逆ラプラス変換</a>）。</li>
+   <li class="q" data-q="a/s ＋ b/s² ＋ c/(s−1) に分けると、(a, b, c) は？" data-o="(−1, −1, 2)|(1, 1, 0)|(−1, 1, 2)" data-a="0" data-w="c は s＝1 を入れて (1＋1)/1＝2。b は s² をかけて s＝0：(0＋1)/(0−1)＝−1。a は s² の係数をそろえて a＋c＝1 から −1。"></li>
+   <li><span class="eq">y(t)＝−1 − t ＋ 2e<sup>t</sup></span></li>
+  </ol>
+ </div>
+
+ <h3>腕試し（予想してから答えを開く）</h3>
+ <div class="prob"><p class="ttl">問1</p><span class="eq">y(t) ＋ <span class="int">∫</span><sub>0</sub><sup>t</sup> y(τ) dτ ＝ 1</span>
+  <details><summary>答えと解き方</summary><div class="why">積分は <span class="m">y∗1</span>。<span class="m">Y＋Y/s＝1/s</span> → <span class="m">Y(s＋1)/s＝1/s</span> → <span class="m">Y＝1/(s＋1)</span>。<b>y(t)＝e<sup>−t</sup></b></div></details></div>
+ <div class="prob"><p class="ttl">問2</p><span class="eq"><span class="int">∫</span><sub>0</sub><sup>t</sup> y(τ) e<sup>t−τ</sup> dτ ＝ t²</span>
+  <details><summary>答えと解き方</summary><div class="why"><span class="m">Y·1/(s−1)＝2/s³</span> → <span class="m">Y＝2(s−1)/s³＝2/s²−2/s³</span>。<b>y(t)＝2t − t²</b></div></details></div>
+ <div class="prob"><p class="ttl">問3</p><span class="eq">y(t) ＝ t ＋ <span class="int">∫</span><sub>0</sub><sup>t</sup> (t − τ) y(τ) dτ</span>
+  <details><summary>答えと解き方</summary><div class="why">積分は <span class="m">t∗y</span>。<span class="m">Y＝1/s²＋Y/s²</span> → <span class="m">Y(s²−1)/s²＝1/s²</span> → <span class="m">Y＝1/(s²−1)＝½(1/(s−1)−1/(s＋1))</span>。<b>y(t)＝(e<sup>t</sup> − e<sup>−t</sup>)/2</b>（＝sinh t）</div></details></div>
+ <div class="prob"><p class="ttl">問4</p><span class="eq">y(t) ＋ 2<span class="int">∫</span><sub>0</sub><sup>t</sup> y(τ) cos(t − τ) dτ ＝ e<sup>−t</sup></span>
+  <details><summary>答えと解き方</summary><div class="why"><span class="m">Y(1＋2s/(s²＋1))＝1/(s＋1)</span> → <span class="m">Y(s＋1)²/(s²＋1)＝1/(s＋1)</span> → <span class="m">Y＝(s²＋1)/(s＋1)³</span>。分子を <span class="m">(s＋1)²−2(s＋1)＋2</span> と書きかえると <span class="m">Y＝1/(s＋1)−2/(s＋1)²＋2/(s＋1)³</span>。推移法則で <b>y(t)＝e<sup>−t</sup>(1 − 2t ＋ t²)＝e<sup>−t</sup>(1 − t)²</b></div></details></div>
+</section>
+
+<!-- 6 -->
+<section class="ch" id="c6"><h2><span>6</span>逆ラプラス変換：s の世界から、時間の世界へ戻る</h2>
+ <h3>なぜ、戻さないといけないの？</h3>
+ <p><span class="m">s</span> の世界で <span class="m">Y(s)＝(s²＋1)/(s²(s−1))</span> が出ても、それは「答えの写し」です。橋が何 cm たわむか、川の流量が何時にいくらか、建物が何秒で止まるか。知りたいのは<b>時間 t の関数 y(t)</b> なので、最後に必ず時間の世界へ戻します。これが逆ラプラス変換 <span class="m">y(t)＝L<sup>−1</sup>[Y(s)]</span> です。</p>
+ <h3>なぜ、部分分数に分けるの？</h3>
+ <p>戻し方の本当の式（ブロムウィッチ積分）は、複素数の世界での積分で、手計算ではまず使いません。そのかわり、<b>表を逆に読めば戻せる</b>ことを使います。ところが表にあるのは <span class="m">1/(s−a)</span>、<span class="m">1/s<sup>n</sup></span>、<span class="m">ω/(s²＋ω²)</span> のような単純な形だけ。だから複雑な分数を、<b>表にある形の足し算に分けてから</b>、1つずつ戻します（線形性：足し算はそのまま戻せる）。</p>
+ <p>分けた1つ1つの分数は、物理的にも意味があります。分母の1つの因数（極）が、答えの中の1つの「動き方」になります。分けることは、答えを「減っていく部分」「揺れる部分」「一定の部分」に分解して見ることです。</p>
+ <span class="key">分母を見れば、計算する前に答えの形がわかる。部分分数は、その形ごとに答えを分ける作業。</span>
+
+ <h3>見分け表：分母の形 → 時間の形</h3>
+ <div class="tbl"><table>
+  <thead><tr><th>分母にある因数（極）</th><th>分けた形</th><th>時間の世界</th><th>どんな動き</th></tr></thead>
+  <tbody>
+   <tr><td class="f">s</td><td class="f">A / s</td><td class="f">A</td><td>一定（落ち着く値）</td></tr>
+   <tr><td class="f">s − a</td><td class="f">A / (s − a)</td><td class="f">A e<sup>at</sup></td><td>a＜0 なら減る、a＞0 なら増える</td></tr>
+   <tr><td class="f">(s − a)<sup>n</sup></td><td class="f">A₁/(s−a) ＋ … ＋ A<sub>n</sub>/(s−a)<sup>n</sup></td><td class="f">e<sup>at</sup>(A₁ ＋ A₂t ＋ … )</td><td>同じ極が重なると t がかかる</td></tr>
+   <tr><td class="f">s² ＋ ω²</td><td class="f">(Bs ＋ C)/(s² ＋ ω²)</td><td class="f">B cos ωt ＋ (C/ω) sin ωt</td><td>同じ大きさで揺れ続ける</td></tr>
+   <tr><td class="f">(s＋α)² ＋ ω²</td><td class="f">(Bs ＋ C)/((s＋α)² ＋ ω²)</td><td class="f">e<sup>−αt</sup>( … cos ωt ＋ … sin ωt)</td><td>揺れながら減る（建物の揺れ）</td></tr>
+  </tbody></table></div>
+
+ <h3>4つの型を、例題で</h3>
+ <div class="prob"><p class="ttl">型A：表にそのままある（係数をそろえるだけ）</p>
+  <span class="eq">Y ＝ <span class="fr"><span>6</span><span>s⁴</span></span> ＋ <span class="fr"><span>5</span><span>s² ＋ 25</span></span></span>
+  <p><span class="m">6/s⁴＝3!/s⁴</span> なので <span class="m">t³</span>。<span class="m">5/(s²＋25)＝ω/(s²＋ω²)</span>（ω＝5）なので <span class="m">sin 5t</span>。<b>y＝t³＋sin 5t</b>。</p>
+  <p class="note">なぜ：表の形（分子が n! や ω）に合うように、定数を前に出したり入れたりするだけ。<span class="m">1/s⁴</span> なら <span class="m">(1/6)·3!/s⁴</span> → <span class="m">t³/6</span>。</p>
+ </div>
+ <div class="prob"><p class="ttl">型B：分母が、違う1次の因数に分かれる</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 3</span><span>(s − 1)(s ＋ 2)</span></span> ＝ <span class="fr"><span>A</span><span>s − 1</span></span> ＋ <span class="fr"><span>B</span><span>s ＋ 2</span></span></span>
+  <p>隠して代入（下の図で触れます）：<span class="m">A</span> は <span class="m">(s−1)</span> を隠して <span class="m">s＝1</span>：<span class="m">4/3</span>。<span class="m">B</span> は <span class="m">(s＋2)</span> を隠して <span class="m">s＝−2</span>：<span class="m">1/(−3)＝−1/3</span>。<b>y＝(4/3)e<sup>t</sup> − (1/3)e<sup>−2t</sup></b>。</p>
+  <p class="note">なぜ隠して代入でよいか：両辺に <span class="m">(s−1)</span> をかけると <span class="m">(s＋3)/(s＋2)＝A＋B(s−1)/(s＋2)</span>。ここで <span class="m">s＝1</span> にすると B の項が 0 になり、A だけが残る。</p>
+ </div>
+ <div class="prob"><p class="ttl">型C：同じ因数が重なる</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 4</span><span>(s ＋ 1)²</span></span> ＝ <span class="fr"><span>A</span><span>s ＋ 1</span></span> ＋ <span class="fr"><span>B</span><span>(s ＋ 1)²</span></span></span>
+  <p>分子を <span class="m">(s＋1)</span> のまとまりで書きかえるのが速い：<span class="m">s＋4＝(s＋1)＋3</span>。だから <span class="m">Y＝1/(s＋1)＋3/(s＋1)²</span>。推移法則で <span class="m">1/(s＋1)² → t e<sup>−t</sup></span>。<b>y＝e<sup>−t</sup>(1＋3t)</b>。</p>
+  <p class="note">なぜ t がかかる：<span class="m">L[t]＝1/s²</span> を推移法則で s→s＋1 とずらすと <span class="m">L[t e<sup>−t</sup>]＝1/(s＋1)²</span>。重なった極は「減りながら、いったん増える」動き（臨界減衰）になる。</p>
+ </div>
+ <div class="prob"><p class="ttl">型D：分母が2次で、因数に分けられない</p>
+  <span class="eq">Y ＝ <span class="fr"><span>s ＋ 5</span><span>s² ＋ 2s ＋ 10</span></span></span>
+  <ol class="steps">
+   <li><b>平方完成</b>：<span class="m">s²＋2s＋10＝(s＋1)²＋9</span>。極は <span class="m">s＝−1±3i</span>（減りながら揺れる）。</li>
+   <li><b>分子も (s＋1) のまとまりに</b>：<span class="m">s＋5＝(s＋1)＋4</span>。</li>
+   <li><span class="m">Y＝(s＋1)/((s＋1)²＋9) ＋ (4/3)·3/((s＋1)²＋9)</span>。</li>
+   <li>推移法則（s→s＋1 は e<sup>−t</sup> をかける）で <b>y＝e<sup>−t</sup>(cos 3t ＋ (4/3) sin 3t)</b>。</li>
+  </ol>
+  <p class="note">なぜ平方完成：表の <span class="m">s/(s²＋ω²)</span> と <span class="m">ω/(s²＋ω²)</span> の形に、推移法則でずらして当てはめるため。建物の揺れの式は、ほとんどがこの型になる。</p>
+ </div>
+
+ <div class="lab" id="lab4"><h4>触って確かめる：隠して代入（ヘビサイドの方法）</h4>
+  <p style="font-size:13px;margin:0 0 6px">分母の因数をタップして隠すと、残りに極の値を入れた計算が出ます。</p>
+  <div class="chips" id="hvP" role="group" aria-label="問題を選ぶ"></div>
+  <div id="hvY" class="eq" style="font-size:22px"></div>
+  <div id="hvF" class="chips" style="justify-content:center" role="group" aria-label="隠す因数"></div>
+  <div id="hvC" class="ans" style="margin-top:10px"></div>
+  <div id="hvR" class="read"></div>
+  <svg id="hvS" viewBox="0 0 340 160" role="img" aria-label="分けた項ごとの時間の動きと、その和"></svg>
+  <p class="note">グラフ：細い線が分けた1つ1つの項、太い線がその和 y(t)。項ごとに「動き方」が違うのが見えます。</p>
+ </div>
+
+ <h3>練習：まず型を見分けてから解く</h3>
+ <div id="ilq"></div>
+
+ <p class="note">配られたプリントの (3) は、途中の分母が <span class="m">s²＋3³</span> と書かれていますが、正しくは <span class="m">s²＋3²</span>（＝s²＋9）です。(4) の答えの最後は <span class="m">2e<sup>t</sup></span> です（<span class="m">2<sup>e<sup>t</sup></sup></span> ではありません）。</p>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ const {C,tx,ln,pl,$}=MX;
+/* 隠して代入：Y=N(s)/Π(s-p_i)、異なる実数の極 */
+const HP=[
+ {n:[1,3],p:[1,-2],lab:'(s＋3)/((s−1)(s＋2))'},
+ {n:[0,5],p:[0,-1,-5],lab:'5/(s(s＋1)(s＋5))'},
+ {n:[2,0,1],p:[-1,-2,-3],lab:'(2s²＋1)/((s＋1)(s＋2)(s＋3))'},
+];
+const fmtF=p=>p===0?'s':p>0?`(s − ${p})`:`(s ＋ ${-p})`;
+const poly=(c,s)=>c.reduce((a,x)=>a*s+x,0);
+const frac=v=>{ for(let d=1;d<=60;d++){ const n=Math.round(v*d); if(Math.abs(n/d-v)<1e-9) return d===1?`${n<0?'−':''}${Math.abs(n)}`:`${n<0?'−':''}${Math.abs(n)}/${d}`; } return v.toFixed(3); };
+let cur=0, cov=new Set();
+$('#hvP').innerHTML=HP.map((h,i)=>`<button data-i="${i}"${i?'':' class="on"'}>問題${i+1}</button>`).join('');
+function nstr(c){ const deg=c.length-1; return c.map((x,i)=>{ const pw=deg-i; if(x===0) return ''; const t=pw===0?`${Math.abs(x)}`:`${Math.abs(x)===1?'':Math.abs(x)}s${pw>1?'²':''}`; return (x<0?' − ':' ＋ ')+t; }).join('').replace(/^ ＋ /,'').replace(/^ − /,'−'); }
+function draw(){ const h=HP[cur];
+ $('#hvY').innerHTML=`Y ＝ <span class="fr"><span>${nstr(h.n)}</span><span>${h.p.map((p,i)=>cov.has(i)?`<span style="background:#12286B;color:#12286B;border-radius:3px">${fmtF(p)}</span>`:fmtF(p)).join('')}</span></span>`;
+ $('#hvF').innerHTML=h.p.map((p,i)=>`<button data-k="${i}" class="${cov.has(i)?'on':''}">${fmtF(p)} を隠す</button>`).join('');
+ const res=h.p.map((p,i)=>{ const num=poly(h.n,p); const den=h.p.reduce((a,q,j)=>j===i?a:a*(p-q),1); return num/den; });
+ const last=[...cov].pop();
+ if(last==null) $('#hvC').innerHTML='因数を1つ選んで隠してみよう。';
+ else { const p=h.p[last]; const num=poly(h.n,p); const others=h.p.filter((_,j)=>j!==last); $('#hvC').innerHTML=`${fmtF(p)} を隠して、残りに <b>s＝${String(p).replace("-","−")}</b> を入れる：<span class="m">{${nstr(h.n).replace(/s/g,`(${String(p).replace('-','−')})`)}} ÷ {${others.map(q=>`(${String(p).replace('-','−')}${q<0?'＋'+(-q):q>0?'−'+q:''})`).join('')}} ＝ ${frac(num)} ÷ ${frac(others.reduce((a,q)=>a*(p-q),1))} ＝ <b>${frac(res[last])}</b></span>`; }
+ $('#hvR').innerHTML=h.p.map((p,i)=>`<div class="${cov.has(i)?'hi':''}">${fmtF(p)} の係数<b>${cov.has(i)?frac(res[i]):'？'}</b><span>→ ${cov.has(i)?`${frac(res[i])}${p===0?'':` e<sup>${p===-1?'−':p===1?'':p<0?'−'+(-p):p}t</sup>`}`:'…'}</span></div>`).join('');
+ const TM=h.p.some(p=>p>0)?1.5:5; const X=t=>36+290*t/TM; const terms=h.p.map((p,i)=>t=>res[i]*Math.exp(p*t)); const tot=t=>terms.reduce((a,f)=>a+f(t),0);
+ let lo=0,hi=0; for(let i=0;i<=100;i++){ const t=TM*i/100; [tot(t),...terms.map(f=>f(t))].forEach(v=>{ if(isFinite(v)){ lo=Math.min(lo,v); hi=Math.max(hi,v); } }); } const pad=(hi-lo)*0.1||1;
+ const Y=v=>150-130*(Math.max(lo-pad,Math.min(hi+pad,v))-(lo-pad))/((hi+pad)-(lo-pad));
+ let s=ln(36,10,36,150)+ln(36,Y(0),330,Y(0),C.navy,1)+tx(330,158,'t',C.navy,10,'end',700);
+ const cols=[C.blue,C.gold,'#7a5fb0'];
+ terms.forEach((f,i)=>{ if(!cov.has(i)) return; const pts=[]; for(let k=0;k<=150;k++){ const t=TM*k/150; pts.push([X(t),Y(f(t))]); } s+=pl(pts,cols[i%3],1.5,'4 3'); });
+ if(cov.size===h.p.length){ const pts=[]; for(let k=0;k<=150;k++){ const t=TM*k/150; pts.push([X(t),Y(tot(t))]); } s+=pl(pts,C.red,2.8)+tx(330,20,'━ 和 y(t)',C.red,10,'end',700); }
+ else s+=tx(183,80,'全部の係数を出すと、y(t) が描けます',C.muted,11);
+ $('#hvS').innerHTML=s;
+ document.querySelectorAll('#hvF button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; if(cov.has(k)) cov.delete(k); else cov.add(k); draw(); }); }
+document.querySelectorAll('#hvP button').forEach(b=>b.onclick=()=>{ cur=+b.dataset.i; cov=new Set(); document.querySelectorAll('#hvP button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+draw();
+
+/* 練習：型を見分ける→答え */
+const T=['型A：そのまま','型B：違う1次','型C：重なる','型D：2次（平方完成）'];
+const IQ=[
+ ['24 / s⁵',0,'24＝4! なので t⁴。','y＝t⁴'],
+ ['3 / (s² ＋ 9)',0,'ω＝3 の sin。','y＝sin 3t'],
+ ['1 / (s(s ＋ 4))',1,'s を隠して s＝0：1/4。(s＋4) を隠して s＝−4：1/(−4)。','y＝(1 − e<sup>−4t</sup>)/4'],
+ ['(s ＋ 7) / ((s ＋ 1)(s ＋ 3))',1,'(s＋1) を隠して s＝−1：6/2＝3。(s＋3) を隠して s＝−3：4/(−2)＝−2。','y＝3e<sup>−t</sup> − 2e<sup>−3t</sup>'],
+ ['(2s ＋ 1) / (s ＋ 2)²',2,'2s＋1＝2(s＋2) − 3。だから 2/(s＋2) − 3/(s＋2)²。','y＝e<sup>−2t</sup>(2 − 3t)'],
+ ['1 / (s² ＋ 4s ＋ 13)',3,'(s＋2)²＋9。(1/3)·3/((s＋2)²＋9)。','y＝(1/3) e<sup>−2t</sup> sin 3t'],
+ ['s / (s² ＋ 6s ＋ 25)',3,'(s＋3)²＋16。分子 s＝(s＋3) − 3 ＝ (s＋3) − (3/4)·4。','y＝e<sup>−3t</sup>(cos 4t − (3/4) sin 4t)'],
+ ['(s² ＋ 1) / (s²(s − 1))',1,'s² は重なるので a/s ＋ b/s² ＋ c/(s−1)。c＝2、b＝−1、a＝−1（プリントの (4)）。B と C の混ざった型。','y＝−1 − t ＋ 2e<sup>t</sup>'],
+];
+$('#ilq').innerHTML=IQ.map(([q],i)=>`<div class="prob" data-i="${i}"><p class="ttl">問${i+1}　<span class="m" style="font-size:18px;color:var(--red)">L<sup>−1</sup>[ ${q} ]</span></p><p style="margin:0 0 6px;font-size:13px;font-weight:700">どの型？</p><div class="chips">${T.map((t,k)=>`<button data-k="${k}">${t}</button>`).join('')}</div><div class="ans" hidden></div></div>`).join('');
+document.querySelectorAll('#ilq .prob').forEach(box=>{ const [q,a,w,ans]=IQ[+box.dataset.i];
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(+x.dataset.k===a) x.classList.add('on'); }); const an=box.querySelector('.ans'); an.innerHTML=(k===a?'<b>当たり。</b>':`<b>${T[a]} です。</b>`)+w+`<br><b style="font-family:var(--math);font-size:17px;color:var(--red)">${ans}</b>`; an.hidden=false; }); });
+});
+</script>
+
+<!-- 7 -->
+<section class="ch" id="c7"><h2><span>7</span>極で、揺れ方がわかる</h2>
+ <p>揺れの式 <span class="m">m x″＋c x′＋k x＝F</span> を変換すると（初期値 0）、<span class="m">(ms²＋cs＋k)X(s)＝F(s)</span>。<span class="m">X(s)＝F(s)/(ms²＋cs＋k)</span> の分母が 0 になる <span class="m">s</span> を<b>極</b>といいます。極が <span class="m">s＝σ±iω</span> なら、表（推移法則）から、揺れは <span class="m">e<sup>σt</sup>(… cos ωt ＋ … sin ωt)</span> の形になります。極の<b>横の位置 σ</b> が減り方、<b>縦の位置 ω</b> が揺れの速さです。</p>
+ <div class="lab" id="lab3"><h4>触って確かめる：極（赤い点）をドラッグ</h4>
+  <svg id="l3sv" viewBox="0 0 340 320" role="img" aria-label="s平面の極の位置と、時間の揺れ方のグラフ"></svg>
+  <div class="read"><div>減り方 σ<b id="l3sg">—</b></div><div>揺れの角振動数 ω<b id="l3om">—</b></div><div class="hi">減衰比 ζ<b id="l3z">—</b></div></div>
+  <p class="note">点を動かせないときは、図の中をタップしても極が移動します。</p>
+ </div>
+ <div class="nazo" data-nazo="4"><b class="k">謎</b>
+  <p class="q">極を、縦の軸（σ＝0）の<b>右側</b>に動かすと、建物の揺れはどうなる？</p>
+  <div class="opts"><button data-a="0">だんだん止まる</button><button data-a="1">同じ大きさで揺れ続ける</button><button data-a="2">どんどん大きくなる</button></div>
+  <div class="ans" data-ok="2" hidden>どんどん大きくなります（<span class="m">e<sup>σt</sup></span> で σ＞0）。減衰が「マイナス」の状態で、風で橋がねじれて壊れたタコマナローズ橋（1940年）がこれでした。極が左半分にあれば安定、縦の軸の上なら揺れ続け、右半分なら不安定。設計では「極が全部左にあるか」を確かめます。</div>
+ </div>
+ <p>構造の理論ラボの<a href="../kozo-riron/#d-shindo-1">自由振動と減衰</a>・<a href="../kozo-riron/#d-shindo-2">共振</a>では、同じ式を微分のまま解いています。見比べると、ラプラス変換のほうが初期値も外力も一度に扱えることがわかります。</p>
+</section>
+
+<!-- 8 -->
+<section class="ch" id="c8"><h2><span>8</span>土木での使い道</h2>
+ <div class="use">
+  <div><b>地震の揺れ（デュアメル積分）</b><p>建物の揺れ ＝ 地面の加速度 と「1回たたいたときの揺れ方」のたたみこみ。変換すると、揺れ ＝ 入力 × 伝達関数 <span class="m">1/(ms²＋cs＋k)</span>。</p></div>
+  <div><b>雨と川の流量（単位図法）</b><p>4章のとおり。雨の記録と単位図のたたみこみで、ダムや河川の計画に使う洪水の流量を出す。</p></div>
+  <div><b>粘土の沈下（圧密）</b><p>テルツァーギの圧密方程式は、時間と深さの偏微分方程式。時間の方向をラプラス変換すると、深さだけの常微分方程式になって解きやすい。</p></div>
+  <div><b>コンクリートのクリープ</b><p>荷重をかけ続けると、ゆっくり縮み続ける。過去の荷重の影響を足すたたみこみ（遺伝積分）で表し、変換で解く。</p></div>
+  <div><b>水門・ポンプの自動制御</b><p>水位を一定に保つ制御は、伝達関数のかけ算で設計する。極が左半分にあれば水位は落ち着く（7章）。</p></div>
+  <div><b>杭や基礎の振動</b><p>地盤のばねと減衰をもつ基礎の揺れも、同じ <span class="m">ms²＋cs＋k</span> の形。周波数ごとの揺れやすさを出す。</p></div>
+ </div>
+</section>
+
+<footer>数学ラボ（土木の勉強ラボシリーズ）。ほかのラボ：<a href="../kozo/">構造力学ラボ</a>・<a href="../kozo-riron/">構造の理論ラボ</a>・<a href="../jiban/">地盤力学ラボ</a>・<a href="../suiri/">水理学ラボ</a>・<a href="../sogi/">そぎ落としミッション</a></footer>
+</div>
+
+<script>
+(()=>{
+const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A'};
+const $=s=>document.querySelector(s);
+const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+const pl=(pts,c,w=2,fill='none')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" stroke="${c}" stroke-width="${w}"/>`;
+
+/* 謎（予想） */
+document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+ nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+
+/* 例題の一歩ずつ */
+document.querySelectorAll('[data-walk]').forEach(ol=>{ const lis=[...ol.children]; lis.forEach((li,i)=>{ if(i>0) li.hidden=true; });
+ const show=i=>{ if(lis[i]) { lis[i].hidden=false; if(!lis[i].classList.contains('q')) { const nb=document.createElement('button'); nb.className='btn'; nb.textContent='次の一歩 →'; nb.style.marginTop='6px'; if(i<lis.length-1){ lis[i].appendChild(nb); nb.onclick=()=>{ nb.remove(); show(i+1); }; } } } };
+ lis.forEach((li,i)=>{ if(!li.classList.contains('q')) return; const os=li.dataset.o.split('|'); const a=+li.dataset.a;
+  li.innerHTML=`<b>${li.dataset.q}</b><div class="opts" style="margin-top:6px">${os.map((o,k)=>`<button data-k="${k}">${o}</button>`).join('')}</div><div class="ans" hidden></div>`;
+  li.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=+b.dataset.k; const an=li.querySelector('.ans'); if(k===a){ li.querySelectorAll('.opts button').forEach(x=>x.disabled=true); b.classList.add('ok'); an.innerHTML='✓ '+li.dataset.w; an.hidden=false; show(i+1); } else { b.classList.add('ng'); b.disabled=true; an.innerHTML='ちがいます。表と、たたみこみの公式を見直してみよう。'; an.hidden=false; } }); });
+ show(0); });
+
+/* 1：定義 */
+(()=>{ const F={one:{f:t=>1,F:s=>1/s,lab:'1/s'},t:{f:t=>t,F:s=>1/(s*s),lab:'1/s²'},exp:{f:t=>Math.exp(-t),F:s=>1/(s+1),lab:'1/(s＋1)'},sin:{f:t=>Math.sin(2*t),F:s=>2/(s*s+4),lab:'2/(s²＋4)'}};
+ let cur='one'; const sv=$('#l1sv'), sl=$('#l1s');
+ const draw=()=>{ const s=+sl.value, fn=F[cur]; $('#l1so').textContent=s.toFixed(2);
+  const X=t=>34+290*t/8, ymax=cur==='t'?4:1.1, ymin=cur==='sin'?-1.1:0, Y=v=>190-150*(v-ymin)/(ymax-ymin);
+  let g=ln(34,Y(0),330,Y(0),C.navy,1.2)+ln(34,36,34,192,C.navy,1.2);
+  for(let k=0;k<=8;k+=2) g+=tx(X(k),206,k)+ln(X(k),Y(0),X(k),Y(0)+3,C.navy,1);
+  g+=tx(330,218,'t','#12286B',11,'end',700);
+  const N=160, pf=[], pw=[], pp=[];
+  for(let i=0;i<=N;i++){ const t=8*i/N; const fv=Math.max(ymin,Math.min(ymax,fn.f(t))); pf.push([X(t),Y(fv)]); pw.push([X(t),Y(Math.exp(-s*t)*(cur==='t'?1:1))]); pp.push([X(t),Y(Math.max(ymin,Math.min(ymax,fn.f(t)*Math.exp(-s*t))))]); }
+  g+=`<polygon points="${X(0)},${Y(0)} ${pp.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')} ${X(8)},${Y(0)}" fill="${C.red}" fill-opacity=".28"/>`;
+  g+=pl(pf,C.navy,2)+pl(pw,C.blue,2)+pl(pp,C.red,2.5);
+  g+=tx(34,14,'━ f(t)','#12286B',11,'start',700)+tx(100,14,'━ 重み e⁻ˢᵗ',C.blue,11,'start',700)+tx(190,14,'━ 積（面積が F(s)）',C.red,11,'start',700);
+  sv.innerHTML=g;
+  let sum=0; const M=12000, T=60, h=T/M; for(let i=0;i<=M;i++){ const t=i*h; const v=fn.f(t)*Math.exp(-s*t); sum+=(i===0||i===M?0.5:1)*v; } sum*=h;
+  $('#l1num').textContent=sum.toFixed(3); $('#l1form').textContent=fn.lab+' ＝'; $('#l1fv').textContent=fn.F(s).toFixed(3); };
+ document.querySelectorAll('#l1f button').forEach(b=>b.onclick=()=>{ cur=b.dataset.f; document.querySelectorAll('#l1f button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+ sl.oninput=draw; draw(); })();
+
+/* 2：たたみこみ（雨×単位図） */
+(()=>{ const R={one:t=>(t>=0.5&&t<1.5)?3:0,two:t=>((t>=0.5&&t<1.5)||(t>=4&&t<5))?1.5:0,long:t=>(t>=0.5&&t<3.5)?1:0};
+ const g=u=>u<0?0:u*Math.exp(-u); let cur='one'; const sv=$('#l2sv'), sl=$('#l2t');
+ const conv=(f,t)=>{ let s=0; const n=400, h=t/n; for(let i=0;i<=n;i++){ const tau=i*h; s+=(i===0||i===n?.5:1)*f(tau)*g(t-tau); } return s*h; };
+ let cache={};
+ const draw=()=>{ const t=+sl.value, f=R[cur]; $('#l2to').textContent=t.toFixed(1)+' 時間';
+  const X=v=>34+290*v/12; const Y1=v=>100-80*v/3.2; const Y2=v=>232-90*v/1.2;
+  let s=ln(34,100,330,100)+ln(34,16,34,100)+ln(34,232,330,232)+ln(34,130,34,232);
+  for(let k=0;k<=12;k+=2){ s+=tx(X(k),114,k)+tx(X(k),246,k); }
+  s+=tx(38,14,'雨 f(τ) と g(t−τ)','#12286B',11,'start',700)+tx(38,128,'川の流量（f ∗ g）(t)','#12286B',11,'start',700);
+  for(let k=0;k<12;k+=0.25){ const v=f(k+0.01); if(v>0) s+=`<rect x="${X(k)}" y="${Y1(v)}" width="${(X(k+0.25)-X(k)-0.6).toFixed(1)}" height="${(100-Y1(v)).toFixed(1)}" fill="${C.mid}"/>`; }
+  const pg=[], pp=[]; for(let i=0;i<=200;i++){ const tau=12*i/200; pg.push([X(tau),Y1(g(t-tau)*3/0.37*0.8)]); pp.push([X(tau),Y1(f(tau)*g(t-tau))]); }
+  s+=`<polygon points="${X(0)},100 ${pp.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')} ${X(12)},100" fill="${C.red}" fill-opacity=".45"/>`;
+  s+=pl(pg,C.red,1.8)+ln(X(t),16,X(t),232,C.red,1,'4 3')+tx(X(t),26,'t',C.red,12,'middle',700);
+  if(!cache[cur]){ cache[cur]=[]; for(let i=0;i<=240;i++){ const tt=12*i/240; cache[cur].push([tt,conv(f,tt)]); } }
+  const full=cache[cur].map(([a,v])=>[X(a),Y2(v)]); const done=cache[cur].filter(([a])=>a<=t+1e-9).map(([a,v])=>[X(a),Y2(v)]);
+  s+=pl(full,C.line,1.5)+(done.length>1?pl(done,C.navy,2.5):'');
+  const yv=conv(f,t); s+=`<circle cx="${X(t)}" cy="${Y2(yv)}" r="5" fill="${C.red}"/>`;
+  sv.innerHTML=s; };
+ document.querySelectorAll('#l2r button').forEach(b=>b.onclick=()=>{ cur=b.dataset.r; document.querySelectorAll('#l2r button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+ sl.oninput=draw; draw(); })();
+
+/* 3：極 */
+(()=>{ const sv=$('#l3sv'); let sg=-0.35, om=3;
+ const PX=v=>40+260*(v+3)/4.2, PY=v=>150-130*v/6.5, iPX=x=>(x-40)*4.2/260-3, iPY=y=>(150-y)*6.5/130;
+ const draw=()=>{ let s='';
+  s+=`<rect x="${PX(0)}" y="14" width="${300-PX(0)}" height="136" fill="#fbeaea"/>`+tx(PX(0.55),80,'不安定',C.red,11,'middle',700)+tx(PX(-2.5),30,'安定（揺れが止まる）',C.blue,10,'start');
+  s+=ln(40,150,300,150)+ln(PX(0),14,PX(0),150,C.navy,1.5);
+  for(let k=-3;k<=1;k++) s+=tx(PX(k),164,k)+ln(PX(k),150,PX(k),153,C.navy,1);
+  for(let k=2;k<=6;k+=2) s+=tx(PX(0)-6,PY(k)+3,k,C.muted,9,'end')+ln(PX(0)-3,PY(k),PX(0),PY(k),C.navy,1);
+  s+=tx(302,146,'σ（実部）','#12286B',10,'end',700)+tx(PX(0)-8,12,'ω（虚部）','#12286B',10,'end',700);
+  s+=ln(PX(0),150,PX(sg),PY(om),C.mid,1,'3 3')+`<circle cx="${PX(sg)}" cy="${PY(om)}" r="9" fill="${C.red}" stroke="#fff" stroke-width="2" style="cursor:grab"/>`+(PX(sg)>150?tx(PX(sg)-14,PY(om)+4,`s＝${sg.toFixed(2)}＋${om.toFixed(2)}i`,C.red,10,'end',700):tx(PX(sg)+14,PY(om)+4,`s＝${sg.toFixed(2)}＋${om.toFixed(2)}i`,C.red,10,'start',700));
+  // time plot
+  const X=t=>40+260*t/10, Y=v=>250-55*v; s+=ln(40,250,300,250)+ln(40,190,40,312)+tx(42,188,'揺れ x(t)（1回たたいたとき）','#12286B',10,'start',700)+tx(300,264,'t','#12286B',11,'end',700);
+  const pts=[]; for(let i=0;i<=300;i++){ const t=10*i/300; let v=Math.exp(sg*t)*Math.cos(om*t); v=Math.max(-1.1,Math.min(1.1,v)); pts.push([X(t),Y(v)]); }
+  s+=pl(pts,C.navy,2.2);
+  const env=[]; for(let i=0;i<=100;i++){ const t=10*i/100; env.push([X(t),Y(Math.max(-1.1,Math.min(1.1,Math.exp(sg*t))))]); } s+=pl(env,C.red,1,'none').replace('/>',' stroke-dasharray="4 3"/>');
+  sv.innerHTML=s;
+  const wn=Math.hypot(sg,om), z=-sg/wn; $('#l3sg').textContent=sg.toFixed(2); $('#l3om').textContent=om.toFixed(2); $('#l3z').textContent=(z*100).toFixed(1)+' %'; };
+ let drag=false; const pos=e=>{ const r=sv.getBoundingClientRect(); const x=(e.clientX-r.left)*340/r.width, y=(e.clientY-r.top)*320/r.height; if(y>155) return; sg=Math.max(-3,Math.min(1.1,iPX(x))); om=Math.max(0.3,Math.min(6.3,iPY(y))); if(Math.abs(sg)<0.06) sg=0; draw(); };
+ sv.addEventListener('pointerdown',e=>{ drag=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); });
+ sv.addEventListener('pointermove',e=>{ if(drag) pos(e); }); sv.addEventListener('pointerup',()=>drag=false); sv.addEventListener('pointercancel',()=>drag=false);
+ draw(); })();
+})();
+</script>

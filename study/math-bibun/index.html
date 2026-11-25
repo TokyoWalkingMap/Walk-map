@@ -1,0 +1,285 @@
+<title>微分積分はいつ使う？</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* レイアウト：勉強ラボシリーズのリソグラフ調。1カラムの章立て、各章に「謎 → 触る → 導く」 */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;--gold:#C8A02A;
+ --disp:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;--body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;--math:"Times New Roman",Times,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 60px}
+header.top{border-bottom:3px solid var(--navy);padding-block:14px 10px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.logo{font-family:var(--disp);font-size:20px;color:var(--navy);letter-spacing:1px}.logo b{color:var(--red);font-weight:400}
+.series{font-size:12px;color:var(--muted)}
+.hero{padding-block:28px 10px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(26px,6vw,40px);line-height:1.3;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:62ch;margin:0}
+.road{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none;font-size:12px}
+.road li{border:1.5px solid var(--navy);padding:2px 10px;background:var(--sheet)}
+.road li.on{background:var(--navy);color:#fff}.road li.soon{border-style:dashed;color:var(--muted);border-color:var(--muted)}
+nav.toc{margin:22px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+nav.toc a{display:block;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);text-decoration:none;font-weight:700;padding:6px 10px;font-size:13px}
+nav.toc a span{color:var(--red);font-family:var(--disp);font-weight:400;margin-right:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--soft)}
+section.ch{margin-top:46px;scroll-margin-top:12px}
+section.ch>h2{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--navy);margin:0 0 8px;line-height:1.4;text-wrap:balance}
+section.ch>h2 span{color:var(--red);margin-right:10px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 6px}
+p{margin:8px 0}
+.mm,.m{font-family:var(--math);font-style:italic;font-weight:700;white-space:nowrap}
+.eq{display:block;text-align:center;font-family:var(--math);font-style:italic;font-weight:700;font-size:20px;color:var(--red);margin:12px 0;white-space:normal;overflow-x:auto}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span:last-child{padding:0 .2em}
+.int{font-size:1.4em;vertical-align:-.25em;font-style:normal;font-weight:400}
+sup,sub{font-size:.7em}
+.nazo{background:var(--sheet);border:3px solid var(--red);padding:14px 16px;margin:16px 0}
+.nazo b.k{display:block;font-family:var(--disp);font-weight:400;color:var(--red);font-size:14px;letter-spacing:2px}
+.nazo .q{font-weight:700;margin:4px 0 10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button,.btn{font:inherit;font-weight:700;text-align:left;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 12px;cursor:pointer;min-height:44px}
+.opts button:hover,.opts button:focus-visible,.btn:hover,.btn:focus-visible{background:var(--soft);outline:none}
+.opts button.ok{background:var(--navy);color:#fff}.opts button.ng{border-color:var(--red);color:var(--red);background:#fbeaea}
+.opts button:disabled{cursor:default}
+.ans{border-left:4px solid var(--blue);background:var(--soft);padding:8px 12px;margin-top:10px}
+.lab{background:var(--sheet);border:2px solid var(--navy);padding:12px;margin:14px 0}
+.lab h4{margin:0 0 4px;font-size:14px;color:var(--red);letter-spacing:1px}
+.lab svg{width:100%;height:auto;display:block;background:var(--sheet);touch-action:none}
+.ctl{display:grid;gap:8px;margin-top:8px}
+.ctl label{display:grid;grid-template-columns:auto 1fr 64px;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.ctl input[type=range]{width:100%;accent-color:var(--red)}
+.ctl output{font-family:var(--math);font-weight:700;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:4px 10px;cursor:pointer;min-height:36px}
+.chips button.on{background:var(--navy);color:#fff}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
+.read div{border:1.5px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted)}
+.read b{display:block;font-family:var(--math);font-size:20px;color:var(--navy)}
+.read .hi b{color:var(--red)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;background:var(--sheet);font-size:14px}
+th,td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:13px}
+td.f{font-family:var(--math);font-style:italic;font-weight:700;font-size:17px;white-space:nowrap}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--blue);font-weight:700;font-size:13px}
+details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps>li{counter-increment:st;position:relative;padding:10px 0 10px 40px;border-bottom:1.5px solid var(--line)}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.steps>li.q::before{content:"?";background:var(--red)}
+.steps>li[hidden]{display:none}
+.prob{background:var(--sheet);border:2px solid var(--navy);padding:12px 14px;margin:14px 0}
+.prob .ttl{font-weight:900;color:var(--navy)}
+.prob .eq{font-size:18px}
+.use{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.use div{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px;min-width:0}
+.use b{display:block;color:var(--red);font-size:15px}
+.use p{font-size:13px;line-height:1.7;margin:4px 0 0}
+.key{display:block;background:#fbeaea;border-left:5px solid var(--red);padding:8px 12px;font-weight:900;color:var(--navy);margin:14px 0}
+.note{font-size:12px;color:var(--muted)}
+a{color:var(--blue)}
+footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
+
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
+<div class="wrap">
+<header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
+
+<div class="hero">
+ <h1>知りたいのは<em>「速さ」</em>か、<em>「合計」</em>か。</h1>
+ <p class="lead">微分と積分は、計算のしかたより先に「いつ使うか」がわかれば怖くありません。<b>変わる速さ・傾き</b>を知りたいときは微分、<b>少しずつを全部足した合計</b>を知りたいときは積分。そして2つは、行きと帰りの関係です。土木の本物の場面で、触って確かめましょう。</p>
+ <ul class="road" aria-label="数学ラボの章"><li><a href="../math-sankaku/">三角関数</a></li><li><a href="../math-kika/">幾何学</a></li><li class="on">微分積分はいつ使う？</li><li><a href="../math-bihou/">微分方程式</a></li><li><a href="../math/">ラプラス変換と積分方程式</a></li></ul>
+ <nav class="toc" aria-label="目次">
+  <a href="#c1"><span>1</span>謎：ダムの水は、いつ一番多い？</a>
+  <a href="#c2"><span>2</span>見分け方はひとつだけ</a>
+  <a href="#c3"><span>3</span>触って確かめる：6つの現場</a>
+  <a href="#c4"><span>4</span>最大を探す ＝ 微分が 0</a>
+  <a href="#c5"><span>5</span>仕分けクイズ：微分？積分？</a>
+  <a href="#c6"><span>6</span>土木の3力と、微分積分の地図</a>
+ </nav>
+</div>
+
+<section class="ch" id="c1"><h2><span>1</span>謎：ダムの水は、いつ一番多い？</h2>
+ <div class="nazo" data-nazo="1"><b class="k">謎</b>
+  <p class="q">大雨でダムに流れこむ水が増え、ピークを過ぎてだんだん減っていく。ダムは一定の量だけ放流している。ダムにたまっている水がいちばん多くなるのは、いつ？</p>
+  <div class="opts"><button data-a="0">流れこむ量がいちばん多いとき（ピーク）</button><button data-a="1">流れこむ量が、放流する量と同じになったとき</button><button data-a="2">雨がやんだとき</button></div>
+  <div class="ans" data-ok="1" hidden>ピークを過ぎても、流れこむ量が放流より多いあいだは、水は増え続けます。増えるのが止まるのは「流れこむ量＝放流量」のとき。<b>たまっている量（合計）は積分</b>、<b>増える速さ（流入−放流）は微分</b>で、「速さが 0 のとき、量が最大」。3章の「貯水池」で確かめてみましょう。</div>
+ </div>
+</section>
+
+<section class="ch" id="c2"><h2><span>2</span>見分け方はひとつだけ</h2>
+ <div class="tbl"><table>
+  <thead><tr><th></th><th>微分（ばらす）</th><th>積分（集める）</th></tr></thead>
+  <tbody>
+   <tr><th style="background:var(--blue)">知りたいこと</th><td>変わる<b>速さ</b>、<b>傾き</b>、「1あたり」</td><td>全部で<b>いくら</b>、<b>たまった量</b>、面積・体積</td></tr>
+   <tr><th style="background:var(--blue)">問題文のことば</th><td>〜の速さ、〜の勾配、毎秒・毎時、密度、強さ</td><td>合計、累計、総量、全部で、〜までに</td></tr>
+   <tr><th style="background:var(--blue)">グラフでは</th><td>曲線の<b>接線の傾き</b></td><td>曲線の<b>下の面積</b></td></tr>
+   <tr><th style="background:var(--blue)">単位は</th><td>÷ 時間、÷ 長さ（m³ → m³/s）</td><td>× 時間、× 長さ（m³/s → m³）</td></tr>
+   <tr><th style="background:var(--blue)">例</th><td>沈下量 → 沈下の速さ、標高 → 川の勾配</td><td>流量 → 貯水量、水圧 → 全水圧</td></tr>
+  </tbody></table></div>
+ <span class="key">「速さ・傾き・1あたり」は微分、「合計・たまった量・面積」は積分。単位を見ると、どちらかがすぐわかる。</span>
+ <p>そして、<b>微分と積分は逆の操作</b>です（微分積分学の基本定理）。量を微分すると速さ、速さを積分すると量に戻ります。下の図では、上のグラフの<b>傾き</b>が、下のグラフの<b>高さ</b>と、いつも同じになっています。</p>
+</section>
+
+<section class="ch" id="c3"><h2><span>3</span>触って確かめる：6つの現場</h2>
+ <div class="lab" id="lab"><h4>現場を選んで、横の位置（時刻）を動かす</h4>
+  <div class="chips" id="sc" role="group" aria-label="現場を選ぶ"></div>
+  <p id="story" style="font-size:13px;margin:8px 0 0"></p>
+  <svg id="sv" viewBox="0 0 340 360" role="img" aria-label="上に量のグラフと接線、下に速さのグラフと面積"></svg>
+  <div class="ctl"><label for="xs"><span id="xl">時刻</span> <input id="xs" type="range" min="0" max="100" step="0.5" value="35"><output id="xo"></output></label></div>
+  <div class="read"><div>上の量<b id="ra">—</b><span id="ral"></span></div><div class="hi">傾き（微分）＝下の高さ<b id="rr">—</b><span id="rrl"></span></div></div>
+  <p class="note" id="tip"></p>
+ </div>
+</section>
+
+<section class="ch" id="c4"><h2><span>4</span>最大を探す ＝ 微分が 0</h2>
+ <p>山のてっぺんでは、上りでも下りでもないので、傾きは 0 です。だから「いちばん大きい所」「いちばん小さい所」は、<b>微分して 0 になる所</b>を探せば見つかります。土木では、これがいちばんよく使う微分の使い方です。</p>
+ <div class="prob"><p class="ttl">例：梁のどこが、いちばん曲がろうとする？</p>
+  <p>長さ <span class="m">L＝10 m</span> の単純梁に、<span class="m">w＝10 kN/m</span> の荷重が一様にのる。曲げモーメントは <span class="m">M(x)＝50x − 5x²</span>（kN·m）。</p>
+  <ol class="steps">
+   <li>微分すると <span class="m">dM/dx＝50 − 10x</span>。これは<b>せん断力 Q</b> そのもの（構造力学の <span class="m">dM/dx＝Q</span>）。</li>
+   <li><span class="m">50 − 10x＝0</span> より <span class="m">x＝5 m</span>（真ん中）。</li>
+   <li><span class="m">M(5)＝250 − 125＝125 kN·m</span>。これが最大で、公式 <span class="m">wL²/8＝10×100/8＝125</span> と一致。</li>
+  </ol>
+  <p class="note">3章の「梁」で、せん断力が 0 になる所で曲げが最大になるのを確かめられます。</p>
+ </div>
+ <div class="nazo" data-nazo="2"><b class="k">謎</b>
+  <p class="q">道路の縦断（坂の上り下り）をつくるとき、峠のてっぺんの位置を知りたい。標高の式 <span class="m">z(x)</span> があるとき、何をすればよい？</p>
+  <div class="opts"><button data-a="0">z(x) を積分する</button><button data-a="1">z(x) を微分して、0 になる x を探す</button><button data-a="2">z(x) に 0 を入れる</button></div>
+  <div class="ans" data-ok="1" hidden>微分は「勾配」。てっぺんでは勾配 0 なので、<span class="m">dz/dx＝0</span> の所が峠の頂上です。道路では、勾配が急に変わる所を緩い曲線（縦断曲線）でつなぎ、その曲線の式の微分から頂上や見通しを計算します。</div>
+ </div>
+</section>
+
+<section class="ch" id="c5"><h2><span>5</span>仕分けクイズ：微分？積分？</h2>
+ <p>土木の現場で出てくる「知りたいこと」です。微分か積分か、選んでみましょう。</p>
+ <div id="quiz" class="use"></div>
+ <p id="qscore" style="font-weight:900;color:var(--navy)"></p>
+</section>
+
+<section class="ch" id="c6"><h2><span>6</span>土木の3力と、微分積分の地図</h2>
+ <div class="use">
+  <div><b>構造力学：4回積分のはしご</b><p>荷重 <span class="m">w</span> → 積分 → せん断力 <span class="m">Q</span> → 積分 → 曲げ <span class="m">M</span> → ÷EI して積分 → たわみ角 <span class="m">θ</span> → 積分 → たわみ <span class="m">y</span>。逆に下りると微分。<a href="../kozo-riron/#d-beam-2">導出を見る</a></p></div>
+  <div><b>水理学：積分で全部の力、微分で流れの式</b><p>深さで増える水圧 <span class="m">ρgh</span> を面で積分すると全水圧。流れの「入る−出る＝増える速さ」を書くと連続の式（微分方程式）。<a href="../suiri-riron/#d-fluid-1">連続の式</a></p></div>
+  <div><b>地盤力学：時間と深さの微分</b><p>粘土から水が抜ける速さを、時間と深さの両方で微分して書くと圧密方程式（偏微分方程式）。沈下量はそれを積分して出す。</p></div>
+  <div><b>振動：微分が2回</b><p>位置を微分すると速度、もう一度で加速度。<span class="m">m x″＋c x′＋k x＝F</span> は微分方程式。地震計の加速度記録を2回積分すると、地面の動いた距離になる。</p></div>
+  <div><b>測量・土工：積分で土の量</b><p>道路をつくるとき、削る土と盛る土の量は、断面積を道路の長さ方向に積分（足し算）して出す。平均断面法はその近似。</p></div>
+  <div><b>微分方程式を楽に解く</b><p>微分と積分が混ざった式は、ラプラス変換で「かけ算と割り算」に変えて解ける。<a href="../math/">ラプラス変換の章</a></p></div>
+ </div>
+</section>
+
+<footer>数学ラボ（土木の勉強ラボシリーズ）。ほかのラボ：<a href="../kozo/">構造力学ラボ</a>・<a href="../jiban/">地盤力学ラボ</a>・<a href="../suiri/">水理学ラボ</a>・<a href="../sogi/">そぎ落としミッション</a></footer>
+</div>
+
+<script>
+(()=>{
+const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86'};
+const $=s=>document.querySelector(s);
+const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+const pl=(pts,c,w=2)=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+
+document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+ nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+
+/* 現場：A＝量（上）、r＝dA/dx（下） */
+const gauss=(x,m,s)=>Math.exp(-(((x-m)/s)**2)/2);
+const SC=[
+ {k:'dam',name:'貯水池',xl:'時刻',xu:'時間',x0:0,x1:24,def:8,
+  story:'大雨でダムに水が流れこむ。放流は毎時 2 万m³ で一定。上：たまっている水の量、下：増える速さ（流入 − 放流）。',
+  r:x=>10*gauss(x,6,2.5)-2, A:null, al:'貯水量（基準からの増え）',au:'万m³',rl:'増える速さ',ru:'万m³/時',
+  tip:'下のグラフが 0 を横切る所（流入＝放流）で、上の貯水量が最大になる。下が負の間は水が減っていく。'},
+ {k:'beam',name:'梁',xl:'左からの距離',xu:'m',x0:0,x1:10,def:3,
+  story:'長さ 10 m の単純梁に、10 kN/m の荷重が一様にのる。上：曲げモーメント M、下：せん断力 Q（＝M の傾き）。',
+  r:x=>50-10*x, A:x=>50*x-5*x*x, al:'曲げモーメント M',au:'kN·m',rl:'せん断力 Q',ru:'kN',
+  tip:'Q が 0 になる真ん中で、M が最大 125 kN·m（＝wL²/8）。せん断力の面積を左から足すと曲げモーメントになる。'},
+ {k:'rain',name:'雨量計',xl:'時刻',xu:'時',x0:0,x1:12,def:5,
+  story:'台風の雨。上：降り始めからの累積雨量、下：1時間あたりの雨の強さ（降雨強度）。',
+  r:x=>40*gauss(x,4,1.2)+15*gauss(x,8,1.5), A:null, al:'累積雨量',au:'mm',rl:'降雨強度',ru:'mm/時',
+  tip:'天気予報の「1時間に 50 mm」は微分（強さ）、「総雨量 300 mm」は積分（合計）。避難の判断には両方を見る。'},
+ {k:'cons',name:'粘土の沈下',xl:'経過年数',xu:'年',x0:0,x1:10,def:2,
+  story:'埋立地に盛土をした。粘土から水が抜けて、地面が沈んでいく。上：沈下量、下：沈下の速さ。',
+  r:x=>60*0.5*Math.exp(-0.5*x), A:x=>60*(1-Math.exp(-0.5*x)), al:'沈下量',au:'cm',rl:'沈下の速さ',ru:'cm/年',
+  tip:'最初は速く沈み、だんだん遅くなる。工事では、沈下の速さ（微分）が十分小さくなってから舗装する。'},
+ {k:'road',name:'道路の坂',xl:'起点からの距離',xu:'km',x0:0,x1:4,def:1.2,
+  story:'山を越える道路の縦断。上：標高、下：勾配（1 km 進むと何 m 上がるか）。',
+  r:null, A:x=>100+60*gauss(x,1.8,0.7)-20*gauss(x,3.2,0.4), al:'標高',au:'m',rl:'勾配',ru:'m/km',
+  tip:'勾配が 0 の所が峠の頂上や谷の底。道路の勾配は普通 5〜8%（50〜80 m/km）までに抑える。'},
+ {k:'quake',name:'地震計',xl:'時刻',xu:'秒',x0:0,x1:10,def:2,
+  story:'地震で地面が動く。上：地面の位置（変位）、下：地面の速さ（速度）。速度をもう一度微分すると加速度。',
+  r:null, A:x=>12*Math.exp(-0.35*x)*Math.sin(2.4*x), al:'変位',au:'cm',rl:'速度',ru:'cm/秒',
+  tip:'地震計は加速度を測る。それを積分すると速度、もう一度積分すると変位。建物の被害には速度や変位も効く。'},
+];
+const N=400;
+SC.forEach(sc=>{ const xs=[...Array(N+1)].map((_,i)=>sc.x0+(sc.x1-sc.x0)*i/N); sc.xs=xs;
+ if(!sc.A){ const a=[0]; for(let i=1;i<=N;i++) a.push(a[i-1]+(sc.r(xs[i-1])+sc.r(xs[i]))/2*(xs[i]-xs[i-1])); sc.Av=a; } else sc.Av=xs.map(sc.A);
+ if(!sc.r){ const h=(sc.x1-sc.x0)/N; sc.rv=xs.map(x=>(sc.A(x+h/2)-sc.A(x-h/2))/h); } else sc.rv=xs.map(sc.r); });
+let cur=SC[0]; const sv=$('#sv'), sl=$('#xs');
+$('#sc').innerHTML=SC.map((s,i)=>`<button data-i="${i}"${i?'':' class="on"'}>${s.name}</button>`).join('');
+const nf=v=>Math.abs(v)>=100?v.toFixed(0):Math.abs(v)>=10?v.toFixed(1):v.toFixed(2);
+function draw(){ const sc=cur; const p=+sl.value/100; const i=Math.round(p*N); const x=sc.xs[i];
+ const X=v=>40+284*(v-sc.x0)/(sc.x1-sc.x0);
+ const rng=a=>{ let lo=Math.min(0,...a), hi=Math.max(0,...a); const pd=(hi-lo)*0.08||1; return [lo-pd,hi+pd]; };
+ const [a0,a1]=rng(sc.Av), [r0,r1]=rng(sc.rv);
+ const YA=v=>160-122*(v-a0)/(a1-a0), YR=v=>330-118*(v-r0)/(r1-r0);
+ let s='';
+ s+=`<defs><clipPath id="cpA"><rect x="40" y="34" width="286" height="128"/></clipPath></defs>`+tx(40,14,'上：'+sc.al+'（'+sc.au+'）',C.navy,11,'start',700)+tx(40,28,'━ 接線（傾き ＝ 下のグラフの高さ）',C.blue,10,'start',700)+tx(40,206,'下：'+sc.rl+'（'+sc.ru+'）',C.red,11,'start',700);
+ s+=ln(40,36,40,160)+ln(40,YA(0),324,YA(0),C.navy,1)+ln(40,212,40,330)+ln(40,YR(0),324,YR(0),C.navy,1);
+ [0,.25,.5,.75,1].forEach(q=>{ const v=sc.x0+(sc.x1-sc.x0)*q; s+=tx(X(v),344,+v.toFixed(1),C.muted,9); });
+ s+=tx(324,356,sc.xl+'（'+sc.xu+'）',C.muted,9,'end');
+ // area under r up to x
+ const ar=[[X(sc.xs[0]),YR(0)]]; for(let k=0;k<=i;k++) ar.push([X(sc.xs[k]),YR(sc.rv[k])]); ar.push([X(x),YR(0)]);
+ s+=`<polygon points="${ar.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="${C.red}" fill-opacity=".22"/>`;
+ s+=pl(sc.xs.map((v,k)=>[X(v),YA(sc.Av[k])]),C.navy,2.5)+pl(sc.xs.map((v,k)=>[X(v),YR(sc.rv[k])]),C.red,2.5);
+ // tangent
+ const A=sc.Av[i], R=sc.rv[i], dx=(sc.x1-sc.x0)*0.14;
+ const tl=[[X(x-dx),YA(A-R*dx)],[X(x+dx),YA(A+R*dx)]];
+ s+=`<line clip-path="url(#cpA)" x1="${tl[0][0].toFixed(1)}" y1="${tl[0][1].toFixed(1)}" x2="${tl[1][0].toFixed(1)}" y2="${tl[1][1].toFixed(1)}" stroke="${C.blue}" stroke-width="2.5"/>`;
+ s+=ln(X(x),36,X(x),160,C.muted,1,'3 3')+ln(X(x),212,X(x),330,C.muted,1,'3 3')+`<circle cx="${X(x)}" cy="${YA(A)}" r="5" fill="${C.navy}"/><circle cx="${X(x)}" cy="${YR(R)}" r="5" fill="${C.red}"/>`;
+ 
+ s+=tx(Math.max(X(sc.x0)+4,Math.min(X(x)-4,X(x)-4)),YR(0)+(R>=0?14:-6),'',C.red,10);
+ s+=`<g font-family="Zen Kaku Gothic New,sans-serif" font-size="11" font-weight="700"><text x="110" y="184" text-anchor="middle" fill="${C.blue}">↓ 微分（傾きをとる）</text><text x="250" y="184" text-anchor="middle" fill="${C.red}">↑ 積分（赤い面積を足す）</text></g>`;
+ sv.innerHTML=s;
+ $('#xl').textContent=sc.xl; $('#xo').textContent=nf(x)+' '+sc.xu;
+ $('#ra').textContent=nf(A); $('#ral').textContent=' '+sc.au; $('#rr').textContent=nf(R); $('#rrl').textContent=' '+sc.ru;
+ $('#story').textContent=sc.story; $('#tip').textContent=sc.tip; }
+document.querySelectorAll('#sc button').forEach(b=>b.onclick=()=>{ cur=SC[+b.dataset.i]; document.querySelectorAll('#sc button').forEach(x=>x.classList.toggle('on',x===b)); sl.value=100*(cur.def-cur.x0)/(cur.x1-cur.x0); draw(); });
+sl.oninput=draw; sl.value=100*(cur.def-cur.x0)/(cur.x1-cur.x0); draw();
+
+/* 仕分けクイズ */
+const Q=[
+ ['川の水位の記録から、水位が上がる速さ（cm/時）を知りたい','d','「速さ」なので微分。水位の上がる速さは、避難の判断に使う。'],
+ ['ダムに流れこむ流量（m³/s）の記録から、1日で何 m³ たまったか知りたい','i','「全部で何 m³」なので積分。m³/s × 秒 ＝ m³。'],
+ ['壁にかかる水圧（深さで増える）から、壁全体を押す力を知りたい','i','少しずつの力を深さ方向に全部足すので積分（全水圧）。'],
+ ['梁の曲げモーメントの式から、どこが一番曲がろうとするか知りたい','d','最大の場所は「微分が 0」。dM/dx＝Q＝0 の所。'],
+ ['道路の断面積を 20 m ごとに測って、削る土の量を出したい','i','断面積 × 長さを足していくので積分（土量計算）。'],
+ ['地盤の沈下量の記録から、沈下が落ち着いたか判断したい','d','沈下の「速さ」が十分小さいかを見るので微分。'],
+ ['地震計の加速度から、地面が何 cm 動いたか知りたい','i','加速度を積分して速度、もう一度積分して変位。'],
+ ['等高線の地図から、斜面がどれだけ急か（勾配）知りたい','d','標高の変わり方（傾き）なので微分。崩れやすさの判断に使う。'],
+];
+let score=0, done=0;
+$('#quiz').innerHTML=Q.map(([q],i)=>`<div data-q="${i}"><p style="margin:0 0 6px;font-weight:700;font-size:14px">${q}</p><div class="opts" style="flex-direction:row"><button data-v="d" style="flex:1;text-align:center">微分</button><button data-v="i" style="flex:1;text-align:center">積分</button></div><p class="why" hidden style="font-size:13px;margin:6px 0 0"></p></div>`).join('');
+document.querySelectorAll('#quiz [data-q]').forEach(box=>{ const [q,a,w]=Q[+box.dataset.q];
+ box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); const hit=b.dataset.v===a; if(!hit) b.classList.add('ng'); score+=hit?1:0; done++;
+  const why=box.querySelector('.why'); why.innerHTML=(hit?'<b>正解。</b>':'<b>ちがいます。</b>')+w; why.hidden=false;
+  $('#qscore').textContent=done===Q.length?`${Q.length} 問中 ${score} 問正解。${score===Q.length?'完璧です。単位を見る、が身についています。':'まちがえた問題は、単位（÷時間か、×時間か）を見直してみよう。'}`:`${done} / ${Q.length} 問`; }); });
+})();
+</script>

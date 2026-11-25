@@ -1,0 +1,236 @@
+<title>幾何学ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* レイアウト：勉強ラボシリーズのリソグラフ調。1カラムの章立て、各章に「謎 → 触る → 導く」 */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;--gold:#C8A02A;
+ --disp:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;--body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;--math:"Times New Roman",Times,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 60px}
+header.top{border-bottom:3px solid var(--navy);padding-block:14px 10px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.logo{font-family:var(--disp);font-size:20px;color:var(--navy);letter-spacing:1px}.logo b{color:var(--red);font-weight:400}
+.series{font-size:12px;color:var(--muted)}
+.hero{padding-block:28px 10px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(26px,6vw,40px);line-height:1.3;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:62ch;margin:0}
+.road{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none;font-size:12px}
+.road li{border:1.5px solid var(--navy);padding:2px 10px;background:var(--sheet)}
+.road li.on{background:var(--navy);color:#fff}.road li.soon{border-style:dashed;color:var(--muted);border-color:var(--muted)}
+nav.toc{margin:22px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+nav.toc a{display:block;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);text-decoration:none;font-weight:700;padding:6px 10px;font-size:13px}
+nav.toc a span{color:var(--red);font-family:var(--disp);font-weight:400;margin-right:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--soft)}
+section.ch{margin-top:46px;scroll-margin-top:12px}
+section.ch>h2{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--navy);margin:0 0 8px;line-height:1.4;text-wrap:balance}
+section.ch>h2 span{color:var(--red);margin-right:10px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 6px}
+p{margin:8px 0}
+.mm,.m{font-family:var(--math);font-style:italic;font-weight:700;white-space:nowrap}
+.eq{display:block;text-align:center;font-family:var(--math);font-style:italic;font-weight:700;font-size:20px;color:var(--red);margin:12px 0;white-space:normal;overflow-x:auto}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span:last-child{padding:0 .2em}
+.int{font-size:1.4em;vertical-align:-.25em;font-style:normal;font-weight:400}
+sup,sub{font-size:.7em}
+.nazo{background:var(--sheet);border:3px solid var(--red);padding:14px 16px;margin:16px 0}
+.nazo b.k{display:block;font-family:var(--disp);font-weight:400;color:var(--red);font-size:14px;letter-spacing:2px}
+.nazo .q{font-weight:700;margin:4px 0 10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button,.btn{font:inherit;font-weight:700;text-align:left;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 12px;cursor:pointer;min-height:44px}
+.opts button:hover,.opts button:focus-visible,.btn:hover,.btn:focus-visible{background:var(--soft);outline:none}
+.opts button.ok{background:var(--navy);color:#fff}.opts button.ng{border-color:var(--red);color:var(--red);background:#fbeaea}
+.opts button:disabled{cursor:default}
+.ans{border-left:4px solid var(--blue);background:var(--soft);padding:8px 12px;margin-top:10px}
+.lab{background:var(--sheet);border:2px solid var(--navy);padding:12px;margin:14px 0}
+.lab h4{margin:0 0 4px;font-size:14px;color:var(--red);letter-spacing:1px}
+.lab svg{width:100%;height:auto;display:block;background:var(--sheet);touch-action:none}
+.ctl{display:grid;gap:8px;margin-top:8px}
+.ctl label{display:grid;grid-template-columns:auto 1fr 64px;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.ctl input[type=range]{width:100%;accent-color:var(--red)}
+.ctl output{font-family:var(--math);font-weight:700;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:4px 10px;cursor:pointer;min-height:36px}
+.chips button.on{background:var(--navy);color:#fff}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
+.read div{border:1.5px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted)}
+.read b{display:block;font-family:var(--math);font-size:20px;color:var(--navy)}
+.read .hi b{color:var(--red)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;background:var(--sheet);font-size:14px}
+th,td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:13px}
+td.f{font-family:var(--math);font-style:italic;font-weight:700;font-size:17px;white-space:nowrap}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--blue);font-weight:700;font-size:13px}
+details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps>li{counter-increment:st;position:relative;padding:10px 0 10px 40px;border-bottom:1.5px solid var(--line)}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.steps>li.q::before{content:"?";background:var(--red)}
+.steps>li[hidden]{display:none}
+.prob{background:var(--sheet);border:2px solid var(--navy);padding:12px 14px;margin:14px 0}
+.prob .ttl{font-weight:900;color:var(--navy)}
+.prob .eq{font-size:18px}
+.use{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.use div{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px;min-width:0}
+.use b{display:block;color:var(--red);font-size:15px}
+.use p{font-size:13px;line-height:1.7;margin:4px 0 0}
+.key{display:block;background:#fbeaea;border-left:5px solid var(--red);padding:8px 12px;font-weight:900;color:var(--navy);margin:14px 0}
+.note{font-size:12px;color:var(--muted)}
+a{color:var(--blue)}
+footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
+
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
+<div class="wrap">
+<header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
+
+<div class="hero">
+ <h1>同じ材料でも、<em>形</em>で強さが変わる。</h1>
+ <p class="lead">幾何学は、形の大きさと位置の数学です。梁の断面の重心（図心）、水路のいちばん流れやすい形、土地の面積、カーブの長さ。土木の設計は「どんな形にするか」を決める仕事なので、形を数で表す幾何学が土台になります。</p>
+ <ul class="road" aria-label="数学ラボの章"><li><a href="../math-sankaku/">三角関数</a></li><li class="on">幾何学</li><li><a href="../math-bibun/">微分積分はいつ使う？</a></li><li><a href="../math-bihou/">微分方程式</a></li><li><a href="../math/">ラプラス変換と積分方程式</a></li></ul>
+ <nav class="toc" aria-label="目次">
+  <a href="#c1"><span>1</span>謎：いちばん流れやすい水路の形は？</a>
+  <a href="#c2"><span>2</span>面積・図心・断面二次モーメント</a>
+  <a href="#c3"><span>3</span>水路の形を変えて、流れやすさを見る</a>
+  <a href="#c4"><span>4</span>座標で土地の面積を測る</a>
+  <a href="#c5"><span>5</span>道路のカーブ：円の幾何学</a>
+  <a href="#c6"><span>6</span>相似と、模型実験</a>
+ </nav>
+</div>
+
+<section class="ch" id="c1"><h2><span>1</span>謎：いちばん流れやすい水路の形は？</h2>
+ <div class="nazo" data-nazo="1"><b class="k">謎</b>
+  <p class="q">コンクリートの長方形の水路をつくる。断面積は同じ 2 m² にする。いちばん多く水を流せるのは、どの形？</p>
+  <div class="opts"><button data-a="0">幅 4 m・深さ 0.5 m（広くて浅い）</button><button data-a="1">幅 2 m・深さ 1 m（幅が深さの2倍）</button><button data-a="2">幅 1 m・深さ 2 m（細くて深い）</button></div>
+  <div class="ans" data-ok="1" hidden>幅が深さの2倍のときです。水は壁と底にこすれて遅くなるので、同じ面積なら、<b>水にふれる周りの長さ（潤辺）がいちばん短い形</b>が流れやすい。長方形では幅 ＝ 2 × 深さ のとき潤辺が最小になります（半円にいちばん近い長方形）。3章で確かめられます。</div>
+ </div>
+</section>
+
+<section class="ch" id="c2"><h2><span>2</span>面積・図心・断面二次モーメント</h2>
+ <p>梁の断面は、3つの数で性格が決まります。<b>面積 A</b>（引っ張り・押しに効く）、<b>図心</b>（断面の重心。曲げても伸び縮みしない中立軸が通る）、<b>断面二次モーメント I</b>（曲げにくさ。図心から遠くに材料があるほど大きい）。</p>
+ <div class="lab"><h4>触って確かめる：T形の断面をつくる</h4>
+  <svg id="sec" viewBox="0 0 340 230" role="img" aria-label="T形断面と図心"></svg>
+  <div class="ctl">
+   <label for="bf">上のフランジの幅 <input id="bf" type="range" min="40" max="300" step="10" value="200"><output id="bfo"></output></label>
+   <label for="tf">フランジの厚さ <input id="tf" type="range" min="10" max="60" step="5" value="30"><output id="tfo"></output></label>
+   <label for="hw">ウェブの高さ <input id="hw" type="range" min="60" max="300" step="10" value="220"><output id="hwo"></output></label>
+   <label for="tw">ウェブの厚さ <input id="tw" type="range" min="10" max="80" step="5" value="30"><output id="two"></output></label>
+  </div>
+  <div class="read"><div>面積 A<b id="sa">—</b><span>cm²</span></div><div class="hi">図心（上から）<b id="sy">—</b><span>mm</span></div><div>断面二次モーメント I<b id="si">—</b><span>×10⁶ mm⁴</span></div></div>
+  <p class="note">図心の求め方：部品ごとに「面積 × 部品の図心までの距離」を足し、全体の面積で割る（<span class="m">ȳ＝ΣA<sub>i</sub>y<sub>i</sub>/ΣA</span>）。I は部品ごとの <span class="m">bh³/12</span> に、平行軸の定理で <span class="m">A·d²</span> を足す。</p>
+ </div>
+ <details><summary>図心の式の導き方</summary><div class="why">図心は「そこで支えると、どちらにも傾かない点」。各部品の重さ（面積に比例）が、ある軸まわりにつくるモーメントの合計 <span class="m">ΣA<sub>i</sub>y<sub>i</sub></span> と、全部の面積が図心 ȳ に集まったときのモーメント <span class="m">ȳΣA</span> が等しい、とおくと出る（力のモーメントのつりあい）。</div></details>
+ <div class="nazo" data-nazo="2"><b class="k">謎</b>
+  <p class="q">同じ面積の材料で、曲げにいちばん強い梁にしたい。上の図でフランジを広げ、ウェブを細く高くすると、I はどうなる？</p>
+  <div class="opts"><button data-a="0">面積が同じなら I も同じ</button><button data-a="1">材料が図心から遠くなるので、I が大きくなる</button><button data-a="2">細くなるので I は小さくなる</button></div>
+  <div class="ans" data-ok="1" hidden>I は「面積 × 距離²」の合計なので、材料を図心から遠くに置くほど急に大きくなります。鉄骨の H形鋼や I形の橋桁が、上下に板を広げ、真ん中を細くしているのはこのためです（<a href="../kozo-riron/#d-section-1">構造の理論ラボ：断面二次モーメント</a>）。</div>
+ </div>
+</section>
+
+<section class="ch" id="c3"><h2><span>3</span>水路の形を変えて、流れやすさを見る</h2>
+ <p>マニングの式 <span class="m">Q＝(1/n) A R<sup>2/3</sup> I<sup>1/2</sup></span> で、形が効くのは<b>径深 R ＝ A / P</b>（面積 ÷ 潤辺）だけです。面積を 2 m² に決めて、幅を変えてみましょう。</p>
+ <div class="lab"><h4>触って確かめる：幅を変える（面積は一定）</h4>
+  <svg id="ch" viewBox="0 0 340 280" role="img" aria-label="長方形水路の断面と、径深のグラフ"></svg>
+  <div class="ctl"><label for="cb">水路の幅 b <input id="cb" type="range" min="0.6" max="6" step="0.05" value="3.2"><output id="cbo"></output></label></div>
+  <div class="read"><div>深さ h ＝ A/b<b id="ch1">—</b><span>m</span></div><div>潤辺 P ＝ b＋2h<b id="ch2">—</b><span>m</span></div><div class="hi">流量（最適を 100 とする）<b id="ch3">—</b></div></div>
+ </div>
+ <details><summary>なぜ幅 ＝ 2 × 深さ？（微分で導く）</summary><div class="why"><span class="m">h＝A/b</span> なので <span class="m">P(b)＝b＋2A/b</span>。最小は微分が 0 の所：<span class="m">P′＝1−2A/b²＝0</span> から <span class="m">b²＝2A＝2bh</span>、つまり <span class="m">b＝2h</span>。幾何学と微分（最大・最小）の組み合わせです。</div></details>
+</section>
+
+<section class="ch" id="c4"><h2><span>4</span>座標で、土地の面積を測る</h2>
+ <p>測量では、土地の角（境界点）の座標 <span class="m">(x, y)</span> を測り、そこから面積を計算します（座標法）。どんなにいびつな多角形でも、次の式1つで面積が出ます。</p>
+ <span class="eq">S ＝ ½ |Σ (x<sub>i</sub> y<sub>i＋1</sub> − x<sub>i＋1</sub> y<sub>i</sub>)|</span>
+ <div class="lab"><h4>触って確かめる：境界点（赤い点）をドラッグ</h4>
+  <svg id="poly" viewBox="0 0 340 260" role="img" aria-label="多角形の土地と面積"></svg>
+  <div class="read"><div class="hi">面積（座標法）<b id="pa">—</b><span>m²</span></div><div>格子 1 マス<b>10 m</b><span>＝100 m²</span></div></div>
+  <p class="note">マス目を数えた面積と、だいたい同じになることを確かめてください。</p>
+ </div>
+ <details><summary>なぜこの式？（導き方）</summary><div class="why">原点と、隣り合う2点 <span class="m">(x<sub>i</sub>, y<sub>i</sub>)</span>・<span class="m">(x<sub>i＋1</sub>, y<sub>i＋1</sub>)</span> でできる三角形の面積は、外積の半分 <span class="m">½(x<sub>i</sub>y<sub>i＋1</sub>−x<sub>i＋1</sub>y<sub>i</sub>)</span>（向きで正負がつく）。一周分を足すと、多角形の外側の部分は正負で打ち消し合い、中の面積だけが残る（靴ひもの公式）。</div></details>
+</section>
+
+<section class="ch" id="c5"><h2><span>5</span>道路のカーブ：円の幾何学</h2>
+ <p>道路や鉄道のカーブは、まっすぐな道2本を円弧でつないでいます。2本の道がなす角（交角）を <span class="m">I</span>、円の半径を <span class="m">R</span> とすると</p>
+ <div class="use">
+  <div><b>曲線の長さ CL</b><p><span class="m">CL ＝ R · I</span>（I はラジアン）。弧の長さ ＝ 半径 × 角度。</p></div>
+  <div><b>接線の長さ TL</b><p><span class="m">TL ＝ R tan(I/2)</span>。交点から、カーブが始まる点までの距離。現地で杭を打つ位置を決める。</p></div>
+  <div><b>外線の長さ SL</b><p><span class="m">SL ＝ R(1/cos(I/2) − 1)</span>。交点とカーブの真ん中の距離。建物にぶつからないかの確認。</p></div>
+ </div>
+ <details><summary>導き方</summary><div class="why">円の中心から、2つの接点へ引いた半径は、それぞれの道（接線）に垂直。中心・接点・交点でできる直角三角形で、中心の角は I/2。だから <span class="m">TL＝R tan(I/2)</span>、中心から交点までの距離は <span class="m">R/cos(I/2)</span>、そこから R を引くと SL。三角関数と円の性質だけでできている。</div></details>
+ <p class="note">実際の道路では、直線から急に円にすると車のハンドルが急に切れるので、間に「クロソイド曲線」（曲がり方が少しずつ変わる曲線）を入れます。</p>
+</section>
+
+<section class="ch" id="c6"><h2><span>6</span>相似と、模型実験</h2>
+ <p>形が同じで大きさだけ違うものを相似といいます。長さが <span class="m">k</span> 倍になると、<b>面積は k² 倍、体積（重さ）は k³ 倍</b>になります。</p>
+ <div class="nazo" data-nazo="3"><b class="k">謎</b>
+  <p class="q">1/50 の模型の橋が、自分の重さに耐えられた。本物（50倍）の橋も、自分の重さに耐えられる？</p>
+  <div class="opts"><button data-a="0">形が同じなので、同じように耐えられる</button><button data-a="1">耐えにくくなる（重さは 50³ 倍、断面積は 50² 倍）</button><button data-a="2">大きいほど丈夫になる</button></div>
+  <div class="ans" data-ok="1" hidden>耐えにくくなります。重さは体積に比例して 125,000 倍、支える断面積は 2,500 倍なので、断面にかかる応力は 50 倍になります。だから大きな橋ほど、自分の重さ（死荷重）との戦いになり、軽い材料や形（トラス・吊り橋）が工夫されます。ゾウの足がネズミより太いのも同じ理由です。</div>
+ </div>
+ <p>水の模型実験では、模型と本物でフルード数 <span class="m">Fr＝v/√(gh)</span> をそろえます。長さが 1/k なら、流速は 1/√k、流量は 1/k<sup>2.5</sup> にします（フルードの相似則）。</p>
+</section>
+
+<footer>数学ラボ（土木の勉強ラボシリーズ）。ほかのラボ：<a href="../kozo/">構造力学ラボ</a>・<a href="../jiban/">地盤力学ラボ</a>・<a href="../suiri/">水理学ラボ</a>・<a href="../sogi/">そぎ落としミッション</a></footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ const {C,tx,ln,pl,pg,arr,nf,$,drag}=MX;
+/* T形断面 */
+(()=>{ const sv=$('#sec'); const ids=['bf','tf','hw','tw'];
+ const draw=()=>{ const [bf,tf,hw,tw]=ids.map(k=>+$('#'+k).value); ids.forEach(k=>$('#'+k+'o').textContent=$('#'+k).value+' mm');
+  const A1=bf*tf, A2=tw*hw, A=A1+A2; const y1=tf/2, y2=tf+hw/2; const yb=(A1*y1+A2*y2)/A;
+  const I=bf*tf**3/12+A1*(yb-y1)**2+tw*hw**3/12+A2*(yb-y2)**2;
+  const H=tf+hw, sc=Math.min(200/H,300/Math.max(bf,tw)); const cx=170, top=15;
+  let g=`<rect x="${(cx-bf*sc/2).toFixed(1)}" y="${top}" width="${(bf*sc).toFixed(1)}" height="${(tf*sc).toFixed(1)}" fill="${C.mid}" stroke="${C.navy}" stroke-width="1.5"/>`+`<rect x="${(cx-tw*sc/2).toFixed(1)}" y="${(top+tf*sc).toFixed(1)}" width="${(tw*sc).toFixed(1)}" height="${(hw*sc).toFixed(1)}" fill="${C.mid}" stroke="${C.navy}" stroke-width="1.5"/>`;
+  const gy=top+yb*sc; g+=ln(10,gy,330,gy,C.red,1.5,'6 4')+`<circle cx="${cx}" cy="${gy.toFixed(1)}" r="6" fill="${C.red}"/>`+tx(14,gy-6,'図心・中立軸',C.red,10,'start',700);
+  const y1p=top+y1*sc, y2p=top+y2*sc; g+=`<circle cx="${cx}" cy="${y1p.toFixed(1)}" r="3" fill="${C.navy}"/><circle cx="${cx}" cy="${y2p.toFixed(1)}" r="3" fill="${C.navy}"/>`;
+  sv.innerHTML=g; $('#sa').textContent=(A/100).toFixed(1); $('#sy').textContent=yb.toFixed(0); $('#si').textContent=(I/1e6).toFixed(1); };
+ ids.forEach(k=>$('#'+k).oninput=draw); draw(); })();
+
+/* 水路 */
+(()=>{ const sv=$('#ch'), bs=$('#cb'); const A=2;
+ const draw=()=>{ const b=+bs.value, h=A/b, P=b+2*h, R=A/P; const Rb=A/(2+2*1); const q=Math.pow(R/Rb,2/3)*100; $('#cbo').textContent=b.toFixed(2)+' m';
+  const sc=40, cx=170, by=150; let g=ln(cx-b*sc/2-8,by-Math.min(h,3)*sc-14,cx-b*sc/2,by-Math.min(h,3)*sc-14,C.navy,0);
+  const hh=Math.min(h,3.4);
+  g+=pg([[cx-b*sc/2,by-hh*sc],[cx-b*sc/2,by],[cx+b*sc/2,by],[cx+b*sc/2,by-hh*sc]],C.mid,0.6,'none');
+  g+=pl([[cx-b*sc/2-10,by-hh*sc-6],[cx-b*sc/2,by-hh*sc-6],[cx-b*sc/2,by],[cx+b*sc/2,by],[cx+b*sc/2,by-hh*sc-6],[cx+b*sc/2+10,by-hh*sc-6]],C.navy,3);
+  g+=pl([[cx-b*sc/2,by-hh*sc],[cx-b*sc/2,by],[cx+b*sc/2,by],[cx+b*sc/2,by-hh*sc]],C.red,2.5,'5 3')+tx(cx,by+14,'赤い点線 ＝ 潤辺 P（水が壁にこすれる長さ）',C.red,10,'middle',700);
+  const X=v=>40+280*(v-0.6)/5.4, Y=v=>262-70*v/0.5; g+=ln(40,190,40,262)+ln(40,262,320,262);
+  const p=[]; for(let i=0;i<=120;i++){ const bb=0.6+5.4*i/120; p.push([X(bb),Y(A/(bb+2*A/bb))]); } g+=pl(p,C.navy,2.2);
+  g+=ln(X(2),190,X(2),262,C.blue,1,'3 3')+tx(X(2),186,'b＝2h（最適）',C.blue,9,'middle',700)+`<circle cx="${X(b).toFixed(1)}" cy="${Y(R).toFixed(1)}" r="5" fill="${C.red}"/>`;
+  g+=tx(320,186,'径深 R ＝ A/P',C.navy,10,'end',700)+tx(320,275,'幅 b（m）',C.muted,9,'end');
+  sv.innerHTML=g; $('#ch1').textContent=h.toFixed(2); $('#ch2').textContent=P.toFixed(2); $('#ch3').textContent=q.toFixed(0); };
+ bs.oninput=draw; draw(); })();
+
+/* 座標法 */
+(()=>{ const sv=$('#poly'); const P=[[3,3],[24,2],[29,12],[17,21],[5,16]]; const S=10, ox=20, oy=240; let sel=-1;
+ const X=x=>ox+x*S, Y=y=>oy-y*S;
+ const draw=()=>{ let g=''; for(let i=0;i<=30;i++) g+=ln(X(i),Y(0),X(i),Y(22),C.line,i%5?0.5:1); for(let j=0;j<=22;j++) g+=ln(X(0),Y(j),X(30),Y(j),C.line,j%5?0.5:1);
+  g+=pg(P.map(([x,y])=>[X(x),Y(y)]),C.red,0.18,C.navy,2.5);
+  P.forEach(([x,y],i)=>g+=`<circle cx="${X(x)}" cy="${Y(y)}" r="8" fill="${C.red}" stroke="#fff" stroke-width="2" style="cursor:grab"/>`+tx(X(x)+(x>15?-12:12),Y(y)-10,`(${x*10}, ${y*10})`,C.navy,9,x>15?'end':'start',700));
+  sv.innerHTML=g; let s=0; for(let i=0;i<P.length;i++){ const [x1,y1]=P[i], [x2,y2]=P[(i+1)%P.length]; s+=x1*y2-x2*y1; } $('#pa').textContent=(Math.abs(s)/2*100).toLocaleString('ja-JP'); };
+ sv.addEventListener('pointerdown',e=>{ const r=sv.getBoundingClientRect(); const x=(e.clientX-r.left)*340/r.width, y=(e.clientY-r.top)*260/r.height; let best=-1,bd=1e9; P.forEach(([px,py],i)=>{ const d=Math.hypot(X(px)-x,Y(py)-y); if(d<bd){bd=d;best=i;} }); sel=bd<30?best:-1; });
+ drag(sv,340,260,(x,y)=>{ if(sel<0) return; P[sel]=[Math.max(0,Math.min(30,Math.round((x-ox)/S))),Math.max(0,Math.min(22,Math.round((oy-y)/S)))]; draw(); });
+ ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>sel=-1));
+ draw(); })();
+});
+</script>
