@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>鉄筋コンクリート設計ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: 謎（予想）→ 梁を壊す（M–φ・ひずみ・応力）→ 梁の設計 → 擁壁 → 橋の床版 → 導き方 → 実例・街で探す */
+:root{
+  --paper:#F4F3EF; --card:#FBFAF7; --ink:#1C3A7E; --navy:#12286B; --blue:#3286BE; --red:#C62422; --mid:#93BCD6;
+  --conc:#D9D6CE; --conc2:#C4C0B6; --soil:#C9BFAE; --steel:#C62422; --line:rgba(28,58,126,.2); --faint:rgba(50,134,190,.09); --ok:#2E7D4F; --warn:#B7791F;
+  --f-disp:'Dela Gothic One','Zen Kaku Gothic New',sans-serif;
+  --f-body:'Zen Kaku Gothic New','Hiragino Sans','Noto Sans JP',sans-serif;
+  --f-num:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#0E1530; --card:#151F45; --ink:#D9E4F6; --navy:#EEF3FC; --blue:#5AA8DE; --red:#EF5B55; --mid:#2D5683;
+  --conc:#3A4361; --conc2:#4B5576; --soil:#6E6250; --steel:#EF5B55; --line:rgba(217,228,246,.18); --faint:rgba(90,168,222,.10); --ok:#5CC48A; --warn:#E0A84A; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0E1530; --card:#151F45; --ink:#D9E4F6; --navy:#EEF3FC; --blue:#5AA8DE; --red:#EF5B55; --mid:#2D5683;
+  --conc:#3A4361; --conc2:#4B5576; --soil:#6E6250; --steel:#EF5B55; --line:rgba(217,228,246,.18); --faint:rgba(90,168,222,.10); --ok:#5CC48A; --warn:#E0A84A; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{color:var(--navy);margin:0;text-wrap:balance}
+h1{font-family:var(--f-disp);font-weight:400;font-size:clamp(30px,5.5vw,50px);line-height:1.2;text-shadow:3px 2px 0 var(--mid)}
+h1 span{color:var(--red)}
+h2{font-family:var(--f-disp);font-weight:400;font-size:21px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h2 small{font-family:var(--f-body);font-size:12.5px;opacity:.75}
+.hero{padding-block:26px 4px;display:grid;gap:8px;position:relative}
+.kicker{font-size:12px;letter-spacing:.18em;color:var(--red);font-weight:700}
+.hero p{margin:0;max-width:66ch}
+.panel{background:var(--card);border:3px solid var(--navy);padding:16px;min-width:0}
+.panel.riddle{border-color:var(--red)}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.choices button,.btn{font:inherit;font-size:14px;border:2px solid var(--navy);background:transparent;color:var(--navy);padding:6px 14px;cursor:pointer;font-weight:700}
+.choices button:hover,.btn:hover{background:var(--navy);color:var(--paper)}
+.choices button.right{background:var(--blue);border-color:var(--blue);color:#fff}
+.choices button.wrong{border-color:var(--red);color:var(--red);text-decoration:line-through}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.answer{margin-top:10px;font-size:14px;border-left:4px solid var(--blue);padding:4px 10px}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;align-items:start}
+@media (max-width:880px){.stage{grid-template-columns:minmax(0,1fr)}}
+canvas#cv{width:100%;height:auto;display:block;background:var(--paper);border:2px solid var(--line)}
+.ctl{display:grid;gap:12px}
+.row{display:grid;gap:2px}
+.row label{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
+.row label b{font-family:var(--f-num);color:var(--navy);font-weight:600;white-space:nowrap}
+.row small{font-size:11.5px;opacity:.75;line-height:1.5}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.state{font-size:13.5px;padding:6px 10px;border:2px solid currentColor;font-weight:700}
+.state.ok{color:var(--ok)} .state.ng{color:var(--red)} .state.wn{color:var(--warn)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:4px}
+@media (max-width:720px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{border-top:4px solid var(--blue);padding-top:6px;min-width:0}
+.kpi span{font-size:12px;opacity:.8;display:block}
+.kpi b{font-family:var(--f-num);font-size:clamp(20px,3vw,27px);color:var(--navy);font-weight:600;line-height:1.3}
+.kpi b em{font-style:normal;font-size:13px;margin-left:3px}
+.kpi small{font-size:11.5px;opacity:.75;display:block}
+.kpi.red{border-color:var(--red)}
+.types{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.types span{font-size:12.5px;border:2px solid var(--line);padding:2px 9px}
+.types span.on{border-color:var(--red);color:var(--red);font-weight:700}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+svg.chart{display:block;width:100%;overflow:visible}
+svg text{font-family:var(--f-body)}
+.lead{margin:6px 0 8px;font-size:13.5px;max-width:72ch}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;margin:4px 0}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend i{width:14px;height:3px;display:inline-block}
+.steps{display:grid;gap:12px;font-size:14px}
+.st{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px}
+.st>i{font-style:normal;font-family:var(--f-num);font-weight:600;background:var(--navy);color:var(--paper);text-align:center;line-height:24px;height:24px;font-size:13px}
+.st p{margin:0}
+.eq{font-family:var(--f-num);font-size:13px;background:var(--faint);padding:5px 9px;margin:4px 0;overflow-x:auto;white-space:nowrap}
+.cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin-top:8px}
+@media (max-width:720px){.cases{grid-template-columns:minmax(0,1fr)}}
+.cases h3{font-size:15px}
+.cases p{margin:0;font-size:13.5px}
+.links{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13.5px;margin-top:12px}
+a{color:var(--blue)}
+footer{max-width:1100px;margin:18px auto 0;font-size:12px;opacity:.75}
+.toc{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px}
+.toc a{font-weight:700;text-decoration:none;border-bottom:2px solid var(--mid)}
+.stage2{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media (max-width:880px){.stage2{grid-template-columns:minmax(0,1fr)}}
+.figbox{border:2px solid var(--line);background:var(--paper);min-width:0;overflow-x:auto}
+.figbox svg{display:block;width:100%;height:auto;min-width:520px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:13px;border:2px solid var(--navy);background:transparent;color:var(--navy);padding:3px 10px;cursor:pointer}
+.seg button.on{background:var(--navy);color:var(--paper)}
+select{font:inherit;font-size:14px;padding:3px 6px;border:2px solid var(--navy);background:var(--card);color:var(--ink)}
+.grp{font-size:12px;letter-spacing:.12em;font-weight:700;color:var(--red);border-bottom:2px solid var(--line);padding-bottom:2px;margin-top:4px}
+.grp.d{color:var(--blue)}
+table.chk{width:100%;border-collapse:collapse;font-size:13.5px}
+table.chk th,table.chk td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+table.chk td.n{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.chk td.r{font-weight:700;white-space:nowrap}
+table.chk td.r.ok{color:var(--ok)} table.chk td.r.ng{color:var(--red)}
+.tblwrap{overflow-x:auto}
+.stars{font-size:22px;letter-spacing:4px;color:var(--mid)}
+.stars b{color:var(--red);font-weight:400}
+.mission{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;border:2px dashed var(--blue);padding:8px 12px;margin-top:10px;font-size:14px}
+.mission p{margin:0;max-width:70ch}
+.calc{font-family:var(--f-num);font-size:12.5px;background:var(--faint);padding:8px 10px;overflow-x:auto;white-space:pre;line-height:1.65;margin:6px 0 0}
+details.der{border-top:2px solid var(--line);padding:8px 0}
+details.der summary{cursor:pointer;font-weight:700;color:var(--navy);font-size:15px}
+details.der .steps{margin-top:10px}
+details.der svg{max-width:420px;width:100%;height:auto;display:block;margin:6px 0}
+.ans-fig{max-width:360px;width:100%;height:auto;display:block;margin-top:8px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn.sm{font-size:12.5px;padding:3px 10px}
+.note{font-size:12.5px;opacity:.8;margin:6px 0 0}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head><body>
+
+<div class="wrap">
+<header class="hero">
+  <div class="kicker">ドボク勉強ラボ ・ コンクリート構造</div>
+  <h1>鉄筋コンクリート<span>設計ラボ</span></h1>
+  <p>コンクリートは押されると強く、引っ張られると弱い材料です。引張強さは圧縮強さの約10分の1しかありません。そこで、引っ張られる側にだけ鉄筋を入れて引張を受け持たせるのが鉄筋コンクリート（RC）です。梁を実際に壊してみてから、擁壁と橋の床版を、実務と同じ手順で設計します。</p>
+  <nav class="toc" aria-label="目次">
+    <a href="#m1">1 梁を壊す・設計する</a><a href="#m2">2 擁壁</a><a href="#m3">3 橋の床版</a><a href="#der">導き方</a><a href="#cases">実例と街で探す</a>
+  </nav>
+</header>
+
+<section class="panel riddle" id="m1" aria-labelledby="h-r1">
+  <h2 id="h-r1">謎1 <small>予想してから、下の梁で確かめる</small></h2>
+  <p style="margin:8px 0 0">梁に入れる鉄筋を増やしていくと、梁はどうなるでしょう。</p>
+  <div class="choices" data-ans="c">
+    <button data-v="a">増やすほど安全になる</button>
+    <button data-v="b">ある量で強さが頭打ちになるだけ</button>
+    <button data-v="c">入れすぎると、壊れ方が危険になる</button>
+  </div>
+  <div class="answer" hidden>鉄筋を入れすぎると、鉄筋が伸び切る（降伏する）前に、上側のコンクリートが先に潰れます。コンクリートの圧壊は前触れなく一瞬で起きるので、強さは上がっても壊れ方は危険になります。下の梁で「鉄筋ぎっしり」を押して、M–φ曲線の終わり方を比べてください。普通の梁は鉄筋が先に伸びて大きくたわみ、壊れる前に「危ない」と目で分かります。設計では鉄筋比 ρ をつり合い鉄筋比 ρ<sub>b</sub> の75％以下に抑えて、必ずこちらの壊れ方にします。</div>
+</section>
+
+<section class="panel" aria-labelledby="h-beam">
+  <h2 id="h-beam">梁を壊してみる <small>荷重を上げると、ひび割れ → 鉄筋降伏 → 圧壊</small></h2>
+  <div class="stage2" style="margin-top:10px">
+    <div style="min-width:0;display:grid;gap:10px">
+      <div class="figbox"><svg id="beam" viewBox="0 0 720 230" aria-label="2点で押した梁の側面。ひび割れとたわみ"></svg></div>
+      <div class="row"><label for="ld">荷重<b><span id="ld_v"></span></b></label>
+        <input type="range" id="ld" min="0" max="300" step="1" value="150"></div>
+      <div class="btnrow"><button class="btn sm" id="play" type="button">壊れるまで押す</button>
+        <button class="btn sm" data-pre="std" type="button">普通の梁</button>
+        <button class="btn sm" data-pre="over" type="button">鉄筋ぎっしり（過鉄筋）</button>
+        <button class="btn sm" data-pre="top" type="button">鉄筋を上側に入れる</button></div>
+      <div class="state" id="bstate"></div>
+      <div class="two">
+        <div><h3 style="font-size:14px">断面のひずみと応力</h3><div class="figbox"><svg id="sec" viewBox="0 0 400 260" style="min-width:300px" aria-label="断面、ひずみ分布、応力分布"></svg></div></div>
+        <div><h3 style="font-size:14px">曲げモーメント M と曲率 φ</h3><div class="figbox"><svg id="mphi" viewBox="0 0 400 260" style="min-width:300px" aria-label="M–φ曲線"></svg></div></div>
+      </div>
+    </div>
+    <div class="ctl">
+      <div class="grp">断面（設計で決める）</div>
+      <div class="row"><label for="bb">幅 b<b><span id="bb_v"></span> mm</b></label><input type="range" id="bb" min="250" max="600" step="50" value="300"></div>
+      <div class="row"><label for="bh">高さ h<b><span id="bh_v"></span> mm</b></label><input type="range" id="bh" min="400" max="1000" step="50" value="600"></div>
+      <div class="row"><label for="bn">鉄筋の本数<b><span id="bn_v"></span> 本</b></label><input type="range" id="bn" min="2" max="10" step="1" value="4"></div>
+      <div class="row"><label for="bD">鉄筋の太さ</label><select id="bD"><option>13</option><option>16</option><option>19</option><option selected>22</option><option>25</option><option>29</option><option>32</option></select><small>D22 は直径約22 mm の異形棒鋼</small></div>
+      <div class="grp d">材料（条件）</div>
+      <div class="row"><label for="bfc">コンクリートの設計基準強度 f′ck</label><select id="bfc"><option value="24" selected>24 N/mm²</option><option value="30">30 N/mm²</option><option value="40">40 N/mm²</option></select></div>
+      <div class="row"><label for="bfy">鉄筋の降伏強度 fy</label><select id="bfy"><option value="345" selected>SD345（345 N/mm²）</option><option value="390">SD390（390 N/mm²）</option></select></div>
+      <div class="row"><label>鉄筋の位置</label><div class="seg" id="bpos"><button data-v="bot" class="on" type="button">下側（引張側）</button><button data-v="top" type="button">上側</button></div></div>
+      <p class="note">側面図は2か所で押す4点曲げ。中央の区間は曲げモーメントが一定で、ひび割れが最も多く入ります。</p>
+    </div>
+  </div>
+  <div class="kpis" id="bkpi" style="margin-top:14px"></div>
+</section>
+
+<section class="panel" aria-labelledby="h-mis1">
+  <h2 id="h-mis1">ミッション1：駐車場の梁 <small>上の梁の断面をそのまま照査する</small></h2>
+  <div class="mission"><p>スパン 8 m の立体駐車場の梁。車と床の重さに安全係数をかけた設計曲げモーメントは <b class="num">Md = 280 kN·m</b>。この力に耐え、しかも壊れるときは必ず鉄筋が先に伸びる梁を、なるべく安く作ってください。</p><div class="stars" id="st1" aria-label="評価">☆☆☆</div></div>
+  <div class="tblwrap" style="margin-top:10px"><table class="chk" id="chk1"></table></div>
+  <div class="calc" id="calc1"></div>
+  <div class="btnrow" style="margin-top:8px"><button class="btn sm" id="best1" type="button">最安の安全案を見る</button><span class="note" id="cost1"></span></div>
+</section>
+
+<section class="panel riddle" id="m2" aria-labelledby="h-r2">
+  <h2 id="h-r2">謎2 <small>擁壁の鉄筋はどちら側？</small></h2>
+  <p style="margin:8px 0 0">道路わきで土を支える逆T形の擁壁。壁の中の主な鉄筋（縦の太い鉄筋）は、壁のどちら側に寄せて入れるでしょう。</p>
+  <div class="choices" data-ans="soil">
+    <button data-v="road">道路側（見えている面）</button>
+    <button data-v="mid">壁の厚さの真ん中</button>
+    <button data-v="soil">土側（埋まっている面）</button>
+  </div>
+  <div class="answer" hidden>土側です。土は壁を道路側へ押し出そうとするので、壁は根元を固定された片持ち梁のように道路側へ曲げられます。このとき引っ張られるのは土に接している面です。だから鉄筋は見えない土側に寄せて入れ、底版の中まで曲げ込んで定着させます。見えている道路側の鉄筋は、乾燥や温度でひび割れないための細い鉄筋です。下の設計で鉄筋を道路側にすると、何が起きるか確かめられます。</div>
+</section>
+
+<section class="panel" aria-labelledby="h-rw">
+  <h2 id="h-rw">ミッション2：逆T形擁壁を設計する <small>安定（地盤）→ 壁の鉄筋（RC）</small></h2>
+  <div class="stage2" style="margin-top:10px">
+    <div style="min-width:0;display:grid;gap:10px">
+      <div class="figbox"><svg id="rwfig" viewBox="0 0 720 400" aria-label="擁壁の断面、土圧、地盤反力"></svg></div>
+      <div class="state" id="rwstate"></div>
+    </div>
+    <div class="ctl">
+      <div class="grp d">条件</div>
+      <div class="row"><label for="rH">擁壁の高さ H<b><span id="rH_v"></span> m</b></label><input type="range" id="rH" min="2" max="8" step="0.5" value="5"></div>
+      <div class="row"><label for="rphi">背面土の内部摩擦角 φ<b><span id="rphi_v"></span>°</b></label><input type="range" id="rphi" min="25" max="40" step="1" value="30"><small>単位体積重量 18 kN/m³、上載荷重 10 kN/m²（車など）</small></div>
+      <div class="row"><label for="rqa">地盤の許容支持力 qa<b><span id="rqa_v"></span> kN/m²</b></label><input type="range" id="rqa" min="100" max="400" step="25" value="300"><small>底面と地盤の摩擦係数 μ = 0.6</small></div>
+      <div class="grp">設計で決める</div>
+      <div class="row"><label for="rt">壁の厚さ t<b><span id="rt_v"></span> mm</b></label><input type="range" id="rt" min="250" max="800" step="50" value="400"></div>
+      <div class="row"><label for="rB">底版の幅 B<b><span id="rB_v"></span> m</b></label><input type="range" id="rB" min="1.0" max="8.0" step="0.1" value="3.0"><small>つま先（道路側）は B の3割。底版の厚さは t + 100 mm</small></div>
+      <div class="row"><label for="rD">縦鉄筋の太さ</label><select id="rD"><option>13</option><option>16</option><option selected>19</option><option>22</option><option>25</option><option>29</option></select></div>
+      <div class="row"><label for="rs">縦鉄筋の間隔<b><span id="rs_v"></span> mm</b></label><input type="range" id="rs" min="100" max="300" step="25" value="150"></div>
+      <div class="row"><label>縦鉄筋の位置</label><div class="seg" id="rside"><button data-v="soil" class="on" type="button">土側</button><button data-v="road" type="button">道路側</button></div></div>
+    </div>
+  </div>
+  <div class="mission"><p>奥行き1 mあたりで、転倒・滑動・支持力（地盤の照査）と、壁の根元の曲げ・せん断（RCの照査）を全部満たして、いちばん安い擁壁を探してください。</p><div class="stars" id="st2" aria-label="評価">☆☆☆</div></div>
+  <div class="tblwrap" style="margin-top:10px"><table class="chk" id="chk2"></table></div>
+  <div class="calc" id="calc2"></div>
+  <div class="btnrow" style="margin-top:8px"><button class="btn sm" id="best2" type="button">最安の安全案を見る</button><span class="note" id="cost2"></span></div>
+</section>
+
+<section class="panel riddle" id="m3" aria-labelledby="h-r3">
+  <h2 id="h-r3">謎3 <small>橋の床が抜けた</small></h2>
+  <p style="margin:8px 0 0">昭和40年代から50年代にかけて、交通量の多い道路橋で、鉄筋コンクリートの床版に亀の甲羅のようなひび割れが広がり、最後は穴が開いて抜け落ちる事故が相次ぎました。いちばん大きな原因は何だったでしょう。</p>
+  <div class="choices" data-ans="fat">
+    <button data-v="quake">大きな地震</button>
+    <button data-v="fat">大型車が何百万回も通る繰り返しの力</button>
+    <button data-v="salt">雨水によるコンクリートの溶解</button>
+  </div>
+  <div class="answer" hidden>繰り返しの力による疲労です。1回なら耐えられる重さでも、何百万回も繰り返すとひび割れが少しずつ伸び、縦横に格子状につながって亀甲状になり、最後は押し抜かれます。当時の床版は薄く、配力鉄筋（橋の長さ方向の鉄筋）も少なかったうえ、大型車が想定以上に増えました。そこで基準が改められ、床版の最小厚さを支間と大型車の交通量で決め、鉄筋の許容応力度をわざと低め（140 N/mm²）にして、繰り返しに余裕を持たせるようになりました。下の設計の「最小厚さ」と「140」がその名残です。
+    <svg class="ans-fig" viewBox="0 0 360 140" aria-label="床版の下面のひび割れの進み方"><g id="crackfig"></g></svg></div>
+</section>
+
+<section class="panel" aria-labelledby="h-sl">
+  <h2 id="h-sl">ミッション3：橋の床版を設計する <small>鋼桁の上の連続版、主鉄筋は車の進む向きと直角</small></h2>
+  <div class="stage2" style="margin-top:10px">
+    <div style="min-width:0;display:grid;gap:10px">
+      <div class="figbox"><svg id="slfig" viewBox="0 0 720 352" aria-label="床版の横断面とT荷重、曲げモーメント図"></svg></div>
+      <div class="state" id="slstate"></div>
+    </div>
+    <div class="ctl">
+      <div class="grp d">条件</div>
+      <div class="row"><label for="sL">桁の間隔（床版の支間）L<b><span id="sL_v"></span> m</b></label><input type="range" id="sL" min="1.5" max="4.0" step="0.1" value="3.0"><small>T荷重：後輪1輪 P = 100 kN（25トン車）</small></div>
+      <div class="row"><label for="sK">大型車の交通量（1日1方向）</label><select id="sK"><option value="1.10">500台未満</option><option value="1.15" selected>500〜1000台</option><option value="1.20">1000〜2000台</option><option value="1.25">2000台以上</option></select></div>
+      <div class="row"><label for="sfc">コンクリート σck</label><select id="sfc"><option value="24" selected>24 N/mm²</option><option value="30">30 N/mm²</option></select></div>
+      <div class="grp">設計で決める</div>
+      <div class="row"><label for="st">床版の厚さ t<b><span id="st_v"></span> mm</b></label><input type="range" id="st" min="160" max="350" step="10" value="230"></div>
+      <div class="row"><label for="sD">主鉄筋の太さ</label><select id="sD"><option>13</option><option selected>16</option><option>19</option><option>22</option></select></div>
+      <div class="row"><label for="ss">主鉄筋の間隔<b><span id="ss_v"></span> mm</b></label><input type="range" id="ss" min="100" max="300" step="25" value="125"><small>支点の上側にも同じ配筋（曲げの大きさが同じため）</small></div>
+    </div>
+  </div>
+  <div class="mission"><p>床版1 m²あたりで、最小厚さ・コンクリート・鉄筋・鉄筋の間隔の照査を満たして、いちばん安い床版を探してください。</p><div class="stars" id="st3" aria-label="評価">☆☆☆</div></div>
+  <div class="tblwrap" style="margin-top:10px"><table class="chk" id="chk3"></table></div>
+  <div class="calc" id="calc3"></div>
+  <div class="btnrow" style="margin-top:8px"><button class="btn sm" id="best3" type="button">最安の安全案を見る</button><span class="note" id="cost3"></span></div>
+</section>
+
+<section class="panel" id="der" aria-labelledby="h-der">
+  <h2 id="h-der">導き方 <small>上で使った式は全部ここから出てくる</small></h2>
+  <div id="ders"><details class="der" open><summary>① なぜ鉄筋とコンクリートは一緒に働けるのか</summary><div class="steps">
+<div class="st"><i>1</i><p>コンクリートは圧縮に強く（24 N/mm² なら1 cm²で約240 kg を支える）、引張はその約1/10。鉄筋は引張に強いが、細いので圧縮では座屈しやすい。弱点が逆なので、組み合わせると互いの弱点を消せます。</p></div>
+<div class="st"><i>2</i><p>一緒に動くには、境目でずれないこと（付着）が必要です。異形棒鋼の表面の節がコンクリートに噛み込み、鉄筋とまわりのコンクリートが同じだけ伸び縮みします。これが次の「平面保持」の前提です。</p></div>
+<div class="st"><i>3</i><p>温度が変わっても離れないこと。熱膨張係数は、コンクリートも鉄筋もほぼ 10×10⁻⁶ /℃ で同じです。さらにコンクリートは強いアルカリ性で、中の鉄筋の表面に薄い膜を作り、錆を防ぎます。</p></div>
+</div></details>
+<details class="der"><summary>② 平面保持：ひずみは高さ方向に直線になる</summary><div class="steps">
+<div class="st"><i>1</i><p>曲げられる前に平らだった断面は、曲げられた後も平らなまま回転する、と考えます（ベルヌーイ・ナビエの仮定）。梁の実験で確かめられている仮定です。</p></div>
+<div class="st"><i>2</i><p>断面が角度だけ回るので、伸び縮みは中立軸からの距離に比例します。曲率を φ、中立軸の深さを x、上端からの深さを y とすると</p><div class="eq">ε(y) = φ·(x − y)　　上端 ε′c = φ·x、　鉄筋 εs = φ·(d − x) = ε′c·(d − x)/x</div></div>
+<div class="st"><i>3</i><p>付着があるので、鉄筋のひずみは同じ高さのコンクリートのひずみと等しい。上の「梁を壊してみる」の断面図の青い三角形がこれです。応力はひずみに材料の性質（応力–ひずみ関係）を当てはめて決まります。</p></div>
+</div></details>
+<details class="der"><summary>③ 中立軸 k = −nρ + √((nρ)² + 2nρ)（許容応力度法）</summary><div class="steps">
+<svg viewBox="0 0 420 170" aria-label="ひび割れた断面の応力"><rect x="20" y="10" width="80" height="150" fill="var(--conc)" stroke="var(--navy)" stroke-width="2"/><rect x="20" y="10" width="80" height="55" fill="var(--mid)" fill-opacity=".5"/><circle cx="40" cy="140" r="5" fill="var(--steel)"/><circle cx="60" cy="140" r="5" fill="var(--steel)"/><circle cx="80" cy="140" r="5" fill="var(--steel)"/><line x1="10" y1="65" x2="400" y2="65" stroke="var(--blue)" stroke-dasharray="4 3"/><text x="104" y="40" font-size="11" fill="var(--ink)">x = kd（圧縮）</text><text x="104" y="110" font-size="11" fill="var(--ink)">ひび割れ（引張は無視）</text><path d="M220 10 L290 10 L220 65 Z" fill="var(--mid)" fill-opacity=".6" stroke="var(--navy)"/><text x="294" y="16" font-size="11" fill="var(--navy)">σc</text><line x1="220" y1="140" x2="300" y2="140" stroke="var(--steel)" stroke-width="5"/><text x="304" y="144" font-size="11" fill="var(--steel)">T = As·σs</text><text x="230" y="36" font-size="11" fill="var(--navy)">C</text><line x1="210" y1="28" x2="210" y2="140" stroke="var(--ink)"/><text x="160" y="90" font-size="11" fill="var(--ink)">jd</text></svg>
+<div class="st"><i>1</i><p>使っている時（荷重が小さい時）は、コンクリートも鉄筋も弾性として扱います。引張側のコンクリートはひび割れているので無視します。鉄筋はコンクリートの n = Es/Ec 倍硬いので、面積を n 倍したコンクリートに置き換えられます（換算断面、道路橋示方書では n = 15）。</p></div>
+<div class="st"><i>2</i><p>中立軸は換算断面の図心を通ります。中立軸まわりの断面一次モーメントが0になる条件から</p><div class="eq">b·x·(x/2) = n·As·(d − x)</div></div>
+<div class="st"><i>3</i><p>x = kd、As = ρbd を入れて b·d² で割ると、k の2次方程式になります。</p><div class="eq">k²/2 = nρ(1 − k)　→　k² + 2nρ·k − 2nρ = 0　→　k = −nρ + √((nρ)² + 2nρ)</div></div>
+<div class="st"><i>4</i><p>鉄筋が多い（ρ が大きい）ほど k が大きくなり、中立軸が下がります。鉄筋が引張をよく受け持てるぶん、圧縮側も広く必要になるからです。</p></div>
+</div></details>
+<details class="der"><summary>④ σc = 2M/(k·j·b·d²)、σs = M/(As·j·d)</summary><div class="steps">
+<div class="st"><i>1</i><p>圧縮側の応力は三角形なので、圧縮力の合計は C = ½·σc·b·x。作用点は上から x/3 です。</p></div>
+<div class="st"><i>2</i><p>引張は鉄筋だけで T = As·σs。C と T の距離（腕の長さ）は jd = d − x/3、つまり j = 1 − k/3。</p></div>
+<div class="st"><i>3</i><p>C = T で、この組（偶力）が曲げモーメント M に釣り合います。</p><div class="eq">M = C·jd = ½·σc·b·kd·jd　→　σc = 2M/(k·j·b·d²)<br>M = T·jd = As·σs·jd　→　σs = M/(As·j·d)</div></div>
+<div class="st"><i>4</i><p>これを許容応力度（コンクリート σck/3、鉄筋 180、床版の鉄筋 140 N/mm²）以下にするのが許容応力度法です。ミッション2・3の計算はこの式です。</p></div>
+</div></details>
+<details class="der"><summary>⑤ ひび割れモーメント Mcr = ft·b·h²/6</summary><div class="steps">
+<div class="st"><i>1</i><p>ひび割れる前は、引張側のコンクリートも効いています。鉄筋の影響を無視すると、ただの長方形断面の弾性の曲げです。</p></div>
+<div class="st"><i>2</i><p>下端の引張応力は σ = M/Z、断面係数 Z = b·h²/6。これがコンクリートの引張強度 ft（標準示方書の目安 ft = 0.23·f′ck^(2/3)）に達したらひび割れます。</p><div class="eq">Mcr = ft·b·h²/6　（b=300, h=600, f′ck=24 なら ft = 1.92 N/mm²、Mcr ≈ 35 kN·m）</div></div>
+<div class="st"><i>3</i><p>普通の梁では、使っている時の荷重でもうひび割れています。ひび割れは失敗ではなく、引張を鉄筋に渡した合図です。問題になるのは幅が大きすぎるひび割れで、そこから水や塩分が入って鉄筋が錆びます。</p></div>
+</div></details>
+<details class="der"><summary>⑥ 等価応力ブロックと曲げ耐力 Mu = As·fy·(d − a/2)</summary><div class="steps">
+<svg viewBox="0 0 420 160" aria-label="等価応力ブロック"><path d="M40 10 Q110 10 120 40 L120 70 L40 70 Z" fill="var(--mid)" fill-opacity=".6" stroke="var(--navy)"/><text x="40" y="88" font-size="11" fill="var(--ink)">本当の応力（放物線）</text><rect x="230" y="10" width="80" height="48" fill="var(--mid)" fill-opacity=".6" stroke="var(--navy)"/><text x="230" y="88" font-size="11" fill="var(--ink)">置き換えた長方形</text><text x="316" y="38" font-size="11" fill="var(--navy)">k₁·f′c,  深さ a = βx</text><line x1="20" y1="70" x2="400" y2="70" stroke="var(--blue)" stroke-dasharray="4 3"/><text x="330" y="66" font-size="10.5" fill="var(--blue)">中立軸 x</text><line x1="40" y1="140" x2="140" y2="140" stroke="var(--steel)" stroke-width="5"/><line x1="230" y1="140" x2="330" y2="140" stroke="var(--steel)" stroke-width="5"/><text x="340" y="144" font-size="11" fill="var(--steel)">T = As·fy</text></svg>
+<div class="st"><i>1</i><p>壊れる時、上端のコンクリートは終局ひずみ ε′cu = 0.0035 に達し、圧縮応力は放物線＋水平の形になります。この形を、合力の大きさと位置が同じ長方形（高さ k₁·f′c、深さ a = β·x、標準示方書では f′ck ≤ 50 で k₁ = 0.85、β = 0.8）に置き換えます。</p></div>
+<div class="st"><i>2</i><p>普通の梁では鉄筋はもう降伏しているので T = As·fy。C = T から a が決まります。</p><div class="eq">k₁·f′c·b·a = As·fy　→　a = As·fy/(k₁·f′c·b)</div></div>
+<div class="st"><i>3</i><p>圧縮の合力は長方形の真ん中（上から a/2）に働くので、腕の長さは d − a/2。</p><div class="eq">Mu = T·(d − a/2) = As·fy·(d − a/2)</div></div>
+<div class="st"><i>4</i><p>設計では材料の強さを安全係数で割り（f′cd = f′ck/1.3、fyd = fy/1.0）、さらに部材係数 γb = 1.1 で割った Mud を、荷重に係数をかけた Md 以上にします（ミッション1）。上の「梁を壊してみる」の Mu（繊維で細かく計算した値）と、この手計算の値はほぼ一致します。</p></div>
+</div></details>
+<details class="der"><summary>⑦ つり合い鉄筋比 ρb：どこから脆くなるか</summary><div class="steps">
+<div class="st"><i>1</i><p>鉄筋の降伏（εs = εy = fy/Es）と上端の圧壊（ε′c = ε′cu）が同時に起きる鉄筋量を「つり合い」と呼びます。ひずみは直線なので</p><div class="eq">xb/d = ε′cu/(ε′cu + εy)　（SD345なら εy = 345/200000 = 0.001725、xb = 0.67d）</div></div>
+<div class="st"><i>2</i><p>その時の C = T に a = β·xb を入れると</p><div class="eq">k₁·f′c·b·β·xb = ρb·b·d·fy　→　ρb = k₁·β·(f′c/fy)·ε′cu/(ε′cu + εy)</div></div>
+<div class="st"><i>3</i><p>ρ が ρb より多いと、鉄筋が伸び切る前にコンクリートが潰れます（謎1の答え）。ばらつきに余裕を持って ρ ≤ 0.75ρb とし、少なすぎてもひび割れと同時に壊れるので ρ ≥ 0.2% とします。</p></div>
+</div></details>
+<details class="der"><summary>⑧ 主働土圧係数 Ka = tan²(45° − φ/2)（ランキン）</summary><div class="steps">
+<div class="st"><i>1</i><p>土の中の深さ z の点には、上の土の重さで鉛直応力 σv = γ·z がかかります。壁が少し前に動くと、水平応力 σh は下がっていき、土がせん断で崩れる寸前（主働状態）で止まります。</p></div>
+<div class="st"><i>2</i><p>崩れる寸前は、モールの応力円が破壊線 τ = σ·tanφ（砂、粘着力なし）に接します。円の中心 (σv + σh)/2、半径 (σv − σh)/2 から</p><div class="eq">sinφ = (σv − σh)/(σv + σh)　→　σh/σv = (1 − sinφ)/(1 + sinφ) = tan²(45° − φ/2) = Ka</div></div>
+<div class="st"><i>3</i><p>φ = 30° なら Ka = 1/3。水平の土圧は深さに比例する三角形 Ka·γ·z になり、上載荷重 q は一様に Ka·q を足します。詳しい導出は地盤の理論ラボにあります。</p></div>
+</div></details>
+<details class="der"><summary>⑨ 擁壁の壁の根元の曲げ M = Ka·γ·h′³/6 + Ka·q·h′²/2</summary><div class="steps">
+<div class="st"><i>1</i><p>壁は底版に固定された片持ち梁です。高さ h′ の壁に、三角形の土圧（下端で Ka·γ·h′）と長方形の上載土圧（Ka·q）がかかります。</p></div>
+<div class="st"><i>2</i><p>三角形の合力は ½·Ka·γ·h′²、作用点は根元から h′/3。長方形は Ka·q·h′、作用点は h′/2。根元まわりのモーメントは力×距離の和です。</p><div class="eq">M = ½·Ka·γ·h′²·(h′/3) + Ka·q·h′·(h′/2) = Ka·γ·h′³/6 + Ka·q·h′²/2</div></div>
+<div class="st"><i>3</i><p>h′ の3乗で効くので、高さが2倍になると曲げは約8倍。高い擁壁ほど根元が急に厚く、鉄筋が太くなるのはこのためです。引っ張られるのは土側の面です（謎2）。</p></div>
+</div></details>
+<details class="der"><summary>⑩ 転倒・滑動・支持力の3つの照査</summary><div class="steps">
+<div class="st"><i>1</i><p>転倒：つま先まわりで、重さが戻すモーメント Mr と土圧が倒すモーメント Mo を比べ、合力の位置 x = (Mr − Mo)/V を出します。底版の中心からのずれ e = B/2 − x が B/6 以下なら、合力は底版の真ん中1/3に入り、底面全体が地盤を押します（浮き上がらない）。</p></div>
+<div class="st"><i>2</i><p>滑動：底面の摩擦力 μ·V が、土圧の横の力 Ph の1.5倍以上あること。</p><div class="eq">Fs = μ·V/Ph ≥ 1.5</div></div>
+<div class="st"><i>3</i><p>支持力：鉛直力 V と、ずれ e によるモーメント V·e を、幅 B の底面で受けます。長方形の断面の「軸力＋曲げ」と同じ形です。</p><div class="eq">q = V/B ± V·e/(B²/6) = V/B·(1 ± 6e/B) ≤ qa</div></div>
+<div class="st"><i>4</i><p>この3つは地盤との勝負、壁の鉄筋は RC としての勝負です。B を広げると地盤は楽になり、t と鉄筋で壁を強くします。両方を満たして安い組み合わせを探すのが設計です。</p></div>
+</div></details>
+<details class="der"><summary>⑪ 床版の曲げモーメント (0.12L + 0.07)P と最小厚さ k₁(30L + 110)</summary><div class="steps">
+<div class="st"><i>1</i><p>床版は4辺を支えられた板で、1つのタイヤ（T荷重 P = 100 kN、接地面 500 mm × 200 mm）が載ります。板の理論で、タイヤをいろいろな位置に置いて最大の曲げを求め、支間 L の直線式にまとめたのが道路橋示方書の式です。衝撃の分も含まれています。</p><div class="eq">単純版の主鉄筋方向　M = (0.12L + 0.07)·P　［kN·m/m、L は m、0 &lt; L ≤ 4］</div></div>
+<div class="st"><i>2</i><p>桁が何本も並ぶ連続版では、隣の支間が回転を押さえるので、支間の曲げも支点の曲げも単純版の8割とします。床版自身と舗装の重さ w による曲げ w·L²/10 を足します。</p></div>
+<div class="st"><i>3</i><p>最小厚さは、謎3の事故の反省から決まった経験式です。30L + 110 mm を基本に、大型車の交通量が多いほど係数 k₁（1.10〜1.25）で厚くします。強さの計算で足りても、薄い床版は繰り返しで抜けるからです。</p></div>
+</div></details>
+<details class="der"><summary>⑫ 二つの設計法：許容応力度法と限界状態設計法</summary><div class="steps">
+<div class="st"><i>1</i><p>許容応力度法：普段の荷重で、応力が「強さ÷安全率」（許容応力度）以下かを見ます。計算は簡単ですが、壊れるまでの余裕がどれだけあるかは直接には分かりません。ミッション2・3の方法です。</p></div>
+<div class="st"><i>2</i><p>限界状態設計法：「壊れる」「使えなくなる（ひび割れ・たわみ）」「疲労で壊れる」などの状態ごとに、荷重を大きめに、強さを小さめに見積もって比べます。ミッション1の方法で、今の土木学会の示方書と道路橋示方書はこの考え方です。</p></div>
+<div class="st"><i>3</i><p>どちらも同じ力のつり合い（C = T、M = T × 腕の長さ）から出発しています。違うのは、どの状態で比べるかと、安全の余裕をどこに入れるかです。</p></div>
+</div></details>
+</div>
+</section>
+
+<section class="panel" id="cases" aria-labelledby="h-case">
+  <h2 id="h-case">実例と使い道</h2>
+  <div class="cases">
+    <div><h3>日本で最初の鉄筋コンクリート橋（1903年）</h3><p>京都の琵琶湖疏水に架かる日ノ岡第11号橋は、田辺朔郎の指導で造られた日本初の鉄筋コンクリート橋とされます。長さ約7 mの小さな橋で、今も山科の疏水沿いで見られます。</p></div>
+    <div><h3>首都高・阪神高速の床版取替</h3><p>疲労で傷んだRC床版は、鋼板を下面に貼る、上面を厚くする、工場で作ったプレキャストPC床版に丸ごと取り替える、という順で対策されてきました。夜間に通行止めをして、一晩で何枚も入れ替える工事が今も続いています。</p></div>
+    <div><h3>宅地の擁壁と水抜き孔</h3><p>擁壁が倒れる事故の多くは、背面に雨水がたまり、土圧に水圧が加わることが引き金です。宅地造成の基準では、壁面3 m²ごとに内径7.5 cm以上の水抜き孔を設けるよう定めています。上の設計は水圧がない前提なので、水抜き孔が詰まると前提が崩れます。</p></div>
+    <div><h3>かぶりと鉄筋のさび</h3><p>鉄筋はアルカリ性のコンクリートに守られて錆びませんが、表面から中性化や塩分が進むと錆び、膨らんで表面を割ります（爆裂）。鉄筋の外側のコンクリートの厚さ（かぶり）を守ることが、強さと同じくらい大事です。</p></div>
+  </div>
+  <h3 style="font-size:15px;margin-top:16px">街で探そう</h3>
+  <ul style="margin:6px 0 0;padding-left:1.2em;font-size:13.5px">
+    <li>擁壁の表面に並ぶ丸い穴（水抜き孔）。壁の高さと穴の数を数えてみる。</li>
+    <li>高架下から床版の裏を見上げる。格子状に貼られた鋼板や炭素繊維シートは、疲労対策の跡。</li>
+    <li>古いコンクリートの角が割れて、錆びた鉄筋が見えている所。鉄筋が外側からどれだけの深さにあるかが、かぶり。</li>
+  </ul>
+  <div class="links">
+    <a href="../kozo-jissen/" target="_blank" rel="noopener">構造 実践ラボ（歩道橋・高架橋）</a>
+    <a href="../jiban-jissen/" target="_blank" rel="noopener">地盤 実践ラボ（擁壁の安定）</a>
+    <a href="../dan/" target="_blank" rel="noopener">断面力図ラボ（NQM図）</a>
+    <a href="../zukan/" target="_blank" rel="noopener">まちの構造図鑑</a>
+    <a href="../../tokyo/sanpo/" target="_blank" rel="noopener">東京ドボクマップ</a>
+  </div>
+</section>
+</div>
+<footer>梁を壊す図は、コンクリートを放物線＋水平の応力–ひずみ関係、引張はひび割れ強度まで直線、鉄筋を完全弾塑性とした断面の繊維計算で、材料の強さは実際の値（安全係数なし）です。ミッション1は土木学会コンクリート標準示方書の限界状態設計法（γc = 1.3、γs = 1.0、γb = 1.1）、ミッション2・3は道路橋示方書の許容応力度法（n = 15）にならった簡易計算です。擁壁は常時（地震なし・水圧なし）、ランキン土圧、壁は一様な厚さとしています。単価は比べるための仮の値です。実際の設計は最新の基準と専門家の確認が必要です。</footer>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const BARS={10:[71.33,.560],13:[126.7,.995],16:[198.6,1.56],19:[286.5,2.25],22:[387.1,3.04],25:[506.7,3.98],29:[642.4,5.04],32:[794.2,6.23]};
+const f0=(x,n=0)=>Number(x).toLocaleString('ja-JP',{minimumFractionDigits:n,maximumFractionDigits:n});
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function EcOf(f){const t=[[18,22000],[24,25000],[30,28000],[40,31000],[50,33000],[60,35000]];for(let i=1;i<t.length;i++){if(f<=t[i][0]){const[a,ea]=t[i-1],[b,eb]=t[i];return ea+(eb-ea)*(f-a)/(b-a)}}return 35000}
+function seg(id,cb){const el=$(id);el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb&&cb()});}
+function segv(id){return $(id).querySelector('button.on').dataset.v}
+function segset(id,v){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.v===v))}
+function rows(tbl,list){
+  let h='<tr><th>照査</th><th>計算値</th><th>限度</th><th>判定</th><th>意味</th></tr>';
+  for(const r of list)h+=`<tr><td>${r.n}</td><td class="n">${r.v}</td><td class="n">${r.l}</td><td class="r ${r.ok?'ok':'ng'}">${r.ok?'OK':'NG'}</td><td>${r.m}</td></tr>`;
+  $(tbl).innerHTML=h;
+}
+/* ---------- stars ---------- */
+const best={};
+function stars(id,touched,allok,cost,opt){
+  let s=0;if(touched){s=1;if(allok)s=2;if(allok&&opt&&cost<=opt*1.0005)s=3}
+  let mem=0;try{mem=+localStorage.getItem('rclab-'+id)||0}catch(e){}
+  if(s>mem){try{localStorage.setItem('rclab-'+id,s)}catch(e){}}
+  const shown=Math.max(s,mem);
+  $(id).innerHTML='<b>'+'★'.repeat(shown)+'</b>'+'☆'.repeat(3-shown);
+  $(id).title=['まだ','★1 挑戦した','★2 全部OK','★3 最安の安全案'][shown];
+}
+
+/* ---------- riddles ---------- */
+document.querySelectorAll('.choices').forEach(c=>{
+  c.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    const ans=c.dataset.ans;c.querySelectorAll('button').forEach(x=>{x.classList.remove('right','wrong');if(x.dataset.v===ans)x.classList.add('right')});
+    if(b.dataset.v!==ans)b.classList.add('wrong');
+    c.nextElementSibling.hidden=false;});
+});
+(function crackFig(){
+  // 3 stages of slab underside cracking
+  let g='';const lbl=['1方向のひび割れ','格子状','亀甲状 → 抜け落ち'];
+  for(let k=0;k<3;k++){const x0=10+k*118;g+=`<rect x="${x0}" y="10" width="105" height="105" fill="var(--conc)" stroke="var(--navy)" stroke-width="1.5"/>`;
+    let p='';const rnd=(i)=>((Math.sin(i*12.9898+k*78.233)*43758.5453)%1+1)%1;
+    for(let i=0;i<6;i++){const x=x0+12+i*16+rnd(i)*4;p+=`M${x} 14 L${x+rnd(i+9)*6-3} 111 `}
+    if(k>=1)for(let i=0;i<6;i++){const y=22+i*16+rnd(i+20)*4;p+=`M${x0+4} ${y} L${x0+101} ${y+rnd(i+30)*6-3} `}
+    if(k===2){for(let i=0;i<40;i++){const x=x0+8+rnd(i+50)*90,y=16+rnd(i+90)*92;p+=`M${x} ${y} l${rnd(i+5)*12-6} ${rnd(i+7)*12-6} `}
+      g+=`<ellipse cx="${x0+52}" cy="62" rx="22" ry="17" fill="var(--paper)" stroke="var(--red)" stroke-width="2"/>`}
+    g+=`<path d="${p}" stroke="var(--navy)" stroke-width="${1+k*.4}" fill="none"/>`;
+    g+=`<text x="${x0+52}" y="132" text-anchor="middle" font-size="11" fill="var(--ink)">${lbl[k]}</text>`}
+  $('crackfig').innerHTML=g;
+})();
+
+/* =========================================================
+   1. 梁：繊維モデルで M–φ
+   ========================================================= */
+function beamGeom(){
+  const b=+$('bb').value,h=+$('bh').value,n=+$('bn').value,D=+$('bD').value,fck=+$('bfc').value,fy=+$('bfy').value,pos=segv('bpos');
+  const edge=50+D/2;const dEff=h-edge;const ys=pos==='bot'?dEff:edge;
+  const As=n*BARS[D][0];const clear=(b-2*50-n*D)/(n-1);
+  return{b,h,n,D,fck,fy,pos,d:dEff,ys,As,clear,edge};
+}
+function analyze(g){
+  const {b,h,fck,fy,As,ys}=g;const Es=2e5,Ec=EcOf(fck),ft=0.23*Math.pow(fck,2/3),ecr=ft/Ec;
+  const k1=Math.min(0.85,1-0.003*fck),ecu=clamp((155-fck)/30000,0.0025,0.0035),ey=fy/Es;
+  const NL=100,dy=h/NL;
+  const sc=e=>{if(e>=0){if(e<0.002){const r=e/0.002;return k1*fck*(2*r-r*r)}return k1*fck}if(-e<=ecr)return Ec*e;return 0};
+  const ss=e=>clamp(Es*e,-fy,fy);
+  function F(et,c){let N=0,M=0;for(let i=0;i<NL;i++){const y=(i+.5)*dy,e=et*(1-y/c),f=sc(e)*b*dy;N+=f;M+=f*(h/2-y)}
+    const es=et*(1-ys/c),fs=ss(es)*As;N+=fs;M+=fs*(h/2-ys);return{N,M,es}}
+  const pts=[{et:0,c:h/2,phi:0,M:0,es:0,eb:0}];const NS=300;
+  for(let k=1;k<=NS;k++){const et=ecu*Math.pow(k/NS,1.7);let lo=1e-3*h,hi=200*h;
+    for(let it=0;it<70;it++){const mid=Math.sqrt(lo*hi);if(F(et,mid).N>0)hi=mid;else lo=mid}
+    const c=Math.sqrt(lo*hi),r=F(et,c);pts.push({et,c,phi:et/c,M:r.M,es:r.es,eb:et*(1-h/c)})}
+  let ic=pts.findIndex(p=>-p.eb>ecr);if(ic<0)ic=NS;
+  const Mcr=Math.max(...pts.slice(0,ic).map(p=>p.M));
+  let iy=pts.findIndex(p=>-p.es>=ey);
+  let Mu=0,iu=0;pts.forEach((p,i)=>{if(p.M>Mu){Mu=p.M;iu=i}});
+  let mode;if(Mu<=Mcr*1.05)mode='cr';else if(iy>=0&&iy<=NS)mode='tens';else mode='comp';
+  // 等価応力ブロック（実強度）
+  const beta=0.52+80*ecu;const rhob=k1*beta*fck/fy*ecu/(ecu+ey);
+  return{pts,ic,iy,iu,Mcr,Mu,My:iy>=0?pts[iy].M:null,mode,ecr,ecu,ey,k1,beta,rhob,Ec,ft,sc,ss,NL,dy,Es};
+}
+let BA=null,BG=null;
+function drawBeam(){
+  const g=BG,A=BA,k=+$('ld').value,p=A.pts[k];
+  const W=720,x0=40,x1=680,yT=80,H=70;const L=x1-x0;
+  const phiMax=A.pts[A.pts.length-1].phi||1;const sag=(x)=>{const t=(x-x0)/L;return 30*(p.phi/phiMax)*Math.sin(Math.PI*t)};
+  let s='';
+  // supports & loads
+  s+=`<path d="M${x0} ${yT+H+sag(x0)} l-12 20 h24 z" fill="none" stroke="var(--navy)" stroke-width="2"/><circle cx="${x1}" cy="${yT+H+10+sag(x1)}" r="9" fill="none" stroke="var(--navy)" stroke-width="2"/>`;
+  const Pfrac=p.M/A.Mu;
+  for(const xl of [x0+L/3,x0+2*L/3]){const len=18+40*Math.max(0,Pfrac);s+=`<line x1="${xl}" y1="${yT-8-len+sag(xl)}" x2="${xl}" y2="${yT-6+sag(xl)}" stroke="var(--red)" stroke-width="3"/><path d="M${xl-7} ${yT-16+sag(xl)} L${xl} ${yT-4+sag(xl)} L${xl+7} ${yT-16+sag(xl)}" fill="var(--red)"/>`}
+  // beam body
+  let top='',bot='';for(let i=0;i<=60;i++){const x=x0+L*i/60;top+=(i?'L':'M')+x+' '+(yT+sag(x))+' ';}
+  for(let i=60;i>=0;i--){const x=x0+L*i/60;bot+='L'+x+' '+(yT+H+sag(x))+' ';}
+  s+=`<path d="${top}${bot}Z" fill="var(--conc)" stroke="var(--navy)" stroke-width="2"/>`;
+  // rebar line
+  const yr=g.ys/g.h*H;let rb='';for(let i=0;i<=60;i++){const x=x0+6+(L-12)*i/60;rb+=(i?'L':'M')+x+' '+(yT+yr+sag(x))+' '}
+  s+=`<path d="${rb}" stroke="var(--steel)" stroke-width="2.5" fill="none" stroke-dasharray="${A.iy>=0&&k>=A.iy?'none':'none'}"/>`;
+  // cracks
+  if(k>=A.ic){const sp=L/26;for(let x=x0+sp/2;x<x1;x+=sp){const t=(x-x0)/L;const shape=t<1/3?3*t:t>2/3?3*(1-t):1;const m=p.M*shape;
+      if(m<A.Mcr*0.98)continue;
+      let j=A.ic;while(j<k&&A.pts[j].M<m)j++;const q=A.pts[j];const depth=clamp((g.h-q.c)/g.h,0.1,0.95)*H;
+      const w=1+clamp(-q.es/A.ey,0,3)*1.1;const jit=((Math.sin(x*3.1)*1000)%1)*4;
+      s+=`<path d="M${x} ${yT+H+sag(x)} L${x+jit} ${yT+H-depth*0.55+sag(x)} L${x-jit*0.5} ${yT+H-depth+sag(x)}" stroke="var(--navy)" stroke-width="${w.toFixed(1)}" fill="none"/>`}}
+  // crushing
+  if(k>=A.pts.length-3){for(let i=0;i<9;i++){const x=x0+L*(0.4+0.2*i/8);const yy=yT+sag(x);s+=`<path d="M${x-5} ${yy} l5 ${8+(i%3)*3} l5 ${-8-(i%2)*3}" fill="var(--paper)" stroke="var(--red)" stroke-width="1.5"/>`}
+    s+=`<text x="${x0+L/2}" y="${yT-50}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--red)">${A.mode==='tens'?'上側が潰れて終局（大きくたわんだ後）':A.mode==='comp'?'突然の圧壊！ たわみが小さいまま':'ひび割れと同時に耐えられなくなる'}</text>`}
+  if(A.mode==='cr'&&k>=A.ic){s+=`<text x="${x0+L/2}" y="${yT-50}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--red)">引張側に鉄筋がない：ひび割れ＝崩壊</text>`}
+  s+=`<text x="${x0}" y="${yT+H+48}" font-size="12" fill="var(--ink)">スパン方向は縮めて描いています。ひび割れの太さは鉄筋のひずみに比例</text>`;
+  $('beam').innerHTML=s;
+  // section
+  drawSec(p);drawMphi(k);
+  // state
+  let st,cls;
+  if(k===0){st='荷重なし';cls='ok'}
+  else if(k<A.ic){st='ひび割れ前：コンクリートの引張も効いている';cls='ok'}
+  else if(A.mode==='cr'){st='ひび割れた瞬間に引張を受け持つものがなくなった';cls='ng'}
+  else if(A.iy<0||k<A.iy){st=(A.mode==='comp'&&k>=A.pts.length-3)?'鉄筋が伸び切る前にコンクリートが圧壊（脆い）':'ひび割れ後：引張は鉄筋が受け持つ。設計で使う状態';cls=(A.mode==='comp'&&k>=A.pts.length-3)?'ng':'ok'}
+  else if(k<A.pts.length-3){st='鉄筋が降伏：荷重はほぼ増えず、たわみとひび割れがぐんと増える（粘り）';cls='wn'}
+  else{st='終局：上側のコンクリートが潰れた';cls='ng'}
+  const bs=$('bstate');bs.textContent=st;bs.className='state '+cls;
+  $('ld_v').textContent=`M = ${f0(p.M/1e6)} kN·m（耐力の ${f0(100*p.M/A.Mu)}％）`;
+}
+function drawSec(p){
+  const g=BG,A=BA;const Hs=200,sc=Hs/g.h,Ws=clamp(g.b*sc,40,130);const ox=20,oy=30;
+  let s=`<text x="${ox}" y="18" font-size="12" fill="var(--ink)">断面</text><text x="175" y="18" font-size="12" fill="var(--ink)">ひずみ</text><text x="290" y="18" font-size="12" fill="var(--ink)">応力</text>`;
+  s+=`<rect x="${ox}" y="${oy}" width="${Ws}" height="${Hs}" fill="var(--conc)" stroke="var(--navy)" stroke-width="2"/>`;
+  const yb=oy+g.ys*sc;const r=clamp(g.D*sc/2,2.5,7);
+  for(let i=0;i<g.n;i++){const x=ox+12+(Ws-24)*(g.n===1?0.5:i/(g.n-1));s+=`<circle cx="${x}" cy="${yb}" r="${r}" fill="var(--steel)"/>`}
+  // neutral axis
+  const c=Math.min(p.c,g.h);const yc=oy+c*sc;
+  if(p.et>0)s+=`<line x1="${ox-6}" y1="${yc}" x2="390" y2="${yc}" stroke="var(--blue)" stroke-dasharray="4 3"/><text x="${ox+Ws+4}" y="${yc-3}" font-size="10.5" fill="var(--blue)">中立軸</text>`;
+  // strain
+  const sx=200;const emax=Math.max(A.ecu,Math.abs(p.es)*1.05,0.003);const kx=60/emax;
+  s+=`<line x1="${sx}" y1="${oy}" x2="${sx}" y2="${oy+Hs}" stroke="var(--line)" stroke-width="2"/>`;
+  const eb=p.et*(1-g.h/p.c);
+  s+=`<path d="M${sx} ${oy} L${sx+p.et*kx} ${oy} L${sx+clamp(eb*kx,-75,75)} ${oy+Hs} L${sx} ${oy+Hs} Z" fill="var(--faint)" stroke="var(--blue)" stroke-width="1.5"/>`;
+  s+=`<circle cx="${sx+clamp(p.es*kx,-75,75)}" cy="${yb}" r="3.5" fill="var(--steel)"/>`;
+  s+=`<text x="${sx+4}" y="${oy+Hs+16}" font-size="10.5" fill="var(--ink)">εc上 ${(p.et*1e6).toFixed(0)}μ ／ εs ${(p.es*1e6).toFixed(0)}μ</text>`;
+  // stress
+  const tx=300;const kS=55/(A.k1*g.fck);let path=`M${tx} ${oy}`;
+  for(let i=0;i<=80;i++){const y=g.h*i/80;const e=p.et*(1-y/p.c);let sv=A.sc(e);path+=` L${tx+sv*kS} ${oy+y*sc}`}
+  path+=` L${tx} ${oy+Hs} Z`;
+  s+=`<line x1="${tx}" y1="${oy}" x2="${tx}" y2="${oy+Hs}" stroke="var(--line)" stroke-width="2"/><path d="${path}" fill="var(--mid)" fill-opacity=".55" stroke="var(--navy)" stroke-width="1.2"/>`;
+  const ssv=A.ss(p.es);const Tw=clamp(ssv/g.fy*40,-45,45);
+  s+=`<line x1="${tx}" y1="${yb}" x2="${tx+Tw}" y2="${yb}" stroke="var(--steel)" stroke-width="5"/>`;
+  s+=`<text x="${tx-4}" y="${oy+Hs+30}" font-size="10.5" fill="var(--ink)">σs ${f0(Math.abs(ssv))} N/mm²</text>`;
+  s+=`<text x="${tx+4}" y="${oy+12}" font-size="10.5" fill="var(--navy)">圧縮 →</text>`;
+  $('sec').innerHTML=s;
+}
+function drawMphi(k){
+  const A=BA,P=A.pts;const W=400,H=260,l=50,r=14,t=16,bm=40;const pmax=P[P.length-1].phi,Mmax=Math.max(A.Mu,A.Mcr)*1.12;
+  const X=v=>l+(W-l-r)*v/pmax,Y=v=>H-bm-(H-bm-t)*v/Mmax;
+  let s='';
+  for(let i=0;i<=4;i++){const v=Mmax*i/4;s+=`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${l-5}" y="${Y(v)+4}" text-anchor="end" font-size="10.5" fill="var(--ink)">${f0(v/1e6)}</text>`}
+  s+=`<text x="${l}" y="${t-4}" font-size="10.5" fill="var(--ink)">M [kN·m]</text><text x="${W-r}" y="${H-8}" text-anchor="end" font-size="10.5" fill="var(--ink)">曲率 φ（たわみやすさ）→</text>`;
+  let d='';P.forEach((p,i)=>{d+=(i?'L':'M')+X(p.phi).toFixed(1)+' '+Y(p.M).toFixed(1)+' '});
+  s+=`<path d="${d}" fill="none" stroke="var(--blue)" stroke-width="2.5"/>`;
+  const mk=(i,lab,col)=>{if(i<0||i>=P.length)return;const xx=X(P[i].phi),far=xx>W-70;s+=`<circle cx="${xx}" cy="${Y(P[i].M)}" r="4" fill="${col}"/><text x="${far?xx-6:xx+6}" y="${Y(P[i].M)+(far?16:-6)}" text-anchor="${far?'end':'start'}" font-size="10.5" fill="${col}">${lab}</text>`};
+  mk(A.ic>0?A.ic-1:0,'ひび割れ','var(--navy)');if(A.iy>=0)mk(A.iy,'降伏','var(--warn)');mk(P.length-1,'圧壊','var(--red)');
+  const p=P[k];s+=`<line x1="${X(p.phi)}" x2="${X(p.phi)}" y1="${t}" y2="${H-bm}" stroke="var(--red)" stroke-dasharray="3 3"/><circle cx="${X(p.phi)}" cy="${Y(p.M)}" r="6" fill="none" stroke="var(--red)" stroke-width="2"/>`;
+  $('mphi').innerHTML=s;
+}
+function beamKpi(){
+  const A=BA,g=BG;const rho=g.As/(g.b*g.d);
+  const duct=A.iy>0?A.pts[A.pts.length-1].phi/A.pts[A.iy].phi:null;
+  const modeTxt={tens:'曲げ引張破壊（粘る）',comp:'曲げ圧縮破壊（脆い）',cr:'ひび割れで崩壊（無筋と同じ）'}[A.mode];
+  $('bkpi').innerHTML=[
+    ['ひび割れモーメント Mcr',f0(A.Mcr/1e6),'kN·m','引張側に最初のひび割れ'],
+    ['降伏モーメント My',A.My?f0(A.My/1e6):'—','kN·m','鉄筋が伸び切り始める'],
+    ['終局モーメント Mu',f0(A.Mu/1e6),'kN·m','これ以上は耐えられない'],
+    ['粘り φu/φy',duct?f0(duct,1):'—','倍','降伏してから壊れるまで'],
+    ['鉄筋比 ρ',f0(rho*100,2),'%',`つり合い ρb = ${f0(A.rhob*100,2)}％`],
+    ['ρ / ρb',f0(rho/A.rhob,2),'','0.75以下なら鉄筋が先に伸びる'],
+    ['鉄筋のあき',g.n>1?f0(g.clear):'—','mm',g.clear>=Math.max(25,g.D)?'1段に入る':'1段に入らない'],
+    ['壊れ方',modeTxt,'','']
+  ].map((x,i)=>`<div class="kpi${i===7&&A.mode!=='tens'?' red':''}"><span>${x[0]}</span><b style="${i===7?'font-size:16px;font-family:var(--f-body)':''}">${x[1]}<em>${x[2]}</em></b><small>${x[3]}</small></div>`).join('');
+}
+/* mission 1 */
+const MD1=280e6,L1=8;
+function m1eval(b,h,n,D,fck,fy){
+  const edge=50+D/2,d=h-edge,As=n*BARS[D][0];const fcd=fck/1.3,fyd=fy/1.0,gb=1.1;
+  const k1=Math.min(0.85,1-0.003*fck),ecu=clamp((155-fck)/30000,0.0025,0.0035),beta=0.52+80*ecu,ey=fy/2e5;
+  const a=As*fyd/(k1*fcd*b),x=a/beta,es=ecu*(d-x)/x;const Mud=As*fyd*(d-a/2)/gb;
+  const rho=As/(b*d),rhob=k1*beta*fck/fy*ecu/(ecu+ey);const clear=(b-100-n*D)/(n-1);
+  const cost=b*h/1e6*L1*35000+n*BARS[D][1]*L1*1.4*250;
+  const chk=[
+    {n:'曲げ耐力 Mud ≥ Md',v:f0(Mud/1e6)+' kN·m',l:'≥ 280',ok:Mud>=MD1,m:'壊れにくさが設計の力を上回るか'},
+    {n:'鉄筋が先に伸びる ρ ≤ 0.75ρb',v:f0(rho*100,2)+' %',l:'≤ '+f0(0.75*rhob*100,2)+' %',ok:rho<=0.75*rhob,m:'圧壊より先に鉄筋が降伏する（粘る壊れ方）'},
+    {n:'最小鉄筋量 ρ ≥ 0.2%',v:f0(rho*100,2)+' %',l:'≥ 0.20 %',ok:rho>=0.002,m:'ひび割れた瞬間に壊れない'},
+    {n:'鉄筋のあき',v:f0(clear)+' mm',l:'≥ '+Math.max(25,D)+' mm',ok:clear>=Math.max(25,D),m:'コンクリートが鉄筋の間に回る'}];
+  return{d,As,a,x,es,ey,Mud,rho,rhob,clear,cost,chk,fcd,fyd,k1,beta,ecu,ok:chk.every(c=>c.ok)};
+}
+let opt1=null;
+function m1opt(fck,fy){const key=fck+'-'+fy;if(best[key])return best[key];let bst=null;
+  for(let b=250;b<=600;b+=50)for(let h=400;h<=1000;h+=50)for(let n=2;n<=10;n++)for(const D of [13,16,19,22,25,29,32]){const r=m1eval(b,h,n,D,fck,fy);if(r.ok&&(!bst||r.cost<bst.cost))bst={b,h,n,D,cost:r.cost}}
+  return best[key]=bst}
+let touched={1:false,2:false,3:false};
+function updM1(){
+  const g=BG;if(g.pos!=='bot'){rows('chk1',[{n:'鉄筋の位置',v:'上側',l:'引張側',ok:false,m:'下側が引っ張られる梁で、上側の鉄筋は引張に効かない'}]);$('calc1').textContent='鉄筋を下側（引張側）に戻してから照査してください。';stars('st1',touched[1],false);$('cost1').textContent='';return}
+  const r=m1eval(g.b,g.h,g.n,g.D,g.fck,g.fy);rows('chk1',r.chk);
+  $('calc1').textContent=
+`有効高さ d = h − (かぶり40 + スターラップ10 + D/2) = ${g.h} − ${f0(g.h-r.d,1)} = ${f0(r.d,1)} mm
+鉄筋量   As = ${g.n} × ${BARS[g.D][0]} = ${f0(r.As)} mm²
+材料の設計値  f′cd = ${g.fck}/1.3 = ${f0(r.fcd,1)} N/mm²,  fyd = ${g.fy}/1.0 = ${g.fy} N/mm²
+つり合い C = T :  ${r.k1}·f′cd·b·a = As·fyd  →  a = ${f0(r.As)}×${g.fy} / (${r.k1}×${f0(r.fcd,1)}×${g.b}) = ${f0(r.a,1)} mm
+中立軸   x = a/β = ${f0(r.a,1)}/${f0(r.beta,2)} = ${f0(r.x,1)} mm   鉄筋ひずみ εs = ${r.ecu}×(d−x)/x = ${(r.es*1e6).toFixed(0)}μ ${r.es>=r.ey?'≥':'<'} εy = ${(r.ey*1e6).toFixed(0)}μ ${r.es>=r.ey?'（降伏する）':'（降伏しない：式の前提が崩れる）'}
+曲げ耐力 Mud = As·fyd·(d − a/2)/γb = ${f0(r.As)}×${g.fy}×(${f0(r.d,1)} − ${f0(r.a/2,1)})/1.1 = ${f0(r.Mud/1e6,1)} kN·m`;
+  const o=m1opt(g.fck,g.fy);stars('st1',touched[1],r.ok,r.cost,o&&o.cost);
+  $('cost1').textContent=`この梁の費用（目安） ${f0(r.cost/1e4,1)} 万円／本` + (o?`　最安の安全案 ${f0(o.cost/1e4,1)} 万円`:'');
+}
+function updBeam(fromInput){
+  ['bb','bh','bn'].forEach(id=>$(id+'_v').textContent=$(id).value);
+  BG=beamGeom();BA=analyze(BG);if(fromInput)touched[1]=true;drawBeam();beamKpi();updM1();
+}
+['bb','bh','bn','bD','bfc','bfy'].forEach(id=>$(id).addEventListener('input',()=>updBeam(true)));
+seg('bpos',()=>updBeam(true));
+$('ld').addEventListener('input',drawBeam);
+let timer=null;
+$('play').addEventListener('click',()=>{if(timer){clearInterval(timer);timer=null;$('play').textContent='壊れるまで押す';return}
+  const red=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(red){$('ld').value=300;drawBeam();return}
+  $('ld').value=0;$('play').textContent='止める';timer=setInterval(()=>{const v=+$('ld').value+2;$('ld').value=Math.min(300,v);drawBeam();if(v>=300){clearInterval(timer);timer=null;$('play').textContent='壊れるまで押す'}},30)});
+document.querySelectorAll('[data-pre]').forEach(b=>b.addEventListener('click',()=>{
+  const p=b.dataset.pre;if(p==='std'){$('bb').value=300;$('bh').value=600;$('bn').value=4;$('bD').value='22';segset('bpos','bot')}
+  if(p==='over'){$('bb').value=300;$('bh').value=600;$('bn').value=8;$('bD').value='32';segset('bpos','bot')}
+  if(p==='top'){segset('bpos','top')}
+  $('ld').value=300;updBeam(true)}));
+$('best1').addEventListener('click',()=>{const o=m1opt(+$('bfc').value,+$('bfy').value);if(!o)return;$('bb').value=o.b;$('bh').value=o.h;$('bn').value=o.n;$('bD').value=String(o.D);segset('bpos','bot');touched[1]=false;updBeam(false)});
+
+/* =========================================================
+   2. 擁壁
+   ========================================================= */
+const GC=24.5,GS=18,QS=10,MU=0.6,SCA=8,SSA=180,TA=0.23;
+function rwEval(P){
+  const {H,phi,qa,t,B,D,s,side}=P;const tf=t+0.1,toe=0.3*B,heel=B-toe-t,Hs=H-tf;
+  const Ka=Math.pow(Math.tan((45-phi/2)*Math.PI/180),2);
+  const P1=0.5*Ka*GS*H*H,P2=Ka*QS*H,Ph=P1+P2,Mo=P1*H/3+P2*H/2;
+  const W1=t*Hs*GC,x1=toe+t/2,W2=B*tf*GC,x2=B/2,W3=Math.max(0,heel)*Hs*GS,W4=QS*Math.max(0,heel),x3=toe+t+Math.max(0,heel)/2;
+  const V=W1+W2+W3+W4,Mr=W1*x1+W2*x2+(W3+W4)*x3;const xr=(Mr-Mo)/V,e=B/2-xr;
+  const Fs=MU*V/Ph;let qmax,qmin;if(Math.abs(e)<=B/6){qmax=V/B*(1+6*e/B);qmin=V/B*(1-6*e/B)}else{qmax=xr>0?2*V/(3*xr):Infinity;qmin=0}
+  const M=Ka*GS*Hs**3/6+Ka*QS*Hs**2/2,S=Ka*GS*Hs**2/2+Ka*QS*Hs;
+  const d=t*1000-70,As=BARS[D][0]*1000/s,rho=As/(1000*d),n=15;const k=-n*rho+Math.sqrt((n*rho)**2+2*n*rho),j=1-k/3;
+  const sc=2*M*1e6/(k*j*1000*d*d),ss=M*1e6/(As*j*d),tau=S*1e3/(1000*d);
+  const ft=0.23*Math.pow(24,2/3),st=M*1e6/(1000*(t*1000)**2/6);
+  const chk=[];
+  chk.push({n:'形が成り立つ（かかとの長さ）',v:f0(heel,2)+' m',l:'≥ 0.20 m',ok:heel>=0.2,m:'底版が壁より土側に出ている'});
+  chk.push({n:'転倒 |e| ≤ B/6',v:f0(Math.abs(e),2)+' m',l:'≤ '+f0(B/6,2)+' m',ok:Math.abs(e)<=B/6,m:'合力が底版の真ん中1/3に入り、底面全体が地盤を押す'});
+  chk.push({n:'滑動 Fs ≥ 1.5',v:f0(Fs,2),l:'≥ 1.50',ok:Fs>=1.5,m:'底面の摩擦で横に押されても滑らない'});
+  chk.push({n:'支持力 q<sub>max</sub> ≤ qa',v:isFinite(qmax)?f0(qmax)+' kN/m²':'∞',l:'≤ '+qa,ok:qmax<=qa,m:'つま先の下の地盤が沈まない'});
+  if(side==='soil'){
+    chk.push({n:'コンクリート σc ≤ σca',v:f0(sc,2)+' N/mm²',l:'≤ 8.00',ok:sc<=SCA,m:'壁の道路側の面が潰れない'});
+    chk.push({n:'鉄筋 σs ≤ σsa',v:f0(ss)+' N/mm²',l:'≤ 180',ok:ss<=SSA,m:'土側の鉄筋が伸びすぎない'});
+  }else{
+    chk.push({n:'土側の面の引張',v:f0(st,2)+' N/mm²',l:'≤ '+f0(ft,2)+'（ひび割れ強度）',ok:st<=ft,m:'土側に鉄筋がないので、コンクリートだけで引張を受ける'});
+    chk.push({n:'鉄筋 σs',v:'効かない',l:'—',ok:false,m:'道路側の鉄筋は圧縮側にあり、引張を受け持てない'});
+  }
+  chk.push({n:'せん断 τ ≤ τa',v:f0(tau,3)+' N/mm²',l:'≤ 0.230',ok:tau<=TA,m:'壁の根元が斜めにずれ切れない'});
+  chk.push({n:'鉄筋の間隔',v:s+' mm',l:'≤ 300',ok:s<=300,m:'ひび割れを分散させる'});
+  const vol=t*Hs+B*tf;const kg=(1000/s)*BARS[D][1]*(Hs+B)*1.5;const cost=vol*35000+kg*250;
+  return{tf,toe,heel,Hs,Ka,P1,P2,Ph,Mo,W1,W2,W3,W4,V,Mr,xr,e,Fs,qmax,qmin,M,S,d,As,rho,k,j,sc,ss,tau,st,ft,chk,cost,vol,kg,ok:chk.every(c=>c.ok)};
+}
+function rwP(){return{H:+$('rH').value,phi:+$('rphi').value,qa:+$('rqa').value,t:+$('rt').value/1000,B:+$('rB').value,D:+$('rD').value,s:+$('rs').value,side:segv('rside')}}
+const rwOptCache={};
+function rwOpt(P){const key=[P.H,P.phi,P.qa].join('-');if(rwOptCache[key]!==undefined)return rwOptCache[key];let bst=null;
+  for(let t=250;t<=800;t+=50)for(let Bi=10;Bi<=80;Bi++)for(const D of [13,16,19,22,25,29])for(let s=100;s<=300;s+=25){
+    const q={...P,t:t/1000,B:Bi/10,D,s,side:'soil'};const r=rwEval(q);if(r.ok&&(!bst||r.cost<bst.cost))bst={t,B:Bi/10,D,s,cost:r.cost}}
+  return rwOptCache[key]=bst}
+function drawRW(P,r){
+  const W=720,Hh=400;const sc=Math.min(250/P.H,330/(P.B+2.2));const gx=40+ (1.0)*sc, gy=40+P.H*sc; // footing bottom y
+  const X=v=>gx+v*sc,Y=v=>gy-v*sc; // v: m from toe-left, height from footing bottom
+  let s='';
+  // ground in front
+  s+=`<rect x="0" y="${Y(r.tf)}" width="${W}" height="${Hh-Y(r.tf)}" fill="var(--soil)" opacity=".55"/>`;
+  // backfill
+  const xs=P.B*0.3+P.t;s+=`<path d="M${X(xs)} ${Y(r.tf)} L${X(xs)} ${Y(P.H)} L${W} ${Y(P.H)} L${W} ${Y(0)} L${X(P.B)} ${Y(0)} L${X(P.B)} ${Y(r.tf)} Z" fill="var(--soil)"/>`;
+  for(let i=0;i<14;i++){const x=X(xs)+20+i*28;if(x>W-10)break;s+=`<circle cx="${x}" cy="${Y(P.H*0.5)+(i%3)*30}" r="2" fill="var(--navy)" opacity=".35"/>`}
+  // road
+  s+=`<line x1="0" y1="${Y(r.tf)}" x2="${X(r.toe)}" y2="${Y(r.tf)}" stroke="var(--navy)" stroke-width="2"/><text x="6" y="${Y(r.tf)-6}" font-size="11.5" fill="var(--ink)">道路側</text>`;
+  s+=`<text x="${W-80}" y="${Y(P.H)-30}" font-size="11.5" fill="var(--ink)">土側（背面）</text>`;
+  // surcharge arrows
+  for(let i=0;i<7;i++){const x=X(xs)+18+i*36;if(x>W-12)break;s+=`<line x1="${x}" y1="${Y(P.H)-24}" x2="${x}" y2="${Y(P.H)-4}" stroke="var(--red)" stroke-width="1.5"/><path d="M${x-4} ${Y(P.H)-9} L${x} ${Y(P.H)-3} L${x+4} ${Y(P.H)-9}" fill="var(--red)"/>`}
+  s+=`<text x="${X(xs)+18}" y="${Y(P.H)-28}" font-size="11" fill="var(--red)">上載荷重 10 kN/m²</text>`;
+  // wall
+  s+=`<path d="M${X(0)} ${Y(0)} L${X(P.B)} ${Y(0)} L${X(P.B)} ${Y(r.tf)} L${X(xs)} ${Y(r.tf)} L${X(xs)} ${Y(P.H)} L${X(r.toe)} ${Y(P.H)} L${X(r.toe)} ${Y(r.tf)} L${X(0)} ${Y(r.tf)} Z" fill="var(--conc)" stroke="var(--navy)" stroke-width="2"/>`;
+  // rebar
+  const off=0.07*sc;const xr=P.side==='soil'?X(xs)-off:X(r.toe)+off;
+  s+=`<path d="M${xr} ${Y(P.H)+8} L${xr} ${Y(0)+off} L${P.side==='soil'?X(P.B)-8:X(0)+8} ${Y(0)+off}" stroke="var(--steel)" stroke-width="3" fill="none"/>`;
+  const xr2=P.side==='soil'?X(r.toe)+off:X(xs)-off;s+=`<line x1="${xr2}" y1="${Y(P.H)+8}" x2="${xr2}" y2="${Y(r.tf)}" stroke="var(--steel)" stroke-width="1.2" stroke-dasharray="5 3"/>`;
+  // earth pressure on virtual back (x=B)
+  const pb=r.Ka*GS*P.H+r.Ka*QS, pt=r.Ka*QS; const ps=60/pb;
+  const bx=X(P.B)+6;
+  s+=`<path d="M${bx} ${Y(P.H)} L${bx+pt*ps} ${Y(P.H)} L${bx+pb*ps} ${Y(0)} L${bx} ${Y(0)} Z" fill="var(--red)" fill-opacity=".16" stroke="var(--red)" stroke-width="1.5"/>`;
+  for(let i=1;i<=5;i++){const h=P.H*i/6,p=r.Ka*GS*(P.H-h)+r.Ka*QS;const yy=Y(h);s+=`<line x1="${bx+p*ps}" y1="${yy}" x2="${bx+4}" y2="${yy}" stroke="var(--red)" stroke-width="1.3"/><path d="M${bx+9} ${yy-3.5} L${bx+3} ${yy} L${bx+9} ${yy+3.5}" fill="var(--red)"/>`}
+  s+=`<text x="${bx+pb*ps+4}" y="${Y(0)-4}" font-size="11" fill="var(--red)">土圧 ${f0(pb,1)} kN/m²</text>`;
+  // bearing pressure diagram under footing
+  const yb=Y(0)+8;const qs=40/Math.max(r.qmax,1);
+  if(isFinite(r.qmax)){let qminv=r.qmin;let pts;
+    if(Math.abs(r.e)<=P.B/6){const qL=r.e>=0?r.qmax:r.qmin,qR=r.e>=0?r.qmin:r.qmax;pts=`M${X(0)} ${yb} L${X(0)} ${yb+qL*qs} L${X(P.B)} ${yb+qR*qs} L${X(P.B)} ${yb} Z`}
+    else{const len=3*r.xr;pts=`M${X(0)} ${yb} L${X(0)} ${yb+r.qmax*qs} L${X(Math.min(len,P.B))} ${yb} Z`}
+    s+=`<path d="${pts}" fill="var(--blue)" fill-opacity=".25" stroke="var(--blue)" stroke-width="1.5"/>`;
+    s+=`<text x="${X(0)}" y="${yb+r.qmax*qs+14}" font-size="11" fill="var(--blue)">地盤反力 最大 ${f0(r.qmax)} kN/m²</text>`}
+  // middle third
+  s+=`<line x1="${X(P.B/3)}" y1="${Y(0)}" x2="${X(P.B/3)}" y2="${Y(0)+6}" stroke="var(--navy)" stroke-width="2"/><line x1="${X(2*P.B/3)}" y1="${Y(0)}" x2="${X(2*P.B/3)}" y2="${Y(0)+6}" stroke="var(--navy)" stroke-width="2"/>`;
+  // resultant
+  if(r.xr>-1&&r.xr<P.B+1){s+=`<circle cx="${X(r.xr)}" cy="${Y(0)}" r="5" fill="${Math.abs(r.e)<=P.B/6?'var(--blue)':'var(--red)'}"/><text x="${X(r.xr)+7}" y="${Y(0)-6}" font-size="11" fill="var(--navy)">合力の位置</text>`}
+  // cracks on wrong side
+  if(P.side==='road'&&r.st>r.ft){for(let i=0;i<4;i++){const yy=Y(r.tf)-10-i*18;s+=`<path d="M${X(xs)} ${yy} l${-0.35*P.t*sc} ${-4} l${-0.25*P.t*sc} ${6}" stroke="var(--red)" stroke-width="2.2" fill="none"/>`}
+    s+=`<text x="${X(xs)+8}" y="${Y(r.tf)+ -60}" font-size="12" font-weight="700" fill="var(--red)">根元の土側がひび割れ、壁が折れる</text>`}
+  // dims
+  s+=`<text x="${X(P.B/2)}" y="${Hh-6}" text-anchor="middle" font-size="11.5" fill="var(--ink)">B = ${f0(P.B,1)} m ／ 壁厚 ${f0(P.t*1000)} mm ／ H = ${f0(P.H,1)} m</text>`;
+  $('rwfig').innerHTML=s;
+}
+function updRW(fromInput){
+  ['rH','rphi','rqa','rt','rs'].forEach(id=>$(id+'_v').textContent=$(id).value);$('rB_v').textContent=(+$('rB').value).toFixed(1);
+  if(fromInput)touched[2]=true;const P=rwP(),r=rwEval(P);rows('chk2',r.chk);drawRW(P,r);
+  const st=$('rwstate');const bad=r.chk.filter(c=>!c.ok).map(c=>c.n.replace(/<[^>]+>/g,''));st.className='state '+(r.ok?'ok':'ng');st.textContent=r.ok?'全部OK。この擁壁は立っていられる':'NG：'+bad.join('、');
+  $('calc2').textContent=
+`主働土圧係数 Ka = tan²(45° − φ/2) = tan²(${f0(45-P.phi/2,1)}°) = ${r.Ka.toFixed(3)}
+土圧の合力  P1 = ½·Ka·γ·H² = ${f0(r.P1,1)} kN（高さ H/3）   P2 = Ka·q·H = ${f0(r.P2,1)} kN（高さ H/2）   Ph = ${f0(r.Ph,1)} kN
+重さ        壁 ${f0(r.W1,1)} ＋ 底版 ${f0(r.W2,1)} ＋ かかとの上の土 ${f0(r.W3,1)} ＋ 上載 ${f0(r.W4,1)} = V = ${f0(r.V,1)} kN
+転倒        つま先まわり 抵抗 Mr = ${f0(r.Mr,1)} kN·m、転倒 Mo = ${f0(r.Mo,1)} kN·m → x = (Mr−Mo)/V = ${f0(r.xr,3)} m、 e = B/2 − x = ${f0(r.e,3)} m
+滑動        Fs = μ·V/Ph = 0.6×${f0(r.V,1)}/${f0(r.Ph,1)} = ${f0(r.Fs,2)}
+支持力      q = V/B·(1 ± 6e/B) = ${isFinite(r.qmax)?f0(r.qmax,1):'∞'} ／ ${f0(r.qmin,1)} kN/m²
+壁の根元    高さ h′ = H − 底版厚 = ${f0(r.Hs,2)} m   M = Ka·γ·h′³/6 + Ka·q·h′²/2 = ${f0(r.M,1)} kN·m/m   S = ${f0(r.S,1)} kN/m
+断面        d = t − 70 = ${f0(r.d)} mm、 As = ${BARS[P.D][0]}×1000/${P.s} = ${f0(r.As)} mm²/m、 ρ = ${(r.rho*100).toFixed(3)}%
+            k = −nρ + √((nρ)² + 2nρ) = ${r.k.toFixed(3)}、 j = 1 − k/3 = ${r.j.toFixed(3)}
+            σc = 2M/(k·j·b·d²) = ${f0(r.sc,2)} N/mm²   σs = M/(As·j·d) = ${f0(r.ss,1)} N/mm²   τ = S/(b·d) = ${r.tau.toFixed(3)} N/mm²`;
+  const o=rwOpt(P);stars('st2',touched[2],r.ok,r.cost,o&&o.cost);
+  $('cost2').textContent=`この擁壁 ${f0(r.cost/1e4,1)} 万円／m（コンクリート ${f0(r.vol,2)} m³、鉄筋 ${f0(r.kg)} kg）`+(o?`　最安の安全案 ${f0(o.cost/1e4,1)} 万円／m`:'　この条件では安全案が見つからない');
+}
+['rH','rphi','rqa','rt','rB','rD','rs'].forEach(id=>$(id).addEventListener('input',()=>updRW(true)));seg('rside',()=>updRW(true));
+$('best2').addEventListener('click',()=>{const o=rwOpt(rwP());if(!o)return;$('rt').value=o.t;$('rB').value=o.B;$('rD').value=String(o.D);$('rs').value=o.s;segset('rside','soil');touched[2]=false;updRW(false)});
+
+/* =========================================================
+   3. 床版
+   ========================================================= */
+function slEval(P){
+  const {L,k1,fck,t,D,s}=P;const tmin=Math.max(160,k1*(30*L+110));
+  const ML=0.8*(0.12*L+0.07)*100;const w=24.5*t/1000+22.5*0.075;const Md=w*L*L/10;const M=ML+Md;
+  const d=t-40,As=BARS[D][0]*1000/s,rho=As/(1000*d),n=15;const k=-n*rho+Math.sqrt((n*rho)**2+2*n*rho),j=1-k/3;
+  const sc=2*M*1e6/(k*j*1000*d*d),ss=M*1e6/(As*j*d);const sca=fck/3;
+  const chk=[
+    {n:'最小厚さ t ≥ k₁(30L + 110)',v:t+' mm',l:'≥ '+f0(Math.ceil(tmin))+' mm',ok:t>=tmin-1e-9,m:'薄いと繰り返しの力で抜ける（謎3の教訓）'},
+    {n:'コンクリート σc ≤ σck/3',v:f0(sc,2)+' N/mm²',l:'≤ '+f0(sca,2),ok:sc<=sca,m:'床版の上面（支点では下面）が潰れない'},
+    {n:'鉄筋 σs ≤ 140',v:f0(ss,1)+' N/mm²',l:'≤ 140',ok:ss<=140,m:'普通の部材の180より低く抑え、疲労に余裕を持たせる'},
+    {n:'鉄筋の間隔 ≤ 300 かつ ≤ t',v:s+' mm',l:'≤ '+Math.min(300,t)+' mm',ok:s<=Math.min(300,t),m:'輪の下にいつも鉄筋がある'}];
+  const conc=t/1000*45000;const kg=2*(1000/s)*BARS[D][1]*1.7;const cost=conc+kg*250;
+  return{tmin,ML,w,Md,M,d,As,rho,k,j,sc,ss,sca,chk,cost,kg,ok:chk.every(c=>c.ok)};
+}
+function slP(){return{L:+$('sL').value,k1:+$('sK').value,fck:+$('sfc').value,t:+$('st').value,D:+$('sD').value,s:+$('ss').value}}
+const slCache={};
+function slOpt(P){const key=[P.L,P.k1,P.fck].join('-');if(slCache[key]!==undefined)return slCache[key];let bst=null;
+  for(let t=160;t<=350;t+=10)for(const D of [13,16,19,22])for(let s=100;s<=300;s+=25){const r=slEval({...P,t,D,s});if(r.ok&&(!bst||r.cost<bst.cost))bst={t,D,s,cost:r.cost}}
+  return slCache[key]=bst}
+function drawSL(P,r){
+  const W=720,x0=40,span=(W-2*x0)/3;const tS=clamp(P.t/1000*span/P.L*2.2,14,46);const yT=110;
+  let s='';
+  // girders at x0, x0+span.. (4 girders, 3 spans)
+  s+=`<rect x="${x0-20}" y="${yT}" width="${3*span+40}" height="${tS}" fill="var(--conc)" stroke="var(--navy)" stroke-width="2"/>`;
+  s+=`<rect x="${x0-20}" y="${yT-6}" width="${3*span+40}" height="6" fill="var(--navy)" opacity=".7"/><text x="${x0-18}" y="${yT-10}" font-size="10.5" fill="var(--ink)">舗装 75 mm</text>`;
+  for(let i=0;i<4;i++){const x=x0+i*span;s+=`<path d="M${x-16} ${yT+tS} h32 M${x} ${yT+tS} v60 M${x-16} ${yT+tS+60} h32" stroke="var(--navy)" stroke-width="4" fill="none"/>`}
+  // bars: bottom main, top main
+  const cv=clamp(40/P.t*tS,3,10);
+  s+=`<line x1="${x0-14}" x2="${x0+3*span+14}" y1="${yT+tS-cv}" y2="${yT+tS-cv}" stroke="var(--steel)" stroke-width="2.5"/><line x1="${x0-14}" x2="${x0+3*span+14}" y1="${yT+cv}" y2="${yT+cv}" stroke="var(--steel)" stroke-width="2.5"/>`;
+  const nd=Math.round(3*span/ (P.s/1000*span/P.L) );const stepPx=Math.max(4,(P.s/1000)*span/P.L);
+  for(let x=x0-10;x<x0+3*span+10;x+=stepPx){s+=`<circle cx="${x}" cy="${yT+tS-cv-3.5}" r="1.8" fill="var(--navy)"/><circle cx="${x}" cy="${yT+cv+3.5}" r="1.8" fill="var(--navy)"/>`}
+  // wheel on middle span
+  const xw=x0+1.5*span;s+=`<rect x="${xw-22}" y="${yT-58}" width="44" height="50" rx="8" fill="var(--navy)"/><text x="${xw}" y="${yT-64}" text-anchor="middle" font-size="12" fill="var(--red)" font-weight="700">P = 100 kN</text>`;
+  s+=`<text x="${x0+span*0.5}" y="${yT+tS+18}" text-anchor="middle" font-size="11" fill="var(--ink)">L = ${f0(P.L,1)} m</text>`;
+  s+=`<text x="${x0+2.5*span}" y="${yT+tS+18}" text-anchor="middle" font-size="11" fill="var(--ink)">t = ${P.t} mm</text>`;
+  // moment diagram
+  const my=268,ms=40/(r.M*1.05);let d='';
+  for(let i=0;i<=180;i++){const x=x0+3*span*i/180;const u=(i%60)/60;const m=-r.M*Math.cos(2*Math.PI*u); d+=(i?' L':'M')+x.toFixed(1)+' '+(my+m*ms).toFixed(1)}
+  s+=`<line x1="${x0-10}" x2="${x0+3*span+10}" y1="${my}" y2="${my}" stroke="var(--line)" stroke-width="2"/>`;
+  s+=`<path d="${d}" fill="none" stroke="var(--blue)" stroke-width="2.2"/>`;
+  s+=`<text x="${x0+1.5*span}" y="${my+ r.M*ms+16}" text-anchor="middle" font-size="11" fill="var(--blue)">支間 +${f0(r.M,1)} kN·m/m（下側が引張）</text>`;
+  s+=`<text x="${x0+2*span}" y="${my- r.M*ms-6}" text-anchor="middle" font-size="11" fill="var(--blue)">支点 −${f0(r.M,1)}（上側が引張）</text>`;
+  s+=`<text x="${x0}" y="${345}" font-size="11" fill="var(--ink)">赤線＝主鉄筋（橋の幅方向）、黒点＝配力鉄筋（橋の長さ方向）。曲げモーメント図は引張側に描いた模式図</text>`;
+  $('slfig').innerHTML=s;
+}
+function updSL(fromInput){
+  ['sL','st','ss'].forEach(id=>$(id+'_v').textContent=$(id).value);$('sL_v').textContent=(+$('sL').value).toFixed(1);
+  if(fromInput)touched[3]=true;const P=slP(),r=slEval(P);rows('chk3',r.chk);drawSL(P,r);
+  const st=$('slstate');const bad=r.chk.filter(c=>!c.ok).map(c=>c.n);st.className='state '+(r.ok?'ok':'ng');st.textContent=r.ok?'全部OK。25トン車が毎日通っても耐える床版':'NG：'+bad.join('、');
+  $('calc3').textContent=
+`最小厚さ     t_min = k₁·(30L + 110) = ${P.k1}×(30×${P.L.toFixed(1)} + 110) = ${f0(r.tmin,1)} mm（160 mm 以上）
+活荷重の曲げ  M_L = 0.8 × (0.12L + 0.07)·P = 0.8×(0.12×${P.L.toFixed(1)} + 0.07)×100 = ${f0(r.ML,2)} kN·m/m（衝撃を含む、連続版は単純版の8割）
+死荷重の曲げ  w = 24.5×t + 22.5×0.075 = ${f0(r.w,2)} kN/m²、 M_D = w·L²/10 = ${f0(r.Md,2)} kN·m/m
+合計          M = ${f0(r.M,2)} kN·m/m
+断面          d = t − 40 = ${r.d} mm、 As = ${BARS[P.D][0]}×1000/${P.s} = ${f0(r.As)} mm²/m、 ρ = ${(r.rho*100).toFixed(3)}%
+              k = ${r.k.toFixed(3)}、 j = ${r.j.toFixed(3)}
+              σc = 2M/(k·j·b·d²) = ${f0(r.sc,2)} N/mm²    σs = M/(As·j·d) = ${f0(r.ss,1)} N/mm²`;
+  const o=slOpt(P);stars('st3',touched[3],r.ok,r.cost,o&&o.cost);
+  $('cost3').textContent=`この床版 ${f0(r.cost/1e4,2)} 万円／m²`+(o?`　最安の安全案 ${f0(o.cost/1e4,2)} 万円／m²`:'');
+}
+['sL','sK','sfc','st','sD','ss'].forEach(id=>$(id).addEventListener('input',()=>updSL(true)));
+$('best3').addEventListener('click',()=>{const o=slOpt(slP());if(!o)return;$('st').value=o.t;$('sD').value=String(o.D);$('ss').value=o.s;touched[3]=false;updSL(false)});
+
+/* ---------- init ---------- */
+updBeam(false);updRW(false);updSL(false);
+window.__rc={analyze,beamGeom,m1eval,m1opt,rwEval,rwOpt,slEval,slOpt};
+})();
+</script>
+</body></html>
