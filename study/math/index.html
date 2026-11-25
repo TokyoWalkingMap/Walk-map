@@ -82,17 +82,32 @@ details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
 a{color:var(--blue)}
 footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-</style>
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
 
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
 <div class="wrap">
 <header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
 
 <div class="hero">
  <h1>微分も積分も、<em>かけ算と割り算</em>に変える道具。</h1>
  <p class="lead">ラプラス変換は、時間 <span class="m">t</span> の世界の式を、<span class="m">s</span> の世界へ写す変換です。向こうの世界では、微分は「<span class="m">s</span> をかける」、積分は「<span class="m">s</span> で割る」、たたみこみ積分は「ただのかけ算」になります。だから、ばねの揺れの微分方程式も、積分方程式も、分数の計算で解けます。</p>
- <ul class="road" aria-label="数学ラボの章">
-  <li class="on">ラプラス変換と積分方程式</li><li class="soon">三角関数（準備中）</li><li class="soon">幾何学（準備中）</li><li class="soon">微分積分（準備中）</li>
- </ul>
+ <ul class="road" aria-label="数学ラボの章"><li><a href="../math-sankaku/">三角関数</a></li><li><a href="../math-kika/">幾何学</a></li><li><a href="../math-bibun/">微分積分はいつ使う？</a></li><li><a href="../math-bihou/">微分方程式</a></li><li class="on">ラプラス変換と積分方程式</li></ul>
  <nav class="toc" aria-label="目次">
   <a href="#c1"><span>1</span>謎：微分方程式を割り算で？</a>
   <a href="#c2"><span>2</span>定義を触って確かめる</a>

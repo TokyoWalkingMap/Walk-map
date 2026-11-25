@@ -1,0 +1,230 @@
+<title>微分方程式ラボ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap">
+<style>
+/* レイアウト：勉強ラボシリーズのリソグラフ調。1カラムの章立て、各章に「謎 → 触る → 導く」 */
+:root{--paper:#F4F3EF;--ink:#1C3A7E;--navy:#12286B;--blue:#3286BE;--red:#C62422;--mid:#93BCD6;--sheet:#FFFFFF;--line:#D9D6CC;--muted:#5E6B86;--soft:#EAF2F8;--gold:#C8A02A;
+ --disp:"Dela Gothic One","Zen Kaku Gothic New",sans-serif;--body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;--math:"Times New Roman",Times,serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.8;margin:0}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px 60px}
+header.top{border-bottom:3px solid var(--navy);padding-block:14px 10px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.logo{font-family:var(--disp);font-size:20px;color:var(--navy);letter-spacing:1px}.logo b{color:var(--red);font-weight:400}
+.series{font-size:12px;color:var(--muted)}
+.hero{padding-block:28px 10px}
+.hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(26px,6vw,40px);line-height:1.3;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:62ch;margin:0}
+.road{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0;padding:0;list-style:none;font-size:12px}
+.road li{border:1.5px solid var(--navy);padding:2px 10px;background:var(--sheet)}
+.road li.on{background:var(--navy);color:#fff}.road li.soon{border-style:dashed;color:var(--muted);border-color:var(--muted)}
+nav.toc{margin:22px 0 6px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+nav.toc a{display:block;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);text-decoration:none;font-weight:700;padding:6px 10px;font-size:13px}
+nav.toc a span{color:var(--red);font-family:var(--disp);font-weight:400;margin-right:6px}
+nav.toc a:hover,nav.toc a:focus-visible{background:var(--soft)}
+section.ch{margin-top:46px;scroll-margin-top:12px}
+section.ch>h2{font-family:var(--disp);font-weight:400;font-size:24px;color:var(--navy);margin:0 0 8px;line-height:1.4;text-wrap:balance}
+section.ch>h2 span{color:var(--red);margin-right:10px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 6px}
+p{margin:8px 0}
+.mm,.m{font-family:var(--math);font-style:italic;font-weight:700;white-space:nowrap}
+.eq{display:block;text-align:center;font-family:var(--math);font-style:italic;font-weight:700;font-size:20px;color:var(--red);margin:12px 0;white-space:normal;overflow-x:auto}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.15;margin:0 .1em}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 .2em}
+.fr>span:last-child{padding:0 .2em}
+.int{font-size:1.4em;vertical-align:-.25em;font-style:normal;font-weight:400}
+sup,sub{font-size:.7em}
+.nazo{background:var(--sheet);border:3px solid var(--red);padding:14px 16px;margin:16px 0}
+.nazo b.k{display:block;font-family:var(--disp);font-weight:400;color:var(--red);font-size:14px;letter-spacing:2px}
+.nazo .q{font-weight:700;margin:4px 0 10px}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts button,.btn{font:inherit;font-weight:700;text-align:left;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:8px 12px;cursor:pointer;min-height:44px}
+.opts button:hover,.opts button:focus-visible,.btn:hover,.btn:focus-visible{background:var(--soft);outline:none}
+.opts button.ok{background:var(--navy);color:#fff}.opts button.ng{border-color:var(--red);color:var(--red);background:#fbeaea}
+.opts button:disabled{cursor:default}
+.ans{border-left:4px solid var(--blue);background:var(--soft);padding:8px 12px;margin-top:10px}
+.lab{background:var(--sheet);border:2px solid var(--navy);padding:12px;margin:14px 0}
+.lab h4{margin:0 0 4px;font-size:14px;color:var(--red);letter-spacing:1px}
+.lab svg{width:100%;height:auto;display:block;background:var(--sheet);touch-action:none}
+.ctl{display:grid;gap:8px;margin-top:8px}
+.ctl label{display:grid;grid-template-columns:auto 1fr 64px;gap:8px;align-items:center;font-size:13px;font-weight:700}
+.ctl input[type=range]{width:100%;accent-color:var(--red)}
+.ctl output{font-family:var(--math);font-weight:700;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:13px;font-weight:700;border:2px solid var(--navy);background:var(--sheet);color:var(--navy);padding:4px 10px;cursor:pointer;min-height:36px}
+.chips button.on{background:var(--navy);color:#fff}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-top:8px}
+.read div{border:1.5px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted)}
+.read b{display:block;font-family:var(--math);font-size:20px;color:var(--navy)}
+.read .hi b{color:var(--red)}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;background:var(--sheet);font-size:14px}
+th,td{border:1.5px solid var(--line);padding:6px 10px;text-align:left;vertical-align:middle}
+th{background:var(--navy);color:#fff;font-weight:700;font-size:13px}
+td.f{font-family:var(--math);font-style:italic;font-weight:700;font-size:17px;white-space:nowrap}
+details{margin-top:4px}
+summary{cursor:pointer;color:var(--blue);font-weight:700;font-size:13px}
+details .why{font-size:13px;line-height:1.8;padding:6px 0 2px}
+.steps{list-style:none;padding:0;margin:10px 0;counter-reset:st}
+.steps>li{counter-increment:st;position:relative;padding:10px 0 10px 40px;border-bottom:1.5px solid var(--line)}
+.steps>li::before{content:counter(st);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;font-weight:900;display:grid;place-items:center;font-size:14px}
+.steps>li.q::before{content:"?";background:var(--red)}
+.steps>li[hidden]{display:none}
+.prob{background:var(--sheet);border:2px solid var(--navy);padding:12px 14px;margin:14px 0}
+.prob .ttl{font-weight:900;color:var(--navy)}
+.prob .eq{font-size:18px}
+.use{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.use div{background:var(--sheet);border:2px solid var(--navy);padding:10px 12px;min-width:0}
+.use b{display:block;color:var(--red);font-size:15px}
+.use p{font-size:13px;line-height:1.7;margin:4px 0 0}
+.key{display:block;background:#fbeaea;border-left:5px solid var(--red);padding:8px 12px;font-weight:900;color:var(--navy);margin:14px 0}
+.note{font-size:12px;color:var(--muted)}
+a{color:var(--blue)}
+footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style><style>.road a{color:inherit;text-decoration:none;display:block}.road li:has(a):hover{background:var(--soft)}</style>
+
+<script>window.MX=(()=>{ const C={navy:'#12286B',blue:'#3286BE',red:'#C62422',mid:'#93BCD6',line:'#D9D6CC',muted:'#5E6B86',soft:'#EAF2F8',gold:'#C8A02A',paper:'#F4F3EF'};
+ const tx=(x,y,t,c=C.muted,fs=10,a='middle',w=400)=>`<text x="${x}" y="${y}" font-size="${fs}" fill="${c}" text-anchor="${a}" font-weight="${w}" font-family="Zen Kaku Gothic New,sans-serif">${t}</text>`;
+ const ln=(x1,y1,x2,y2,c=C.navy,w=1.5,d='')=>`<line x1="${(+x1).toFixed(1)}" y1="${(+y1).toFixed(1)}" x2="${(+x2).toFixed(1)}" y2="${(+y2).toFixed(1)}" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pl=(pts,c,w=2,d='')=>`<polyline points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${c}" stroke-width="${w}"${d?` stroke-dasharray="${d}"`:''}/>`;
+ const pg=(pts,fill,op=1,st='none',w=1.5)=>`<polygon points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="${fill}" fill-opacity="${op}" stroke="${st}" stroke-width="${w}"/>`;
+ const arr=(x1,y1,x2,y2,c=C.red,w=2.5)=>{ const a=Math.atan2(y2-y1,x2-x1), h=8; return ln(x1,y1,x2,y2,c,w)+`<path d="M${x2},${y2} L${(x2-h*Math.cos(a-0.4)).toFixed(1)},${(y2-h*Math.sin(a-0.4)).toFixed(1)} L${(x2-h*Math.cos(a+0.4)).toFixed(1)},${(y2-h*Math.sin(a+0.4)).toFixed(1)}Z" fill="${c}"/>`; };
+ const nf=(v,d)=>{ if(!isFinite(v)) return '—'; const a=Math.abs(v); if(d==null) d=a>=100?0:a>=10?1:2; return v.toFixed(d); };
+ const $=s=>document.querySelector(s);
+ const drag=(sv,W,H,cb)=>{ let on=false; const pos=e=>{ const r=sv.getBoundingClientRect(); cb((e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height,e); };
+  sv.addEventListener('pointerdown',e=>{ on=true; try{sv.setPointerCapture(e.pointerId);}catch(_){} pos(e); }); sv.addEventListener('pointermove',e=>{ if(on) pos(e); }); ['pointerup','pointercancel'].forEach(t=>sv.addEventListener(t,()=>on=false)); };
+ document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[data-nazo]').forEach(nz=>{ const ans=nz.querySelector('.ans'); const ok=+ans.dataset.ok;
+   nz.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>{ nz.querySelectorAll('.opts button').forEach(x=>{ x.disabled=true; if(+x.dataset.a===ok) x.classList.add('ok'); }); if(+b.dataset.a!==ok){ b.classList.add('ng'); ans.insertAdjacentHTML('afterbegin','<b>予想は外れ。</b>'); } else ans.insertAdjacentHTML('afterbegin','<b>当たり！</b>'); ans.hidden=false; }); });
+  document.querySelectorAll('[data-quiz]').forEach(box=>{ const a=box.dataset.quiz; box.querySelectorAll('button').forEach(b=>b.onclick=()=>{ box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.dataset.v===a) x.classList.add('ok'); }); if(b.dataset.v!==a) b.classList.add('ng'); const w=box.querySelector('.why'); if(w) w.hidden=false; }); });
+ });
+ return {C,tx,ln,pl,pg,arr,nf,$,drag}; })();
+</script>
+<div class="wrap">
+<header class="top"><span class="logo">数学<b>ラボ</b></span><span class="series">土木の勉強ラボシリーズ ／ 構造・地盤・水理で使う数学</span></header>
+
+<div class="hero">
+ <h1>「いまの状態」が、<em>次の一瞬</em>を決める式。</h1>
+ <p class="lead">微分方程式は、「変わる速さ」と「いまの量」の関係を書いた式です。土木の現象は、ほとんどがこの形で書けます。タンクの水が抜ける、粘土が沈む、建物が揺れる、梁がたわむ。答えは数ではなく<b>関数（時間とともにどう変わるか）</b>です。</p>
+ <ul class="road" aria-label="数学ラボの章"><li><a href="../math-sankaku/">三角関数</a></li><li><a href="../math-kika/">幾何学</a></li><li><a href="../math-bibun/">微分積分はいつ使う？</a></li><li class="on">微分方程式</li><li><a href="../math/">ラプラス変換と積分方程式</a></li></ul>
+ <nav class="toc" aria-label="目次">
+  <a href="#c1"><span>1</span>謎：水を2倍入れたら、抜ける時間は？</a>
+  <a href="#c2"><span>2</span>つくり方：入る − 出る ＝ 増える速さ</a>
+  <a href="#c3"><span>3</span>解く ＝ 傾きに沿って少しずつ進む</a>
+  <a href="#c4"><span>4</span>手で解く3つの型</a>
+  <a href="#c5"><span>5</span>2階の微分方程式と揺れ</a>
+  <a href="#c6"><span>6</span>土木の5つの方程式</a>
+ </nav>
+</div>
+
+<section class="ch" id="c1"><h2><span>1</span>謎：水を2倍入れたら、抜ける時間は？</h2>
+ <div class="nazo" data-nazo="1"><b class="k">謎</b>
+  <p class="q">底に穴のあいた水槽に、深さ 1 m まで水を入れると、空になるまで 10 分かかった。深さ 2 m まで入れたら、空になるまで何分かかる？</p>
+  <div class="opts"><button data-a="0">20 分（水が2倍だから）</button><button data-a="1">約 14 分（√2 倍）</button><button data-a="2">10 分（穴が同じだから）</button></div>
+  <div class="ans" data-ok="1" hidden>約 14 分です。深いほど水圧が高く、穴から速く出ます（トリチェリの定理 <span class="m">v＝√(2gh)</span>）。「水面が下がる速さが √h に比例する」という微分方程式 <span class="m">dh/dt＝−c√h</span> を解くと、空になる時間は <span class="m">√h₀</span> に比例します。3章の「水槽」で確かめられます。</div>
+ </div>
+</section>
+
+<section class="ch" id="c2"><h2><span>2</span>つくり方：入る − 出る ＝ 増える速さ</h2>
+ <p>微分方程式は、覚える式ではなく、自分で<b>つくる</b>式です。どの分野でも、つくり方は同じ3段です。</p>
+ <ol class="steps">
+  <li><b>短い時間 dt（または短い長さ dx）だけを見る。</b>その間なら、ものごとはほぼ一定とみなせる。</li>
+  <li><b>収支を書く。</b>増えた量 ＝ 入った量 − 出た量。または、力のつりあい（質量 × 加速度 ＝ 力）。</li>
+  <li><b>dt で割る。</b>「増えた量 / dt」が微分 <span class="m">dy/dt</span> になって、微分方程式ができる。</li>
+ </ol>
+ <div class="prob"><p class="ttl">例：水槽の水位</p>
+  <p>水面の面積 <span class="m">A</span>、穴の面積 <span class="m">a</span>。短い時間 <span class="m">dt</span> に穴から出る水は <span class="m">a·v·dt＝a√(2gh)·dt</span>。その分だけ水位が <span class="m">dh</span> 下がるので</p>
+  <span class="eq">A dh ＝ −a√(2gh) dt　→　<span class="fr"><span>dh</span><span>dt</span></span> ＝ −<span class="fr"><span>a√(2g)</span><span>A</span></span> √h</span>
+  <p class="note">「水がたまる（雨が降る）」なら右辺に入る量を足し、「水を抜く（ポンプ）」なら引く。それだけで、ダム・遊水地・調整池の式になります。</p>
+ </div>
+ <span class="key">微分方程式は「ほんの少しの間の収支」。だから自分でつくれる。</span>
+</section>
+
+<section class="ch" id="c3"><h2><span>3</span>解く ＝ 傾きに沿って少しずつ進む</h2>
+ <p>微分方程式は、各点での「進む向き（傾き）」を教えてくれます。下の図の短い線がその向きです。スタート地点から、向きに沿って一歩ずつ進めば、答えの曲線が描けます（オイラー法）。コンピューターの解析も、基本はこれです。</p>
+ <div class="lab" id="lab"><h4>触って確かめる：一歩の大きさを変える</h4>
+  <div class="chips" id="eqs" role="group" aria-label="式を選ぶ"></div>
+  <p id="eqd" style="font-size:13px;margin:8px 0 0"></p>
+  <svg id="sv" viewBox="0 0 340 250" role="img" aria-label="傾きの場と、オイラー法の折れ線と、正しい解の曲線"></svg>
+  <div class="ctl"><label for="hs">一歩の大きさ Δt <input id="hs" type="range" min="0" max="5" step="1" value="2"><output id="ho"></output></label><label for="y0">はじめの値 <input id="y0" type="range" min="0" max="100" step="1" value="60"><output id="y0o"></output></label></div>
+  <div class="read"><div>一歩ずつ進めた答え<b id="re">—</b></div><div class="hi">正しい答え（式で解いた）<b id="rx">—</b></div></div>
+  <p class="note" id="tip">赤い折れ線：一歩ずつ進めた答え。紺の曲線：正しい答え。一歩を小さくすると、ぴったり重なっていきます。</p>
+ </div>
+</section>
+
+<section class="ch" id="c4"><h2><span>4</span>手で解く3つの型</h2>
+ <div class="prob"><p class="ttl">型1：変わる速さが「いまの量」に比例する</p>
+  <span class="eq"><span class="fr"><span>dy</span><span>dt</span></span> ＝ −k y　→　y ＝ y₀ e<sup>−kt</sup></span>
+  <details><summary>導き方（変数分離）</summary><div class="why">y を左、t を右に集める：<span class="m">dy/y＝−k dt</span>。両辺を積分して <span class="m">ln y＝−kt＋定数</span>。<span class="m">t＝0</span> で <span class="m">y＝y₀</span> だから <span class="m">y＝y₀e<sup>−kt</sup></span>。半分になる時間は <span class="m">ln2/k≈0.69/k</span> で、はじめの量に関係ない。</div></details>
+  <p class="note">土木では：粘土の沈下の残り、コンクリートの温度が下がる、汚れた水が薄まる、放射性の物質。</p>
+ </div>
+ <div class="prob"><p class="ttl">型2：一定の量が入り、量に比例して出ていく</p>
+  <span class="eq"><span class="fr"><span>dy</span><span>dt</span></span> ＝ q − k y　→　y ＝ <span class="fr"><span>q</span><span>k</span></span> ＋ (y₀ − <span class="fr"><span>q</span><span>k</span></span>) e<sup>−kt</sup></span>
+  <details><summary>導き方</summary><div class="why">いずれ「入る＝出る」で止まる量 <span class="m">y∞＝q/k</span>（平衡）。<span class="m">z＝y−q/k</span> とおくと <span class="m">dz/dt＝−kz</span> で型1になる。だから <span class="m">z＝z₀e<sup>−kt</sup></span>。</div></details>
+  <p class="note">土木では：調整池の水位、湖の水質、地下水位、部屋の温度。「最後に落ち着く値」と「どれくらいの速さで近づくか（1/k）」の2つで全部わかる。</p>
+ </div>
+ <div class="prob"><p class="ttl">型3：変わる速さが √（量）に比例する（水槽）</p>
+  <span class="eq"><span class="fr"><span>dh</span><span>dt</span></span> ＝ −c√h　→　√h ＝ √h₀ − <span class="fr"><span>c</span><span>2</span></span>t</span>
+  <details><summary>導き方</summary><div class="why">変数分離で <span class="m">dh/√h＝−c dt</span>。積分すると <span class="m">2√h＝−ct＋2√h₀</span>。空（h＝0）になる時刻は <span class="m">T＝2√h₀/c</span>。<b>はじめの深さを2倍にすると、T は √2 倍（約1.41倍）</b>。これが1章の謎の答え。</div></details>
+ </div>
+ <p>式で解けない微分方程式も多くあります。そのときは3章のように一歩ずつ進めて（数値解析）、または<a href="../math/">ラプラス変換</a>で「かけ算と割り算」に変えて解きます。</p>
+</section>
+
+<section class="ch" id="c5"><h2><span>5</span>2階の微分方程式と揺れ</h2>
+ <p>力のつりあい「質量 × 加速度 ＝ 力」を書くと、加速度は位置の2回微分なので、2階の微分方程式になります。おもり <span class="m">m</span>、ダンパー <span class="m">c</span>、ばね <span class="m">k</span> なら</p>
+ <span class="eq">m x″ ＋ c x′ ＋ k x ＝ 0</span>
+ <details><summary>導き方（特性方程式）</summary><div class="why"><span class="m">x＝e<sup>λt</sup></span> と予想して入れると、<span class="m">e<sup>λt</sup></span> で割れて <span class="m">mλ²＋cλ＋k＝0</span>（特性方程式）。2次方程式の解の公式で λ が出る。判別式 <span class="m">c²−4mk</span> の正負で、揺れ方が3通りに分かれる：負なら λ が複素数 <span class="m">−ζω±iω<sub>d</sub></span> になり、オイラーの式から <span class="m">e<sup>−ζωt</sup>cos ω<sub>d</sub>t</span>（揺れながら減る）。0 なら臨界減衰、正なら揺れずに戻る。</div></details>
+ <div class="lab" id="lab2"><h4>触って確かめる：減衰を変える</h4>
+  <svg id="sv2" viewBox="0 0 340 200" role="img" aria-label="減衰比ごとの揺れ方のグラフ"></svg>
+  <div class="ctl"><label for="zs">減衰比 ζ <input id="zs" type="range" min="0" max="1.6" step="0.01" value="0.05"><output id="zo"></output></label></div>
+  <p class="note" id="zt"></p>
+ </div>
+ <p>建物はふつう ζ が 2〜5% で、揺れながら少しずつ止まります。ダンパーで ζ を大きくすると早く止まります（<a href="../kozo-riron/#d-shindo-1">構造の理論ラボ：自由振動と減衰</a>）。</p>
+</section>
+
+<section class="ch" id="c6"><h2><span>6</span>土木の5つの方程式</h2>
+ <p>どれも「短い区間の収支・つりあい」からつくられた微分方程式です。</p>
+ <div class="use">
+  <div><b>梁のたわみ（構造）</b><p><span class="m">EI d⁴y/dx⁴ ＝ w</span>。荷重 → せん断力 → 曲げ → たわみ角 → たわみの、4回積分のはしご。端の止め方（ピン・固定）が「境界条件」になる。</p></div>
+  <div><b>建物の揺れ（構造・振動）</b><p><span class="m">m x″＋c x′＋k x＝−m ü<sub>g</sub></span>。地震の加速度を入れて、時間を一歩ずつ進めて解く（時刻歴応答解析）。</p></div>
+  <div><b>粘土の圧密（地盤）</b><p><span class="m">∂u/∂t ＝ c<sub>v</sub> ∂²u/∂z²</span>。水圧 u が時間と深さで変わる偏微分方程式。熱の伝わり方と同じ形。</p></div>
+  <div><b>地下水の流れ（地盤）</b><p><span class="m">∂²h/∂x² ＋ ∂²h/∂z² ＝ 0</span>（ラプラス方程式）。ダムや堤防の下をしみ出る水の流線網は、これの解。</p></div>
+  <div><b>川の水面の形（水理）</b><p><span class="m">dh/dx ＝ (I − I<sub>f</sub>)/(1 − Fr²)</span>（不等流）。堰の上流で水面がどこまで上がるか（背水）を、下流から一歩ずつ計算する。</p></div>
+ </div>
+</section>
+
+<footer>数学ラボ（土木の勉強ラボシリーズ）。ほかのラボ：<a href="../kozo/">構造力学ラボ</a>・<a href="../jiban/">地盤力学ラボ</a>・<a href="../suiri/">水理学ラボ</a>・<a href="../sogi/">そぎ落としミッション</a></footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{ const {C,tx,ln,pl,nf,$}=MX;
+const E=[
+ {k:'decay',name:'沈下の残り',d:'dy/dt ＝ −0.4 y　（残りの沈下 y cm が、残りに比例する速さで減る）',T:10,ymax:100,f:(t,y)=>-0.4*y,ex:(t,y0)=>y0*Math.exp(-0.4*t),yl:'残りの沈下 y（cm）',tl:'年'},
+ {k:'pond',name:'調整池',d:'dy/dt ＝ 30 − 0.5 y　（毎時 30 千m³ 入り、水量 y に比例して 0.5y 出る）',T:10,ymax:100,f:(t,y)=>30-0.5*y,ex:(t,y0)=>60+(y0-60)*Math.exp(-0.5*t),yl:'水量 y（千m³）',tl:'時間'},
+ {k:'tank',name:'水槽',d:'dh/dt ＝ −c√h　（穴から水が抜ける。深いほど速く出る）',T:10,ymax:100,sc:0.1,f:(t,y)=>-2*Math.sqrt(Math.max(y,0)/10),ex:(t,y0)=>{ const r=Math.sqrt(y0/10)-0.1*t; return r>0?10*r*r:0; },yl:'水深 h（cm）',tl:'分'},
+];
+let cur=E[0]; const sv=$('#sv'), hs=$('#hs'), y0s=$('#y0'); const HS=[2,1.5,1,0.5,0.2,0.05];
+$('#eqs').innerHTML=E.map((e,i)=>`<button data-i="${i}"${i?'':' class="on"'}>${e.name}</button>`).join('');
+function draw(){ const e=cur, h=HS[+hs.value], y0=+y0s.value; $('#ho').textContent=h; $('#y0o').textContent=y0; $('#eqd').textContent=e.d;
+ const X=t=>40+286*t/e.T, Y=y=>222-200*y/e.ymax; let s='';
+ s+=ln(40,22,40,222)+ln(40,222,326,222); for(let k=0;k<=e.T;k+=2) s+=tx(X(k),236,k); for(let k=0;k<=e.ymax;k+=25) s+=tx(34,Y(k)+3,k,C.muted,9,'end');
+ s+=tx(326,248,'時間（'+e.tl+'）',C.muted,9,'end')+tx(44,14,e.yl,C.navy,10,'start',700);
+ for(let i=0;i<=12;i++) for(let j=0;j<=8;j++){ const t=e.T*i/12, y=e.ymax*j/8; const sl=e.f(t,y); const dx=e.T/40, dy=sl*dx; const px=X(dx)-X(0), py=Y(0)-Y(dy); const L=Math.hypot(px,py)||1, u=8/L; s+=ln(X(t)-px*u,Y(y)+py*u,X(t)+px*u,Y(y)-py*u,C.mid,1.3); }
+ const ex=[]; for(let i=0;i<=200;i++){ const t=e.T*i/200; ex.push([X(t),Y(e.ex(t,y0))]); } s+=pl(ex,C.navy,2.5);
+ const eu=[[X(0),Y(y0)]]; let y=y0, t=0; while(t<e.T-1e-9){ y=Math.max(0,y+h*e.f(t,y)); t+=h; eu.push([X(t),Y(y)]); }
+ s+=pl(eu,C.red,2); if(h>=0.5) eu.forEach(p=>s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="${C.red}"/>`);
+ sv.innerHTML=s; const te=e.T/2; let yy=y0,tt=0; while(tt<te-1e-9){ yy=Math.max(0,yy+h*e.f(tt,yy)); tt+=h; }
+ $('#re').textContent=`t＝${te} で ${nf(yy,1)}`; $('#rx').textContent=`t＝${te} で ${nf(e.ex(te,y0),1)}`; }
+document.querySelectorAll('#eqs button').forEach(b=>b.onclick=()=>{ cur=E[+b.dataset.i]; document.querySelectorAll('#eqs button').forEach(x=>x.classList.toggle('on',x===b)); draw(); });
+hs.oninput=draw; y0s.oninput=draw; draw();
+
+const sv2=$('#sv2'), zs=$('#zs');
+function d2(){ const z=+zs.value; $('#zo').textContent=(z*100).toFixed(0)+' %'; const w=2*Math.PI*0.5; const X=t=>40+286*t/8, Y=v=>100-80*v;
+ const x=t=>{ if(z<1){ const wd=w*Math.sqrt(1-z*z); return Math.exp(-z*w*t)*(Math.cos(wd*t)+z*w/wd*Math.sin(wd*t)); } if(Math.abs(z-1)<1e-6) return Math.exp(-w*t)*(1+w*t); const r=w*Math.sqrt(z*z-1), l1=-z*w+r, l2=-z*w-r; return (l2*Math.exp(l1*t)-l1*Math.exp(l2*t))/(l2-l1); };
+ let s=ln(40,20,40,182)+ln(40,100,326,100,C.navy,1); for(let k=0;k<=8;k+=2) s+=tx(X(k),196,k+' 秒');
+ const p=[]; for(let i=0;i<=300;i++){ const t=8*i/300; p.push([X(t),Y(x(t))]); } s+=pl(p,C.red,2.5)+tx(44,14,'位置 x（はじめ 1 だけずらして離す）',C.navy,10,'start',700);
+ sv2.innerHTML=s; $('#zt').textContent=z<0.005?'ζ＝0：減衰がないと、いつまでも同じ大きさで揺れ続ける。':z<1?'ζ＜1：揺れながら減る（建物・橋はこの範囲）。':Math.abs(z-1)<0.02?'ζ＝1（臨界減衰）：揺れずに、いちばん早く戻る。ドアクローザーはこれに近い。':'ζ＞1：揺れずに、ゆっくり戻る（減衰が強すぎる）。'; }
+zs.oninput=d2; d2();
+});
+</script>
