@@ -171,6 +171,7 @@ footer{margin-top:50px;border-top:3px solid var(--navy);padding-top:10px;font-si
   <tr><td class="f"><span class="int">∫</span><sub>0</sub><sup>t</sup> f(τ) dτ</td><td class="f"><span class="fr"><span>F(s)</span><span>s</span></span></td><td><details><summary>導き方（積分 → s で割る）</summary><div class="why"><span class="m">g(t)＝∫<sub>0</sub><sup>t</sup> f dτ</span> とおくと <span class="m">g′＝f</span>、<span class="m">g(0)＝0</span>。微分の公式から <span class="m">sG(s)＝F(s)</span>、だから <span class="m">G＝F/s</span>。</div></details></td></tr>
   <tr><td class="f">(f ∗ g)(t)＝<span class="int">∫</span><sub>0</sub><sup>t</sup> f(τ) g(t−τ) dτ</td><td class="f">F(s) G(s)</td><td><details><summary>導き方（たたみこみ → かけ算）</summary><div class="why">定義に入れると <span class="m">∫<sub>0</sub><sup>∞</sup>∫<sub>0</sub><sup>t</sup> f(τ)g(t−τ)dτ e<sup>−st</sup>dt</span>。積分の順番を入れかえ（τ を先に固定）、<span class="m">u＝t−τ</span> とおくと <span class="m">e<sup>−st</sup>＝e<sup>−sτ</sup>e<sup>−su</sup></span> に分かれて、<span class="m">∫f(τ)e<sup>−sτ</sup>dτ · ∫g(u)e<sup>−su</sup>du＝F(s)G(s)</span>。<b>これが積分方程式を解く鍵。</b></div></details></td></tr>
   </tbody></table></div>
+ <p class="note"><b>記号のメモ</b>：<span class="m">[F(t)]<sub>0</sub><sup>∞</sup></span> の大かっこは、積分したあとに「上の端（∞）を入れた値 − 下の端（0）を入れた値」をとる、という意味です。<span class="m">L[ ]</span> の大かっこは「中身をラプラス変換する」という別の記号です。</p>
  <p class="note">どの公式も「重ね合わせ」が使える（線形性）：<span class="m">L[a f＋b g]＝aF＋bG</span>。積分は足し算なので、そのまま分けられます。</p>
 </section>
 
