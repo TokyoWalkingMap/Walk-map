@@ -529,7 +529,7 @@ unit({id:'buckle',name:'座屈',tag:'c',ds:'オイラー座屈荷重、座屈長
  ]});
 
 // ---- 11 仕事とエネルギー
-unit({id:'energy',name:'仕事とエネルギー法',tag:'c',ds:'仮想仕事の原理、単位荷重法、ひずみエネルギー、カスティリアーノの定理',
+unit({id:'energy',name:'仕事とエネルギー法',tag:'c',ds:'仮想仕事の原理、単位荷重法、ひずみエネルギー、カスティリアーノの定理、マックスウェルの相反定理',
  pts:[`仮想仕事の原理：つりあっている構造物に仮想変位を与えると、外力の仕事の合計＝0`,`単位荷重法（トラス） ${F('δ = Σ N n L / (EA)')}（n：求めたい方向に単位荷重1をかけたときの軸力）`,`単位荷重法（梁） ${F('δ = ∫ M m / (EI) dx')}`,`軸力のひずみエネルギー ${F('U = N²L/(2EA)')}、曲げのひずみエネルギー ${F('U = ∫ M²/(2EI) dx')}`,`カスティリアーノの定理 ${F('δ = ∂U/∂P')}：エネルギーを荷重で微分すると、その荷重点・荷重の向きの変位`,`荷重のない点は仮の荷重 Q を置いて微分し、最後に Q＝0（単位荷重法 ${F('∫Mm/EI dx')} と同じ式になる）`,`相反作用の定理：点1の荷重による点2の変位＝点2の同じ荷重による点1の変位`],
  game:[{name:'断面力図ラボ（カスティリアーノの定理のタブ）',url:'../dan/'},{name:'仮想仕事ラボ',url:'../kaso/'}],
  gens:[
@@ -857,6 +857,9 @@ const NAZO={
  arch:{q:'吊り橋のケーブル。たるみを少なくピンと張るほど、ケーブルの力は？',o:['小さくなる','大きくなる','変わらない'],a:1,w:'ケーブルの水平張力 H＝wL²/(8f)。たるみ f が小さいほど大きくなります。洗濯ロープをピンと張るほど切れやすいのと同じです。'},
 };
 const NAZO2={
+ energy:[
+  {q:'橋の左寄りの点Aに重り（1 t）をのせたら、真ん中寄りの点Bが 3 mm 下がった。今度は重りを点Bにのせると、点Aは何 mm 下がる？',o:['3 mm','点Aは端に近いので 3 mm より小さい','計算しないとわからない'],a:0,w:'マックスウェルの相反定理：「Aにのせたときの B のたわみ」と「Bにのせたときの A のたわみ」は、いつでも等しくなります。曲がった形はまったく違うのに、この2つの数だけはぴったり同じ。押す点と測る点を入れ替えてもよい、という強力な性質です。',link:['導出：マックスウェルの相反定理（触って確かめる）','#d-energy-4']},
+ ],
  vib:[
   {q:'ブランコに乗った友達を、軽い力で大きく揺らしたい。押すタイミングは？',o:['できるだけ速く何度も押す','揺れが戻ってきたときに合わせて押す','ゆっくり2往復に1回押す'],a:1,w:'揺れの固有の周期に合わせて押すと、1回ごとの小さな力が積み重なって、揺れがどんどん大きくなります（共振）。地震の揺れの周期と建物の固有周期が近いと大きく揺れるのも、歩道橋が人の歩調で揺れるのも同じしくみです。',link:['導出：強制振動と共振','#d-shindo-2']},
   {q:'建物を「わざと柔らかい台」の上に載せる（免震）。地震の揺れはどうなる？',o:['柔らかいので大きく揺れる','建物が受ける揺れが小さくなる','変わらない'],a:1,w:'柔らかい層の上に載せると、建物全体の固有周期が3〜4秒にのびます。地震の揺れの多くはもっと短い周期なので、建物は速い揺れについていけず、受ける加速度は数分の1になります。代わりに、建物は地面に対してゆっくり大きく動くので、まわりにすき間を設けます。',link:['導出：免震と制振','#d-shindo-6']},
@@ -1277,7 +1280,29 @@ energy:{p:['work','hooke'],it:[
   s:['ためたエネルギー U を、荷重 P の式で書く。',
    {q:'P を少し dP 増やすと、U はどれだけ増える？'},
    '増えた分の仕事は、その荷重の位置が動く量 δ × dP。',
-   `<span class="eq">${m('δ＝∂U / ∂P')}</span>エネルギーを荷重で微分すると、その荷重の向きの変位。片持ち梁なら ${m('U＝P²L³/(6EI)')} を微分して ${m('δ＝PL³/(3EI)')}。`]},
+   `<span class="eq">${m('δ＝∂U / ∂P')}</span>エネルギーを荷重で微分すると、その荷重の向きの変位。片持ち梁なら ${m('U＝P²L³/(6EI)')} を微分して ${m('δ＝PL³/(3EI)')}。`]}, {t:'ベッティの相反定理',goal:'P₁ δ₁₂＝P₂ δ₂₁',fig:S(320,210,T(160,16,'順番①：P₁ → P₂',n,12),B(30,290,60),Pin(30,64),Rol(290,64),A(110,28,110,56,r),M(98,36,'P₁',r,13,'end'),A(210,28,210,56,b),M(222,36,'P₂',b,13,'start'),P('M30,60 Q160,86 290,60','none',n,1.5,'4 3'),
+   T(160,120,'順番②：P₂ → P₁',n,12),B(30,290,164),Pin(30,168),Rol(290,168),A(210,132,210,160,b),M(222,140,'P₂',b,13,'start'),A(110,132,110,160,r),M(98,140,'P₁',r,13,'end'),P('M30,164 Q160,190 290,164','none',n,1.5,'4 3'),
+   T(160,206,'最後の形は同じ → たまるエネルギーも同じ',r,11)),
+  cap:'δ₁₂ は「点2に荷重をかけたときの、点1の変位」。添字は「どこが・何によって」の順。',
+  s:['梁の点1に P₁、点2に P₂ をかける。かける<b>順番</b>を変えて、外からした仕事を数える。',
+   `順番①：まず P₁ をゆっくりかける。仕事は ${m('½P₁δ₁₁')}。次に P₂ をゆっくりかける。仕事は ${m('½P₂δ₂₂')}。このとき点1も ${m('δ₁₂')} 下がる。<b>P₁ はもう全部のっている</b>ので、½ がつかず ${m('P₁δ₁₂')} の仕事をする。`,
+   `順番②：P₂ が先なら、同じように ${m('½P₂δ₂₂＋½P₁δ₁₁＋P₂δ₂₁')}。`,
+   {q:'最後の形は同じ。2つの仕事の関係は？'},
+   `比例する範囲（③と③′）なら、最後の形はかける順番に関係なく同じで、たまったひずみエネルギーも同じ（④）。だから2つの仕事は等しい。共通の項を消すと<span class="eq">${m('P₁ δ₁₂＝P₂ δ₂₁')}</span>「荷重1が、荷重2による変位でする仕事」と「荷重2が、荷重1による変位でする仕事」は等しい。`],key:'かける順番を変えても、最後のエネルギーは同じ。そこから出る。'},
+ {t:'マックスウェルの相反定理',goal:'δ₁₂＝δ₂₁',fig:`<div class="mxw" data-mx></div>`,
+  cap:'上の梁で、点A・点Bを動かしてから、重りをのせる点を切り替えてみよう。',
+  s:[`ベッティの定理で、2つの荷重をどちらも ${m('1')} にする（${m('P₁＝P₂＝1')}）。`,
+   {q:'すると、何と何が等しくなる？'},
+   `<span class="eq">${m('δ₁₂＝δ₂₁')}</span>「点2に1をのせたときの点1のたわみ」と「点1に1をのせたときの点2のたわみ」は、<b>いつでも同じ</b>。点が梁の端と真ん中のように、ぜんぜん違う場所でも成り立つ。`,
+   '梁だけでなく、トラスでもラーメンでも成り立つ。比例する範囲（弾性）なら、どんな形でもよい。',
+   '回転にも使える：点1に「モーメント1」をかけたときの点2のたわみ（長さ）と、点2に「力1」をかけたときの点1のたわみ角（角度）は、数値が等しい。'],key:'たわみは「入れ替えても同じ」。測る点と押す点を入れ替えてよい。'},
+ {t:'相反定理の使い道',goal:'影響線＝たわみの形',fig:S(320,200,T(160,16,'点Cに 1 をのせたときのたわみの形',n,12),B(30,290,50),Pin(30,54),Rol(290,54),A(200,20,200,46,r),M(212,28,'1',r,13,'start'),P('M30,50 C100,95 170,100 200,96 S270,80 290,50','none',b,2.5),M(200,112,'C',n,13),
+   T(160,140,'＝ 荷重が動いたときの、点Cのたわみの影響線',b,12),B(30,290,170,n,4),P('M30,170 C100,195 170,198 200,196 S270,185 290,170','#e1eef7',b,1.5),A(110,150,110,166,r),M(122,156,'動く 1',r,11,'start')),
+  s:['橋のある点Cのたわみが、トラックが動くとどう変わるか（たわみの影響線）を知りたい。',
+   {q:'トラックを1 m ずつ動かして、毎回計算する？'},
+   `相反定理より、${m('δ<sub>C,x</sub>＝δ<sub>x,C</sub>')}。「x にのせたときの C のたわみ」は「C にのせたときの x のたわみ」と同じ。だから<b>点Cに1をのせたときのたわみの形が、そのまま影響線</b>になる。計算は1回でよい。`,
+   '反力や曲げの影響線も同じ考え方で描ける（ミュラー・ブレスラウの原理）：知りたい力のところを切って、その向きに 1 だけずらした形が影響線。',
+   '構造計算ソフトの柔性マトリクス・剛性マトリクスが<b>対称</b>（K<sub>ij</sub>＝K<sub>ji</sub>）なのも、この定理のおかげ。実験でも、荷重をかける点と測る点を入れ替えて、測定器を1つで済ませることができる。'],key:'1回の計算で、動く荷重の影響が全部わかる。'},
 ]},
 indet:{p:['sup','eq','comp','hooke'],it:[
  {t:'重ね合わせの原理',goal:'δ＝δ₁＋δ₂',fig:S(320,200,T(55,18,'荷重1だけ',n,12),B(15,95,50,n,5),Pin(15,54),Rol(95,54),A(40,14+10,40,46,r),M(30,30,'P₁',r,13),P('M15,50 Q55,64 95,50','none',b,1.5,'4 3'),
@@ -1509,6 +1534,35 @@ return {p:['motion','hooke','eq'],it:[
    '<b>TMD（同調質量ダンパー）</b>：揺れやすい振動数に合わせたおもりとばねを、構造物の上に載せる。共振すると、おもりが逆向きに揺れて、構造物の揺れを打ち消す。歩道橋の床下や、超高層ビルの屋上に使われている。'],key:'免震＝周期をのばす、制振＝減衰を足す、TMD＝逆向きに揺れるおもり。'},
 ]}; })();
 
+// ---- マックスウェルの相反定理：触れる梁
+(()=>{ const L=10;
+ const defl=(a,x)=>{ // 単純梁、点 a に 1、点 x のたわみ（EI＝1）
+   const bb=L-a; if(x<=a) return bb*x*(L*L-bb*bb-x*x)/(6*L); const xx=L-x; return a*xx*(L*L-a*a-xx*xx)/(6*L); };
+ const init=el=>{ if(el.dataset.ok) return; el.dataset.ok=1; const st={a:2.5,b:6,at:'A',shown:{A:false,B:false}};
+  el.innerHTML=`<svg viewBox="0 0 320 190" class="mxsv"></svg><div class="mxc"><label>点A <input type="range" min="0.5" max="9.5" step="0.5" value="2.5" data-k="a"><b data-v="a"></b></label><label>点B <input type="range" min="0.5" max="9.5" step="0.5" value="6" data-k="b"><b data-v="b"></b></label>
+   <div class="mxb"><button data-at="A">重りを A にのせる</button><button data-at="B">重りを B にのせる</button></div><p class="mxr"></p></div>`;
+  const sv=el.querySelector('svg'), X=x=>30+260*x/L, Y0=70, sc=55/defl(5,5)/1.0;
+  const K=10/defl(5,5); const draw=()=>{ const ld=st.at==='A'?st.a:st.b, ms=st.at==='A'?st.b:st.a; let pts=[]; for(let i=0;i<=100;i++){ const x=L*i/100; pts.push(`${X(x).toFixed(1)},${(Y0+sc*defl(ld,x)).toFixed(1)}`); }
+   const dm=defl(ld,ms); const ym=Y0+sc*dm;
+   sv.innerHTML=`<line x1="30" y1="${Y0}" x2="290" y2="${Y0}" stroke="#93BCD6" stroke-width="5"/><polyline points="${pts.join(' ')}" fill="none" stroke="#12286B" stroke-width="3"/>
+    <path d="M30,${Y0+4} l-9,14 h18z" fill="#fff" stroke="#12286B" stroke-width="2"/><path d="M290,${Y0+4} l-9,14 h18z" fill="#fff" stroke="#12286B" stroke-width="2"/><line x1="276" y1="${Y0+22}" x2="304" y2="${Y0+22}" stroke="#12286B" stroke-width="2"/>
+    ${['A','B'].map(k=>{ const x=X(k==='A'?st.a:st.b); const y=Y0+sc*defl(ld,k==='A'?st.a:st.b); return `<line x1="${x}" y1="${Y0}" x2="${x}" y2="${y}" stroke="#C62422" stroke-width="1" stroke-dasharray="3 3"/><circle cx="${x}" cy="${y}" r="5" fill="${k===st.at?'#C62422':'#3286BE'}"/><text x="${x}" y="${Y0-10-(k===st.at?28:0)}" font-size="14" font-weight="900" text-anchor="middle" fill="${k===st.at?'#C62422':'#3286BE'}">${k}</text>`; }).join('')}
+    <rect x="${X(ld)-11}" y="${Y0-34}" width="22" height="16" fill="#C62422"/><text x="${X(ld)}" y="${Y0-22}" font-size="10" fill="#fff" text-anchor="middle" font-weight="900">1</text><line x1="${X(ld)}" y1="${Y0-18}" x2="${X(ld)}" y2="${Y0+sc*defl(ld,ld)-6}" stroke="#C62422" stroke-width="2"/>
+    <text x="${Math.max(100,Math.min(220,X(ms)))}" y="${Math.max(ym,Y0+sc*defl(ld,ld))+26}" font-size="12" font-weight="700" text-anchor="middle" fill="#3286BE">${st.at==='A'?'B':'A'}のたわみ ${(dm*K).toFixed(2)} mm</text>
+    <text x="160" y="180" font-size="11" text-anchor="middle" fill="#5E6B86">梁の長さ 10 m　赤：のせた点　青：測る点</text>`;
+   st.shown[st.at]=dm*K; const r=el.querySelector('.mxr'); const A_=st.shown.A, B_=st.shown.B;
+   r.innerHTML=`A にのせたときの B のたわみ δ<sub>BA</sub>＝<b>${A_===false?'？（A にのせてみよう）':A_.toFixed(2)+' mm'}</b><br>B にのせたときの A のたわみ δ<sub>AB</sub>＝<b>${B_===false?'？（B にのせてみよう）':B_.toFixed(2)+' mm'}</b>${A_!==false&&B_!==false?`<br><em>${Math.abs(A_-B_)<1e-9?'同じ！ 曲がった形はまったく違うのに、2つの値はぴったり等しい。':''}</em>`:''}`;
+   el.querySelectorAll('[data-at]').forEach(b=>b.classList.toggle('on',b.dataset.at===st.at)); el.querySelector('[data-v="a"]').textContent=st.a.toFixed(1)+' m'; el.querySelector('[data-v="b"]').textContent=st.b.toFixed(1)+' m'; };
+  el.querySelectorAll('input').forEach(i=>i.oninput=()=>{ st[i.dataset.k]=+i.value; if(st.a===st.b){ st[i.dataset.k]+= (st[i.dataset.k]<9.5?0.5:-0.5); i.value=st[i.dataset.k]; } st.shown={A:false,B:false}; draw(); });
+  el.querySelectorAll('[data-at]').forEach(b=>b.onclick=()=>{ st.at=b.dataset.at; draw(); });
+  draw(); };
+ const scan=()=>document.querySelectorAll('[data-mx]').forEach(init);
+ const css=document.createElement('style'); css.textContent='.mxw{max-width:420px;margin:0 auto}.mxsv{width:100%;display:block;background:#fff}.mxc{display:grid;gap:6px;font-size:13px;margin-top:6px}.mxc label{display:grid;grid-template-columns:44px 1fr 54px;align-items:center;gap:6px;font-weight:700}.mxc input{width:100%}.mxb{display:flex;gap:6px}.mxb button{flex:1;border:2px solid #12286B;background:#fff;color:#12286B;font:inherit;font-weight:700;padding:6px;cursor:pointer}.mxb button.on{background:#C62422;border-color:#C62422;color:#fff}.mxr{margin:4px 0 0;line-height:1.7}.mxr b{color:#C62422}.mxr em{font-style:normal;font-weight:700;color:#12286B}';
+ document.head.appendChild(css);
+ let pend=false; const mo=new MutationObserver(()=>{ if(pend) return; pend=true; setTimeout(()=>{ pend=false; scan(); },0); });
+ const go=()=>{ scan(); mo.observe(document.body,{childList:true,subtree:true}); }; if(document.body) go(); else document.addEventListener('DOMContentLoaded',go);
+})();
+
 // 用語集：[用語, 読み・別名, 意味, 飛び先（d-単元-番号＝導出、u番号＝単元）]
 const GLOSS=[
 ['運動方程式（振動）','m ẍ＋c ẋ＋k x＝F','おもり・ダンパー・ばねの力のつりあい。振動工学の出発点。','d-shindo-0'],
@@ -1550,6 +1604,9 @@ const GLOSS=[
 ['ひずみエネルギー','ひずみえねるぎー','荷重がした仕事が、ばねのように部材にたまったもの。','d-energy-0'],
 ['単位荷重法','たんいかじゅうほう、仮想仕事の原理','求めたい点に1の力を仮にかけて、∫Mm/EI dx でたわみを出す方法。','d-energy-1'],
 ['カスティリアーノの定理','かすてぃりあーの','ひずみエネルギーを荷重で微分すると、その点の変位になる。','d-energy-2'],
+['ベッティの相反定理','べってぃ、相反作用の定理','荷重1が荷重2による変位でする仕事と、荷重2が荷重1による変位でする仕事は等しい。P₁δ₁₂＝P₂δ₂₁。','d-energy-3'],
+['マックスウェルの相反定理','まっくすうぇる、相反定理、相反作用','点2に1をのせたときの点1のたわみと、点1に1をのせたときの点2のたわみは等しい。δ₁₂＝δ₂₁。','d-energy-4'],
+['ミュラー・ブレスラウの原理','みゅらーぶれすらう','知りたい反力や曲げのところを切って、その向きに1だけずらした形が影響線になる。','d-energy-5'],
 ['重ね合わせの原理','かさねあわせ','力と変形が比例する範囲では、荷重ごとの結果を足してよい。座屈・塑性では使えない。','d-indet-0'],
 ['応力法','おうりょくほう、余力法','余分な支点や部材力を外して静定にし、外した所の変形が元に戻る条件で余力を決める方法。','d-indet-1'],
 ['適合条件','てきごうじょうけん、変形の適合','つながっている所は、切れたり重なったりしない、という条件。不静定を解く式になる。','d-indet-1'],
